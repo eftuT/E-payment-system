@@ -5,7 +5,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
-  FaUser, FaLock, FaSignInAlt, FaHome, FaEye, FaEyeSlash, FaUserCircle
+  FaUser, FaLock, FaSignInAlt, FaHome, FaEye, FaEyeSlash, FaUserCircle,
+  FaInfoCircle, FaEnvelope
 } from 'react-icons/fa';
 import companyLogo from '../image/logoimage.jpg';
 import paymentImage from '../image/payment.png';
@@ -45,26 +46,22 @@ const UserLogin = () => {
     setErrorMessage('');
 
     try {
-      // Using your original working API endpoint
       const response = await axios.post('http://localhost:3000/Users/login', {
         identifier: identifier,
         Password: password,
       });
-
-      console.log('Login response:', response);
 
       if (response.status === 200) {
         setIsLoggedInUser(true);
         localStorage.setItem('isLoggedInUser', 'true');
         localStorage.setItem('userData', JSON.stringify(response.data.user || response.data));
         
-        toast.success('🎉 Login successful!', {
+        toast.success('Login successful!', {
           position: toast.POSITION.TOP_RIGHT,
           autoClose: 3000,
         });
         
         message.success('User logged in successfully');
-        console.log('User logged in successfully');
         
         setTimeout(() => {
           navigate('/users');
@@ -73,10 +70,7 @@ const UserLogin = () => {
         setErrorMessage('Login failed. Please try again.');
       }
     } catch (error) {
-      console.error('An error occurred during User login:', error);
-      
       if (error.response) {
-        // The request was made and the server responded with a status code
         if (error.response.status === 400) {
           setErrorMessage('Invalid email or password format');
         } else if (error.response.status === 401) {
@@ -86,11 +80,9 @@ const UserLogin = () => {
         }
         message.error(error.response.data?.message || 'Login failed');
       } else if (error.request) {
-        // The request was made but no response was received
         setErrorMessage('No response from server. Please try again.');
         message.error('No response from server. Please try again.');
       } else {
-        // Something happened in setting up the request
         setErrorMessage('An error occurred. Please try again.');
         message.error('An error occurred. Please try again.');
       }
@@ -103,42 +95,44 @@ const UserLogin = () => {
     <div className="login-container">
       <ToastContainer />
       
-      {/* Header */}
       <header className="login-header">
         <div className="header-content">
           <div className="logo-section">
             <img src={companyLogo} alt="company-logo" className="company-logo" />
             <div className="company-info">
-              <h1>E-Payment-System</h1>
+             <h1 style={{ color: "blue" }}>E-Payment-System</h1>
               <p className="slogan">your trusted online payment system</p>
             </div>
           </div>
           <nav className="header-nav">
             <Link to="/users" className="nav-link">
-              <FaHome /> Home
+              Home
             </Link>
+            <Link to="/aboutUs" className="nav-link">
+             About Us
+            </Link>
+            <Link to="/contactUs" className="nav-link">
+               Contact Us
+            </Link>
+            
           </nav>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="login-main">
         <div className="login-wrapper">
-          {/* Left Side - Image */}
           <div className="login-image-side">
             <div className="image-content">
-              <img src={paymentImage} alt="Payment System" className="side-image" />
               <div className="image-overlay">
-                <h2>Device Entry Portal</h2>
-                <p>The smart solution for seamless device entry and secure exit management.</p>
+                <h2 >E-Payment System</h2>
+                <p>The smart solution for seamless for yout payment.</p>
               </div>
+              <img src={paymentImage} alt="Payment System" className="side-image" />
             </div>
           </div>
 
-          {/* Right Side - Login Form */}
           <div className="login-form-side">
             <div className="login-card">
-              {/* Profile Icon */}
               <div className="profile-icon-container">
                 <FaUserCircle className="profile-icon" />
               </div>
@@ -148,7 +142,6 @@ const UserLogin = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="login-form">
-                {/* Email/Username Field */}
                 <div className="form-group">
                   <label htmlFor="identifier" className="form-label">
                     EMPLOYEE EMAIL
@@ -164,7 +157,6 @@ const UserLogin = () => {
                   />
                 </div>
 
-                {/* Password Field */}
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">
                     PASSWORD
@@ -189,17 +181,14 @@ const UserLogin = () => {
                   </div>
                 </div>
 
-                {/* Error Message */}
                 {errorMessage && (
                   <div className="error-message">{errorMessage}</div>
                 )}
 
-                {/* Forgot Password Link */}
                 <div className="forgot-password">
                   <Link to="/reset-password">Forgot Password?</Link>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   className="btn-submit"
@@ -214,10 +203,9 @@ const UserLogin = () => {
                   )}
                 </button>
 
-                {/* Register Link */}
                 <div className="login-footer">
                   <p className="register-link">
-                    Don't have an account? <Link to="/signup">register</Link>
+                    Don't have an account? <Link to="/signup">Register</Link>
                   </p>
                 </div>
               </form>
