@@ -70,7 +70,6 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   User.associate = (models) => {
-    // Many-to-Many with ServiceProviders
     if (models.ServiceProviders) {
       User.belongsToMany(models.ServiceProviders, {
         through: models.UserServiceProvider,
@@ -80,7 +79,6 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    // Many-to-Many with Agents
     if (models.Agents) {
       User.belongsToMany(models.Agents, {
         through: models.userAgent,
@@ -90,7 +88,6 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    // One-to-Many with Payment
     if (models.Payment) {
       User.hasMany(models.Payment, {
         foreignKey: 'UserId',
@@ -98,7 +95,6 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    // One-to-Many with Bill
     if (models.Bill) {
       User.hasMany(models.Bill, {
         foreignKey: 'UserId',
@@ -107,7 +103,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
 
-  // Create SuperAdmin user after sync
   User.afterSync(async () => {
     try {
       const superAdmin = await User.findOne({ where: { Role: 'SuperAdmin' } });
@@ -125,10 +120,10 @@ module.exports = (sequelize, DataTypes) => {
           Address: 'Super Admin Address',
           Role: 'SuperAdmin',
         });
-        console.log('✅ Super admin user created successfully.');
+        console.log('Super admin user created successfully.');
       }
     } catch (error) {
-      console.error('❌ Error creating super admin user:', error);
+      console.error('Error creating super admin user:', error);
     }
   });
 
