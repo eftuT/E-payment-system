@@ -1,77 +1,137 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MailOutlined, PhoneOutlined, EnvironmentOutlined, FacebookOutlined, TwitterOutlined, InstagramOutlined } from '@ant-design/icons';
-import { Typography, Space } from 'antd';
-import companyLogo from '../image/logoimage.jpg';
-import USER from '../image/himage3.jpg';
-import './style.css';
+import { 
+  MailOutlined, 
+  PhoneOutlined, 
+  EnvironmentOutlined, 
+  FacebookOutlined, 
+  TwitterOutlined, 
+  InstagramOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons';
+import { Typography } from 'antd';
 import Header from './Header';
+import './ContactUs.css';
 
 const { Title, Paragraph } = Typography;
 
 const ContactUs = () => {
 
-  useEffect(()=>{
+  useEffect(() => {
     localStorage.setItem("userSelectedMenu", 2);
-  },[])
+  }, [])
 
   return (
-    <div className="container">
-      <div className="overlay-curve"></div>
+    <div className="contact-container">
       <Header />
 
-      <div className="body" style={{ textAlign:'center' }}>
-        <Title className="contactus" style={{ marginTop: '50px' }}>Contact Us</Title>
-        <Paragraph className="contactus-description">For any inquiries or assistance, please reach out to our support team:</Paragraph>
-        <div className="contact-info">
-          <Space>
-            <MailOutlined className="contact-icon" />
-            <Title level={5}>Email:</Title>
-          </Space>
-          <Paragraph>support@epaymentsystem.com</Paragraph>
+      {/* Hero Section */}
+      <section className="contact-hero">
+        <div className="contact-hero-content">
+          <h1 className="contact-hero-title">Contact Us</h1>
+          <p className="contact-hero-subtitle">
+            For any inquiries or assistance, please reach out to our support team
+          </p>
+          <div className="contact-hero-divider"></div>
         </div>
-        <div className="contact-info">
-          <Space>
-            <PhoneOutlined className="contact-icon" />
-            <Title level={5}>Phone:</Title>
-          </Space>
-          <Paragraph>+251-911-23-76-34</Paragraph>
-        </div>
-        <div className="contact-info">
-          <Space>
-            <EnvironmentOutlined className="contact-icon" />
-            <Title level={5}>Mailing Address:</Title>
-          </Space>
-          <Paragraph>Bole, Addis Ababa, Ethiopia</Paragraph>
-        </div>
+      </section>
 
-        {/* Additional Information */}
-        <div className="additional-info">
-          <Title level={4}>Opening Hours:</Title>
-          <Paragraph>Monday - Friday: 8:30am - 5pm</Paragraph>
-        </div>
+      {/* Contact Info Section */}
+      <section className="contact-info-section">
+        <div className="contact-info-wrapper">
+          {/* Left Side - Contact Form */}
+          <div className="contact-form-container">
+            <h2>Send Us a Message</h2>
+            <form className="contact-form">
+              <div className="form-group">
+                <label>Your Name</label>
+                <input type="text" placeholder="Enter your full name" />
+              </div>
+              <div className="form-group">
+                <label>Your Email</label>
+                <input type="email" placeholder="Enter your email address" />
+              </div>
+              <div className="form-group">
+                <label>Subject</label>
+                <input type="text" placeholder="Enter subject" />
+              </div>
+              <div className="form-group">
+                <label>Message</label>
+                <textarea rows="4" placeholder="Enter your message"></textarea>
+              </div>
+              <button type="submit" className="submit-btn">
+                Send Message
+              </button>
+            </form>
+          </div>
 
-        <div className="additional-info">
-          <Title level={4}>Social Media:</Title>
-          <ul className="social-media-list">
-            <li>
-              <Link to="#">
-                <FacebookOutlined className="social-media-icon" />
-              </Link>
-            </li>
-            <li>
-              <Link to="#">
-                <TwitterOutlined className="social-media-icon" />
-              </Link>
-            </li>
-            <li>
-              <Link to="#">
-                <InstagramOutlined className="social-media-icon" />
-              </Link>
-            </li>
-          </ul>
+          {/* Right Side - Contact Details */}
+          <div className="contact-info-side">
+            <h2>Contact Details</h2>
+            
+            <div className="info-item">
+              <div className="info-icon-wrapper email-icon-wrapper">
+                <MailOutlined className="info-icon" />
+              </div>
+              <div className="info-content">
+                <h4>Email</h4>
+                <p>support@epaymentsystem.com</p>
+                <p className="info-sub">We'll respond within 24 hours</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <div className="info-icon-wrapper phone-icon-wrapper">
+                <PhoneOutlined className="info-icon" />
+              </div>
+              <div className="info-content">
+                <h4>Phone</h4>
+                <p>+251-911-23-76-34</p>
+                <p className="info-sub">Mon-Fri 8:30am - 5pm</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <div className="info-icon-wrapper address-icon-wrapper">
+                <EnvironmentOutlined className="info-icon" />
+              </div>
+              <div className="info-content">
+                <h4>Address</h4>
+                <p>Bole, Addis Ababa, Ethiopia</p>
+                <p className="info-sub">Visit us in person</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <div className="info-icon-wrapper hours-icon-wrapper">
+                <ClockCircleOutlined className="info-icon" />
+              </div>
+              <div className="info-content">
+                <h4>Opening Hours</h4>
+                <p>Monday - Friday: 8:30am - 5pm</p>
+                <p className="info-sub">Saturday - Sunday: Closed</p>
+              </div>
+            </div>
+
+            {/* Social Media */}
+            <div className="social-section">
+              <h4>Follow Us</h4>
+              <div className="social-links">
+                <Link to="#" className="social-link facebook">
+                  <FacebookOutlined />
+                </Link>
+                <Link to="#" className="social-link twitter">
+                  <TwitterOutlined />
+                </Link>
+                <Link to="#" className="social-link instagram">
+                  <InstagramOutlined />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
     </div>
   );
 };
