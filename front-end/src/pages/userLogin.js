@@ -143,7 +143,7 @@ const UserLogin = () => {
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="form-group">
                   <label htmlFor="identifier" className="form-label">
-                    EMPLOYEE EMAIL
+                    USER EMAIL
                   </label>
                   <input
                     id="identifier"
