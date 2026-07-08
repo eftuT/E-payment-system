@@ -126,8 +126,8 @@ const UserLogin = () => {
               <div className="image-overlay">
                 <h2>E-payment System</h2>
                 <p>The smart solution for seamless payment.</p>
-              </div>
               <img src={paymentImage} alt="Payment System" className="side-image" />
+            </div>
             </div>
           </div>
           <div className="login-form-side">
