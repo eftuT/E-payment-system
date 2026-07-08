@@ -100,7 +100,7 @@ const UserLogin = () => {
           <div className="logo-section">
             <img src={companyLogo} alt="company-logo" className="company-logo" />
             <div className="company-info">
-             <h1 style={{ color: "blue" }}>E-Payment-System</h1>
+             <h1 >E-Payment-System</h1>
               <p className="slogan">your trusted online payment system</p>
             </div>
           </div>
@@ -124,8 +124,8 @@ const UserLogin = () => {
           <div className="login-image-side">
             <div className="image-content">
               <div className="image-overlay">
-                <h2 >E-Payment System</h2>
-                <p>The smart solution for seamless for yout payment.</p>
+                <h2 style={{ color: "#667eea" }} >E-Payment System</h2>
+                <p style={{ color: "#667eea" }}>The smart solution for seamless for yout payment.</p>
               </div>
               <img src={paymentImage} alt="Payment System" className="side-image" />
             </div>
