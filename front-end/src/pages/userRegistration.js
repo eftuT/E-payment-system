@@ -295,7 +295,7 @@ const RegistrationForm = () => {
         
           <nav className="header-nav">
             <Link to="/users" className="nav-link">
-              <FaHome /> Home
+             Home
             </Link>
             <Link to="/aboutUs" className="nav-link">
               About Us
