@@ -1,19 +1,10 @@
-// ============================================
-// LOAD ENVIRONMENT VARIABLES
-// ============================================
 require('dotenv').config();
 
-// ============================================
-// FIX: Ensure JWT_SECRET is available
-// ============================================
 if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ JWT_SECRET not found, setting fallback');
+  console.warn('JWT_SECRET not found, setting fallback');
   process.env.JWT_SECRET = 'fallback_secret_key_for_development_only';
 }
 
-// ============================================
-// IMPORTS
-// ============================================
 const asyncHandler = require('express-async-handler');
 const db = require('../models');
 const bcrypt = require('bcryptjs');
@@ -24,12 +15,8 @@ const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const { Op } = require('sequelize');
 
-// Import required models
 const { User, Payment, Bill, Agents, ServiceProviders, UserServiceProvider } = require('../models');
 
-// ============================================
-// MULTER CONFIGURATION
-// ============================================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'Images');
@@ -41,7 +28,7 @@ const storage = multer.diskStorage({
 
 exports.upload = multer({
   storage: storage,
-  limits: { fileSize: 5000000 }, // 5MB
+  limits: { fileSize: 5000000 },
   fileFilter: (req, file, cb) => {
     const fileTypes = /jpeg|jpg|png|gif/;
     const mimeType = fileTypes.test(file.mimetype);
@@ -52,10 +39,6 @@ exports.upload = multer({
     cb(new Error('Please provide a valid image format (jpeg, jpg, png, gif)'));
   }
 }).single('ProfilePicture');
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
 
 function getDefaultIncludes() {
   return [
@@ -83,17 +66,10 @@ function getJWTSecret() {
   return process.env.JWT_SECRET || 'fallback_secret_key_for_development_only';
 }
 
-// ============================================
-// LOGIN FUNCTION - COMPLETELY FIXED
-// ============================================
-
 exports.login = async (req, res) => {
-  console.log('=== LOGIN ATTEMPT ===');
-  
   try {
     const { identifier, Password } = req.body;
 
-    // Validate input
     if (!identifier || !Password) {
       return res.status(400).json({
         success: false,
@@ -101,9 +77,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    console.log(`🔍 Looking for user: ${identifier}`);
-
-    // Find user
     const user = await User.findOne({
       where: {
         [Op.or]: [
@@ -114,29 +87,21 @@ exports.login = async (req, res) => {
     });
 
     if (!user) {
-      console.log('❌ User not found');
       return res.status(404).json({
         success: false,
         message: 'User not found',
       });
     }
 
-    console.log(`✅ User found: ${user.Email}`);
-
-    // Verify password
     const isPasswordValid = await bcrypt.compare(Password, user.Password);
     
     if (!isPasswordValid) {
-      console.log('❌ Invalid password');
       return res.status(401).json({
         success: false,
         message: 'Invalid password',
       });
     }
 
-    console.log('✅ Password verified');
-
-    // Generate JWT Token
     const secret = getJWTSecret();
     const token = jwt.sign(
       { 
@@ -149,9 +114,6 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ JWT Token generated');
-
-    // Get user with associations
     let userData = {
       id: user.id,
       UserID: user.UserID,
@@ -165,7 +127,6 @@ exports.login = async (req, res) => {
       ProfilePicture: user.ProfilePicture,
     };
 
-    // Try to get associations
     try {
       const userWithAssociations = await User.findByPk(user.id, {
         include: getDefaultIncludes()
@@ -181,14 +142,11 @@ exports.login = async (req, res) => {
         };
       }
     } catch (assocError) {
-      console.log('⚠️ Could not load associations:', assocError.message);
       userData.ServiceProviders = [];
       userData.Payments = [];
       userData.Bills = [];
       userData.Agents = [];
     }
-
-    console.log(`✅ Login successful for: ${user.Email}`);
 
     return res.status(200).json({
       success: true,
@@ -198,7 +156,6 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Login Error:', error);
     return res.status(500).json({
       success: false,
       message: 'Error during login',
@@ -206,10 +163,6 @@ exports.login = async (req, res) => {
     });
   }
 };
-
-// ============================================
-// CREATE USER
-// ============================================
 
 exports.create = asyncHandler(async (req, res) => {
   const requiredFields = [
@@ -234,7 +187,6 @@ exports.create = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [
@@ -252,10 +204,8 @@ exports.create = asyncHandler(async (req, res) => {
       });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(req.body.Password, 10);
 
-    // Create user
     const userData = {
       UserID: req.body.UserID,
       FirstName: req.body.FirstName,
@@ -282,7 +232,6 @@ exports.create = asyncHandler(async (req, res) => {
       user: userWithAssociations
     });
   } catch (error) {
-    console.error('Error creating user:', error);
     if (error.name === 'SequelizeValidationError') {
       const errors = error.errors.map((err) => err.message);
       return res.status(400).json({
@@ -299,10 +248,6 @@ exports.create = asyncHandler(async (req, res) => {
   }
 });
 
-// ============================================
-// GET ALL USERS
-// ============================================
-
 exports.findAll = asyncHandler(async (req, res) => {
   try {
     const users = await User.findAll({
@@ -314,7 +259,6 @@ exports.findAll = asyncHandler(async (req, res) => {
       users: users
     });
   } catch (error) {
-    console.error('Error retrieving users:', error);
     res.status(500).json({
       success: false,
       message: 'Error retrieving users',
@@ -322,10 +266,6 @@ exports.findAll = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// GET USER BY ID
-// ============================================
 
 exports.findOne = asyncHandler(async (req, res) => {
   try {
@@ -346,7 +286,6 @@ exports.findOne = asyncHandler(async (req, res) => {
       user: user
     });
   } catch (error) {
-    console.error('Error retrieving user:', error);
     res.status(500).json({
       success: false,
       message: 'Error retrieving user',
@@ -354,10 +293,6 @@ exports.findOne = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// GET USER BY SERVICE NO
-// ============================================
 
 exports.findOneByServiceNo = asyncHandler(async (req, res) => {
   const serviceNo = req.params.serviceNo;
@@ -396,7 +331,6 @@ exports.findOneByServiceNo = asyncHandler(async (req, res) => {
       user: user
     });
   } catch (error) {
-    console.error('Error finding user:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -404,10 +338,6 @@ exports.findOneByServiceNo = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// UPDATE USER
-// ============================================
 
 exports.update = asyncHandler(async (req, res) => {
   const id = req.params.id;
@@ -422,7 +352,6 @@ exports.update = asyncHandler(async (req, res) => {
       });
     }
 
-    // Update user fields
     const updateData = {
       FirstName: req.body.FirstName || user.FirstName,
       LastName: req.body.LastName || user.LastName,
@@ -454,7 +383,6 @@ exports.update = asyncHandler(async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error updating user:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating user',
@@ -462,10 +390,6 @@ exports.update = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// DELETE USER
-// ============================================
 
 exports.delete = asyncHandler(async (req, res) => {
   const id = req.params.id;
@@ -486,10 +410,6 @@ exports.delete = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// ASSOCIATE USER WITH SERVICE PROVIDERS
-// ============================================
 
 exports.associate = asyncHandler(async (req, res) => {
   try {
@@ -521,7 +441,6 @@ exports.associate = asyncHandler(async (req, res) => {
         });
       }
 
-      // Generate service numbers
       for (let i = 0; i < serviceProviders.length; i++) {
         const serviceNo = Math.floor(100000 + Math.random() * 900000);
         await user.addServiceProviders(serviceProviders[i], {
@@ -546,7 +465,6 @@ exports.associate = asyncHandler(async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error associating user:', error);
     res.status(500).json({
       success: false,
       message: 'Error associating user with service providers',
@@ -554,10 +472,6 @@ exports.associate = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// ============================================
-// PASSWORD RESET FUNCTIONS
-// ============================================
 
 exports.requestPasswordReset = asyncHandler(async (req, res) => {
   if (!req.body.Email) {
@@ -683,10 +597,6 @@ exports.verifyUser = asyncHandler(async (req, res) => {
   });
 });
 
-// ============================================
-// TEST JWT FUNCTION
-// ============================================
-
 exports.testJWT = async (req, res) => {
   try {
     const secret = getJWTSecret();
@@ -710,10 +620,6 @@ exports.testJWT = async (req, res) => {
   }
 };
 
-// ============================================
-// EMAIL FUNCTION
-// ============================================
-
 async function sendEmail(recipientEmail, subject, message) {
   try {
     const transporter = nodemailer.createTransport({
@@ -735,10 +641,8 @@ async function sendEmail(recipientEmail, subject, message) {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent:', info.messageId);
     return info;
   } catch (error) {
-    console.error('❌ Error sending email:', error);
     throw error;
   }
 }
