@@ -138,21 +138,20 @@
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
   margin-bottom: 1.5rem;
 }
-
 .image-overlay h2 {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
   color: #667eea;
 }
 
 .image-overlay p {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  line-height: 1.5;
+  font-size: 1.1rem;
+  line-height: 1.6;
   max-width: 90%;
-  margin: 0 auto;
-  color: #555;
+  margin: 0.5rem auto;
+  color: #667eea;
+  opacity: 0.9;
 }
 
 .login-form-side {

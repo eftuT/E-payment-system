@@ -122,15 +122,14 @@ const UserLogin = () => {
       <main className="login-main">
         <div className="login-wrapper">
           <div className="login-image-side">
-            <div className="image-content">
+           <div className="image-content">
               <div className="image-overlay">
-                <h2 style={{ color: "#667eea" }} >E-Payment System</h2>
-                <p style={{ color: "#667eea" }}>The smart solution for seamless for yout payment.</p>
-              </div>
+                <h2>E-payment System</h2>
+                <p>The smart solution for seamless payment.</p>
               <img src={paymentImage} alt="Payment System" className="side-image" />
             </div>
+            </div>
           </div>
-
           <div className="login-form-side">
             <div className="login-card">
               <div className="profile-icon-container">
@@ -144,7 +143,7 @@ const UserLogin = () => {
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="form-group">
                   <label htmlFor="identifier" className="form-label">
-                    EMPLOYEE EMAIL
+                    USER EMAIL
                   </label>
                   <input
                     id="identifier"
