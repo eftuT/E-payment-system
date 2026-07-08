@@ -5,10 +5,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import {
-  FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash,
+  FaUser, FaLock, FaEye, FaEyeSlash,
   FaUserPlus, FaHome, FaCamera, FaGenderless, FaTimes
 } from 'react-icons/fa';
-import { MdEmail, MdPerson, MdLock, MdPhone, MdHome } from 'react-icons/md';
+import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
 import companyLogo from '../image/logoimage.jpg';
 import paymentImage from '../image/payment.png';
 import './RegistrationForm.css';
@@ -22,7 +22,6 @@ const RegistrationForm = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Auto-generate UserID
   const getNextUserID = () => {
     const timestamp = Date.now().toString();
     const randomNumber = Math.floor(Math.random() * 10000).toString();
@@ -43,9 +42,8 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(false);
 
-  // Handle profile photo upload
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -66,7 +64,6 @@ const RegistrationForm = () => {
     }
   };
 
-  // Delete profile photo
   const handleDeletePhoto = () => {
     setProfilePhoto(null);
     setProfilePhotoPreview(null);
@@ -79,7 +76,6 @@ const RegistrationForm = () => {
     fileInputRef.current.click();
   };
 
-  // Validation
   const validateField = (name, value) => {
     const newErrors = {};
 
@@ -128,18 +124,19 @@ const RegistrationForm = () => {
     return newErrors;
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched({ ...touched, [name]: true });
-    const fieldError = validateField(name, value);
-    setErrors({ ...errors, ...fieldError });
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleClearErrors = () => {
+    if (submitted) {
+      setErrors({});
+      setSubmitted(false);
     }
   };
 
@@ -155,7 +152,6 @@ const RegistrationForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Check if user exists
   const checkUserExists = async (email) => {
     try {
       const response = await axios.get('http://localhost:3000/Users');
@@ -218,6 +214,7 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     
     if (!validateForm()) {
       const firstError = Object.keys(errors)[0];
@@ -246,7 +243,6 @@ const RegistrationForm = () => {
         return;
       }
 
-      // Prepare data for submission - send as JSON, not FormData
       const submitData = {
         UserID: formData.UserID,
         FirstName: formData.FirstName,
@@ -257,18 +253,11 @@ const RegistrationForm = () => {
         PhoneNumber: formData.PhoneNumber,
         Email: formData.Email,
         Address: formData.Address,
-        ProfilePhoto: profilePhotoPreview || null // Store the base64 image or null
+        ProfilePhoto: profilePhotoPreview || null
       };
-
-      console.log('Submitting data:', submitData);
 
       const response = await axios.post('http://localhost:3000/Users', submitData, {
         headers: { 'Content-Type': 'application/json' }
-      });
-      
-      toast.success('🎉 Registration successful!', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
       });
       
       message.success('Registered successfully!');
@@ -281,7 +270,6 @@ const RegistrationForm = () => {
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      console.error('Error response:', error.response?.data);
       toast.error('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -292,10 +280,9 @@ const RegistrationForm = () => {
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   return (
-    <div className="registration-container">
+    <div className="registration-container" onClick={handleClearErrors}>
       <ToastContainer />
       
-      {/* Header */}
       <header className="registration-header">
         <div className="header-content">
           <div className="logo-section">
@@ -305,50 +292,52 @@ const RegistrationForm = () => {
               <p className="slogan">your trusted online payment system</p>
             </div>
           </div>
+        
           <nav className="header-nav">
             <Link to="/users" className="nav-link">
               <FaHome /> Home
+            </Link>
+            <Link to="/aboutUs" className="nav-link">
+              About Us
+            </Link>
+            <Link to="/contactUs" className="nav-link">
+              Contact Us
             </Link>
           </nav>
         </div>
       </header>
 
-      {/* Main Content with Side by Side Layout */}
       <main className="registration-main">
         <div className="registration-wrapper">
-          {/* Left Side - Image */}
           <div className="registration-image-side">
             <div className="image-content">
               <div className="image-overlay">
-                <h2>Device Entry Portal</h2>
-                <p>The smart solution for seamless device entry and secure exit management.</p>
+                <h2>E-payment System</h2>
+                <p>The smart solution for seamless payment.</p>
               </div>
               <img src={paymentImage} alt="Payment System" className="side-image" />
             </div>
           </div>
 
-          {/* Right Side - Registration Form */}
           <div className="registration-form-side">
             <div className="registration-card">
               <div className="registration-title-section">
                 <h2 className="registration-title">
                   <FaUserPlus className="title-icon" />
-                  Employee Registration
+                  User Registration
                 </h2>
                 <p className="registration-subtitle">
-                  Create your account to access the device entry portal
+                  Create your account for your easy payment
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="registration-form">
-                {/* Hidden UserID */}
                 <input
                   type="hidden"
                   name="UserID"
                   value={formData.UserID}
                 />
 
-                {/* Profile Photo */}
                 <div className="profile-upload-section">
                   <div className="profile-photo-container">
                     {profilePhotoPreview ? (
@@ -392,9 +381,7 @@ const RegistrationForm = () => {
                   </p>
                 </div>
 
-                {/* Form Fields */}
                 <div className="form-fields">
-                  {/* First Name & Last Name */}
                   <div className="form-row">
                     <div className="form-group half">
                       <label htmlFor="FirstName">
@@ -407,11 +394,10 @@ const RegistrationForm = () => {
                         name="FirstName"
                         value={formData.FirstName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter first name"
-                        className={`form-input ${errors.FirstName && touched.FirstName ? 'error' : ''}`}
+                        className="form-input"
                       />
-                      {errors.FirstName && touched.FirstName && (
+                      {errors.FirstName && submitted && (
                         <div className="error-message">{errors.FirstName}</div>
                       )}
                     </div>
@@ -427,17 +413,15 @@ const RegistrationForm = () => {
                         name="LastName"
                         value={formData.LastName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter last name"
-                        className={`form-input ${errors.LastName && touched.LastName ? 'error' : ''}`}
+                        className="form-input"
                       />
-                      {errors.LastName && touched.LastName && (
+                      {errors.LastName && submitted && (
                         <div className="error-message">{errors.LastName}</div>
                       )}
                     </div>
                   </div>
 
-                  {/* Username & Gender */}
                   <div className="form-row">
                     <div className="form-group half">
                       <label htmlFor="UserName">
@@ -450,49 +434,36 @@ const RegistrationForm = () => {
                         name="UserName"
                         value={formData.UserName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter username"
-                        className={`form-input ${errors.UserName && touched.UserName ? 'error' : ''}`}
+                        className="form-input"
                       />
-                      {errors.UserName && touched.UserName && (
+                      {errors.UserName && submitted && (
                         <div className="error-message">{errors.UserName}</div>
                       )}
                     </div>
 
                     <div className="form-group half">
-                      <label>
+                      <label htmlFor="Gender">
                         <FaGenderless className="input-icon" />
                         GENDER <span className="required">*</span>
                       </label>
-                      <div className="gender-options">
-                        <label className={`gender-option ${formData.Gender === 'male' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="Gender"
-                            value="male"
-                            checked={formData.Gender === 'male'}
-                            onChange={handleChange}
-                          />
-                          <span>Male</span>
-                        </label>
-                        <label className={`gender-option ${formData.Gender === 'female' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="Gender"
-                            value="female"
-                            checked={formData.Gender === 'female'}
-                            onChange={handleChange}
-                          />
-                          <span>Female</span>
-                        </label>
-                      </div>
-                      {errors.Gender && (
+                      <select
+                        id="Gender"
+                        name="Gender"
+                        value={formData.Gender}
+                        onChange={handleChange}
+                        className="form-input"
+                      >
+                        <option value="" disabled>Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                      {errors.Gender && submitted && (
                         <div className="error-message">{errors.Gender}</div>
                       )}
                     </div>
                   </div>
 
-                  {/* Email & Phone */}
                   <div className="form-row">
                     <div className="form-group half">
                       <label htmlFor="Email">
@@ -505,11 +476,10 @@ const RegistrationForm = () => {
                         name="Email"
                         value={formData.Email}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter email"
-                        className={`form-input ${errors.Email && touched.Email ? 'error' : ''}`}
+                        className="form-input"
                       />
-                      {errors.Email && touched.Email && (
+                      {errors.Email && submitted && (
                         <div className="error-message">{errors.Email}</div>
                       )}
                     </div>
@@ -525,17 +495,15 @@ const RegistrationForm = () => {
                         name="PhoneNumber"
                         value={formData.PhoneNumber}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="+251 XXX XXX XXX"
-                        className={`form-input ${errors.PhoneNumber && touched.PhoneNumber ? 'error' : ''}`}
+                        className="form-input"
                       />
-                      {errors.PhoneNumber && touched.PhoneNumber && (
+                      {errors.PhoneNumber && submitted && (
                         <div className="error-message">{errors.PhoneNumber}</div>
                       )}
                     </div>
                   </div>
 
-                  {/* Password & Confirm */}
                   <div className="form-row">
                     <div className="form-group half">
                       <label htmlFor="Password">
@@ -549,9 +517,8 @@ const RegistrationForm = () => {
                           name="Password"
                           value={formData.Password}
                           onChange={handleChange}
-                          onBlur={handleBlur}
                           placeholder="Enter password"
-                          className={`form-input ${errors.Password && touched.Password ? 'error' : ''}`}
+                          className="form-input"
                         />
                         <button
                           type="button"
@@ -561,7 +528,7 @@ const RegistrationForm = () => {
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.Password && touched.Password && (
+                      {errors.Password && submitted && (
                         <div className="error-message">{errors.Password}</div>
                       )}
                     </div>
@@ -578,9 +545,8 @@ const RegistrationForm = () => {
                           name="ConfirmPassword"
                           value={formData.ConfirmPassword}
                           onChange={handleChange}
-                          onBlur={handleBlur}
                           placeholder="Confirm password"
-                          className={`form-input ${errors.ConfirmPassword && touched.ConfirmPassword ? 'error' : ''}`}
+                          className="form-input"
                         />
                         <button
                           type="button"
@@ -590,13 +556,12 @@ const RegistrationForm = () => {
                           {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.ConfirmPassword && touched.ConfirmPassword && (
+                      {errors.ConfirmPassword && submitted && (
                         <div className="error-message">{errors.ConfirmPassword}</div>
                       )}
                     </div>
                   </div>
 
-                  {/* Address */}
                   <div className="form-group">
                     <label htmlFor="Address">
                       <MdHome className="input-icon" />
@@ -608,16 +573,14 @@ const RegistrationForm = () => {
                       name="Address"
                       value={formData.Address}
                       onChange={handleChange}
-                      onBlur={handleBlur}
                       placeholder="Enter your residential address"
-                      className={`form-input ${errors.Address && touched.Address ? 'error' : ''}`}
+                      className="form-input"
                     />
-                    {errors.Address && touched.Address && (
+                    {errors.Address && submitted && (
                       <div className="error-message">{errors.Address}</div>
                     )}
                   </div>
 
-                  {/* Submit */}
                   <button
                     type="submit"
                     className="btn-submit"
@@ -635,7 +598,6 @@ const RegistrationForm = () => {
                   </button>
                 </div>
 
-                {/* Footer */}
                 <div className="registration-footer">
                   <p className="login-link">
                     Already have an account? <Link to="/login">Login here</Link>
