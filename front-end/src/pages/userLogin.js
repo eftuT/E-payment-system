@@ -185,7 +185,7 @@ const UserLogin = () => {
                 )}
 
                 <div className="forgot-password">
-                  <Link to="/reset-password">Forgot Password?</Link>
+                  <Link to="/users/resetpassword">Forgot Password?</Link>
                 </div>
 
                 <button
