@@ -1,96 +1,121 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { FaEnvelope, FaArrowRight, FaShieldAlt, FaCheckCircle } from 'react-icons/fa';
+import { MdEmail, MdLock } from 'react-icons/md';
 import companyLogo from '../image/logoimage.jpg';
+import Header from './Header';
+import './ResetPassword.css';
 
 const ResetPasswordForm = () => {
   const [Email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
+    setMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!Email) {
+      setMessage('Please enter your email address');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
 
     try {
       const response = await axios.post('http://localhost:3000/Users/requestPasswordReset', { Email: Email });
-      setMessage(response.data.message);
-      localStorage.setItem('Email',Email);
+      setMessage(response.data.message || 'Password reset email sent successfully!');
+      setSuccess(true);
+      localStorage.setItem('Email', Email);
       console.log(Email);
-      console.log(localStorage.getItem('Email'));
     } catch (error) {
       console.error(error);
+      setMessage(error.response?.data?.message || 'Failed to send reset email. Please try again.');
+      setSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <div className='logo' style={{ display: 'flex', alignItems: 'center', height: 'fit-content', width: '60%', margin: '2%', position: 'absolute' }}>
-        <img src={companyLogo} alt="company-logo" style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
-        <div className="company-name">
-          E-payment-system
-          <div className="slogan">your trusted online payment system</div>
+    <div className="rp-container">
+      <Header />
+
+      <main className="rp-main">
+        <div className="rp-card">
+          {/* Header */}
+          <div className="rp-card-header">
+            <div className="rp-header-icon">
+              <MdLock />
+            </div>
+            <h1>Reset Password</h1>
+            <p>Enter your email to receive reset instructions</p>
+          </div>
+
+          <div className="rp-card-body">
+            <form onSubmit={handleSubmit}>
+              {/* Email Input */}
+              <div className="rp-input-group">
+                <label htmlFor="Email">
+                  <MdEmail className="rp-input-icon" />
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="Email"
+                  value={Email}
+                  onChange={handleChange}
+                  placeholder="Enter your registered email"
+                  className={`rp-input ${message && !success ? 'error' : ''} ${success ? 'success' : ''}`}
+                  required
+                />
+                <p className="rp-input-hint">
+                  We'll send a password reset link to this email
+                </p>
+              </div>
+
+              {/* Message Display */}
+              {message && (
+                <div className={`rp-message ${success ? 'success' : 'error'}`}>
+                  {success ? <FaCheckCircle className="rp-message-icon" /> : null}
+                  {message}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                className="rp-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="rp-spinner">⏳</span>
+                ) : (
+                  <>
+                    Send Reset Link <FaArrowRight />
+                  </>
+                )}
+              </button>
+            </form>
+
+          
+          </div>
+
+          {/* Footer */}
+          <div className="rp-card-footer">
+            <span>Remember your password?</span>
+            <a href="/login">Back to Login</a>
+          </div>
         </div>
-      </div>
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <div>
-          <label htmlFor="Email" style={labelStyle}>Email:</label>
-          <input type="Email" id="Email" value={Email} onChange={handleChange} required style={inputStyle} />
-        </div>
-        <button type="submit" style={buttonStyle}>Send Email</button>
-      </form>
-      {message && <p style={messageStyle}>{message}</p>}
-      <p style={instructionStyle}>
-          If the provided email is associated with an account, you will receive an email with instructions on how to reset your password.
-        </p>
+      </main>
     </div>
   );
 };
 
 export default ResetPasswordForm;
-
-// Inline styles
-const formStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  maxWidth: '300px',
-  margin: '0 auto',
-};
-
-const labelStyle = {
-  marginBottom: '0.5rem',
-};
-
-const inputStyle = {
-  padding: '0.5rem',
-  marginBottom: '1rem',
-  marginTop: '12rem',
-};
-
-const buttonStyle = {
-  padding: '0.5rem 1rem',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-
-};
-
-const messageStyle = {
-  marginTop: '1rem',
-  padding: '0.5rem',
-  backgroundColor: '#f8f8f8',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  textAlign:'center',
-  justifyContent:'center',
-};
-
-const instructionStyle = {
-  marginTop: '1rem',
-  fontSize: '0.9rem',
-  textAlign: 'center',
-  color: '#555',
-};

@@ -1,24 +1,38 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
-import companyLogo from '../image/logoimage.jpg';
-import { Input } from 'antd';
-import USER from '../image/himage3.jpg';
+import { FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaArrowLeft, FaShieldAlt } from 'react-icons/fa';
+import { MdLock, MdLockOpen } from 'react-icons/md';
+import Header from './Header';
+import './UpdatePassword.css';
 
 const UpdatePassword = () => {
   const [password, setPassword] = useState('');
-  const [Email, setEmail] = useState(localStorage.getItem('Email'));
+  const [Email, setEmail] = useState(localStorage.getItem('Email') || '');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Track password visibility
+  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { token } = useParams();
 
   const handleChangePassword = (e) => {
     setPassword(e.target.value);
+    setMessage('');
   };
 
   const handleChangeConfirmPassword = (e) => {
     setConfirmPassword(e.target.value);
+    setMessage('');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const handleSubmit = async (e) => {
@@ -26,121 +40,167 @@ const UpdatePassword = () => {
 
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
+      setSuccess(false);
       return;
     }
 
+    if (password.length < 8) {
+      setMessage('Password must be at least 8 characters long');
+      setSuccess(false);
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const token = window.location.hash.substr(2);
+      const tokenFromUrl = window.location.hash.substr(2) || token;
       const response = await axios.post('http://localhost:3000/Users/updatePasswordWithToken', {
         Email: Email,
         Password: password,
-        token: token,
+        token: tokenFromUrl,
       });
 
       if (response.status === 200) {
-        setMessage('Password updated successfully');
+        setMessage('Password updated successfully!');
+        setSuccess(true);
         setPassword('');
         setConfirmPassword('');
+        localStorage.removeItem('Email');
       }
     } catch (error) {
       console.error(error);
-      setMessage('Failed to update password');
+      setMessage(error.response?.data?.message || 'Failed to update password. Please try again.');
+      setSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-
   return (
+    <div className="up-container">
+      <Header />
 
-    <div>
+      <main className="up-main">
+        <div className="up-card">
+          {/* Header */}
+          <div className="up-card-header">
+            <div className="up-header-icon">
+              <FaLock />
+            </div>
+            <h1>Set New Password</h1>
+            <p>Create a strong password for your account</p>
+          </div>
 
-      {/* Logo and company name */}
-      <div style={{ alignItems: 'center', marginTop: '25px', width: '80%', position: 'relative' }}>
-        <div className='logo' style={{ display: 'flex', alignItems: 'center', height: 'fit-content', width: '60%', margin: '2%', position: 'absolute' }}>
-          <img src={companyLogo} alt="company-logo" style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
-          <div className="company-name">
-            E-payment-system
-            <div className="slogan">your trusted online payment system</div>
+          <div className="up-card-body">
+            <form onSubmit={handleSubmit}>
+              {/* Password Input */}
+              <div className="up-input-group">
+                <label htmlFor="password">
+                  <MdLock className="up-input-icon" />
+                  New Password
+                </label>
+                <div className="up-password-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={handleChangePassword}
+                    placeholder="Enter your new password"
+                    className={`up-input ${message && !success ? 'error' : ''} ${success ? 'success' : ''}`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="up-password-toggle"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                <p className="up-input-hint">Minimum 8 characters with numbers and letters</p>
+              </div>
+
+              {/* Confirm Password Input */}
+              <div className="up-input-group">
+                <label htmlFor="confirmPassword">
+                  <MdLockOpen className="up-input-icon" />
+                  Confirm Password
+                </label>
+                <div className="up-password-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={handleChangeConfirmPassword}
+                    placeholder="Confirm your new password"
+                    className={`up-input ${message && !success ? 'error' : ''} ${success ? 'success' : ''}`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="up-password-toggle"
+                    onClick={toggleConfirmPasswordVisibility}
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Strength Indicator */}
+              {password && (
+                <div className="up-strength">
+                  <div className="up-strength-bar">
+                    <div 
+                      className="up-strength-fill"
+                      style={{ 
+                        width: `${Math.min((password.length / 12) * 100, 100)}%`,
+                        backgroundColor: password.length < 6 ? '#ef4444' : 
+                                       password.length < 10 ? '#f59e0b' : '#22c55e'
+                      }}
+                    />
+                  </div>
+                  <span className="up-strength-text">
+                    {password.length < 6 ? 'Weak' : 
+                     password.length < 10 ? 'Good' : 'Strong'}
+                  </span>
+                </div>
+              )}
+
+              {/* Message */}
+              {message && (
+                <div className={`up-message ${success ? 'success' : 'error'}`}>
+                  {success && <FaCheckCircle className="up-message-icon" />}
+                  {message}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                className="up-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="up-spinner">⏳</span>
+                ) : (
+                  <>
+                    <FaShieldAlt /> Update Password
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Back to Login */}
+            <div className="up-footer">
+              <Link to="/login" className="up-back-link">
+                <FaArrowLeft /> Back to Login
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-      <div className='login-section'>
-        <div className='login-box' style={{
-          textAlign: 'right', width: '110PX'
-        }}>
-          <img src={USER} alt='login-icon' className='login-icon' style={{ width: '20PX' }}></img>
-          <Link to="/login" className='login'>Login</Link>
-        </div>
-      </div>
-
-      <form className='body' onSubmit={handleSubmit} style={formStyle}>
-        <div>
-          <label htmlFor="password" style={labelStyle}>New Password:</label>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Input.Password
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              value={password}
-              onChange={handleChangePassword}
-              required
-              style={inputStyle}
-            />
-          </div>
-        </div>
-        <div>
-          <label htmlFor="confirmPassword" style={labelStyle}>Confirm Password:</label>
-          <Input.Password type="password" id="confirmPassword" value={confirmPassword} onChange={handleChangeConfirmPassword} required style={inputStyle} />
-        </div>
-        <button type="submit" style={buttonStyle}>Reset Password</button>
-      </form>
-      {message && <p style={messageStyle}>{message}</p>}
-      <p style={instructionStyle}>
-        To update your password, enter a new password and confirm it in the fields above. Make sure the passwords match before submitting the form.
-      </p>
+      </main>
     </div>
   );
 };
 
 export default UpdatePassword;
-
-// Inline styles
-const formStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  maxWidth: '300px',
-  margin: '0 auto',
-};
-
-const labelStyle = {
-  marginBottom: '5px',
-};
-
-const inputStyle = {
-  padding: '0.5rem',
-  marginBottom: '1rem',
-};
-
-const buttonStyle = {
-  padding: '0.5rem 1rem',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-};
-
-const messageStyle = {
-  marginTop: '1rem',
-  padding: '0.5rem',
-  backgroundColor: '#f8f8f8',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  textAlign: 'center',
-  justifyContent: 'center',
-};
-
-const instructionStyle = {
-  marginTop: '1rem',
-  fontSize: '0.9rem',
-  textAlign: 'center',
-  color: '#555',
-};
