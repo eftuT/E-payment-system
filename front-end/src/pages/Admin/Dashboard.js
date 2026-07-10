@@ -204,10 +204,23 @@ const Dashboard = ({ content }) => {
         onCollapse={toggleCollapsed}
         className="admin-sider"
         width={260}
+        collapsedWidth={0}
         trigger={null}
+        style={{ 
+          overflow: 'hidden',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
       >
         <div className="admin-logo-container">
-          <img src={companyLogo} alt="company logo" className="admin-logo-img" />
+          <img 
+            src={companyLogo} 
+            alt="company logo" 
+            className="admin-logo-img rotating-logo" 
+          />
           {!collapsed && (
             <div className="admin-logo-text">
               <h1>E-Payment</h1>
@@ -217,7 +230,7 @@ const Dashboard = ({ content }) => {
         </div>
 
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           selectedKeys={[selectedMenu]}
           onSelect={handleMenuSelect}
@@ -241,7 +254,7 @@ const Dashboard = ({ content }) => {
         </div>
       </Sider>
 
-      <Layout>
+      <Layout className="admin-main-layout" style={{ marginLeft: collapsed ? 0 : 260, transition: 'margin-left 0.2s' }}>
         <Header className="admin-header">
           <div className="admin-header-left">
             <Button
