@@ -70,6 +70,8 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const handleSearch = async (value) => {
     setSearchInput(value);
+    setCurrentPage(1); // Reset to first page when searching
+    
     const activity = {
       adminName: `Admin ${adminData?.user?.FirstName || 'Unknown'}`,
       action: 'Searched for',
@@ -213,19 +215,23 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
                   rowKey="UserID"
                   scroll={{ x: 1000 }}
                   pagination={{
-                    showSizeChanger: true,
+                    current: currentPage,
+                    pageSize: 10,
+                    total: filteredUsers.length,
+                    showSizeChanger: false,
                     showTotal: (total, range) => {
-                      const totalPages = Math.ceil(total / pageSize);
-                      return `Showing ${range[0]}-${range[1]} of ${totalPages} pages`;
+                      return `Showing ${range[0]}-${range[1]} of ${total} admins`;
+                    },
+                    onChange: (page, pageSize) => {
+                      setCurrentPage(page);
+                      setPageSize(pageSize);
                     },
                     showQuickJumper: false,
+                    position: ['bottomRight'],
+                    size: 'default',
                   }}
                   className="admins-table"
                   rowClassName="admins-table-row"
-                  onChange={(pagination) => {
-                    setCurrentPage(pagination.current);
-                    setPageSize(pagination.pageSize);
-                  }}
                   locale={{ emptyText: 'No admins found.' }}
                 />
               </div>
