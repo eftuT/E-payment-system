@@ -227,7 +227,7 @@
 
 /* ========== PAGINATION ========== */
 .users-table .ant-pagination {
-  margin-top: 1.2rem !important;
+  margin-top: 1.5rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
@@ -332,19 +332,9 @@
   border-color: #e8e8e8 !important;
 }
 
-.users-table .ant-pagination-options .ant-select-selector {
-  border-radius: 20px !important;
-  border: 1px solid #e0e0e0 !important;
-  height: 32px !important;
-  padding: 0 0.8rem !important;
-  font-size: 0.85rem !important;
-  color: #555 !important;
-  transition: all 0.3s ease !important;
-  background: #ffffff !important;
-}
-
-.users-table .ant-pagination-options .ant-select-selector:hover {
-  border-color: #667eea !important;
+/* Remove page size changer as we're fixing it to 10 */
+.users-table .ant-pagination-options {
+  display: none !important;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -430,20 +420,6 @@
     min-width: 24px !important;
     width: 24px !important;
     height: 24px !important;
-  }
-
-  .users-table .ant-pagination-options {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
-
-  .users-table .ant-pagination-options .ant-select {
-    width: 100% !important;
-  }
-
-  .users-table .ant-pagination-options .ant-select-selector {
-    height: 28px !important;
-    font-size: 0.75rem !important;
   }
 
   .user-info-wrapper {

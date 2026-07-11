@@ -91,6 +91,7 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
       user.PhoneNumber?.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const getUserInitials = (firstName, lastName) => {
@@ -210,19 +211,23 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
                   rowKey="UserID"
                   scroll={{ x: 1000 }}
                   pagination={{
-                    showSizeChanger: true,
+                    current: currentPage,
+                    pageSize: 10,
+                    total: filteredUsers.length,
+                    showSizeChanger: false,
                     showTotal: (total, range) => {
-                      const totalPages = Math.ceil(total / pageSize);
-                      return `Showing ${range[0]}-${range[1]} of ${totalPages} pages`;
+                      return `Showing ${range[0]}-${range[1]} of ${total} users`;
+                    },
+                    onChange: (page, pageSize) => {
+                      setCurrentPage(page);
+                      setPageSize(pageSize);
                     },
                     showQuickJumper: false,
+                    position: ['bottomRight'],
+                    size: 'default',
                   }}
                   className="users-table"
                   rowClassName="users-table-row"
-                  onChange={(pagination) => {
-                    setCurrentPage(pagination.current);
-                    setPageSize(pagination.pageSize);
-                  }}
                   locale={{ emptyText: 'No users found.' }}
                 />
               </div>
