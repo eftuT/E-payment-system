@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, message, Modal, Form, Input, Spin } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, message, Modal, Form, Input, Spin, Input as AntInput, Upload } from 'antd';
+import { DeleteOutlined, EditOutlined, SearchOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone, FaFileAlt, FaSearch, FaDownload, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
+import './ServiceProvidersList.css';
 
 const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
-
   const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [serviceProviderData, setServiceProviderData] = useState([]);
   const [form] = Form.useForm();
@@ -15,18 +16,23 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
   const [serviceProviderAuthorizationLetterUrl, setServiceProviderAuthorizationLetterUrl] = useState();
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
   const fetchServiceProviders = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/serviceProviders');
+      const response = await axios.get('http://localhost:3000/serviceproviders');
       setServiceProviderData(response.data);
       localStorage.setItem('serviceProvidersData', JSON.stringify(response.data));
-
     } catch (error) {
       message.error('Failed to fetch service providers.');
     }
   };
+
   useEffect(() => {
     if (!adminData) {
       setTimeout(() => {
@@ -40,23 +46,54 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
     fetchServiceProviders();
   }, [adminData, navigate]);
 
-
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="sp-list-loading">
         <Spin size="large" />
-        <p>Please wait while we check your login status...</p>
+        <p>Loading...</p>
       </div>
     );
   }
-
-
-
 
   const handleEdit = (serviceProvider) => {
     form.setFieldsValue(serviceProvider);
     setEditMode(true);
     setServiceProvider(serviceProvider);
+    if (serviceProvider.serviceProviderAuthorizationLetter) {
+      setFilePreview(`http://localhost:3000/${serviceProvider.serviceProviderAuthorizationLetter}`);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const handleFileChange = (info) => {
+    const file = info.file?.originFileObj || info.file;
+    if (!file) {
+      setFile(null);
+      setFilePreview(null);
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(`image/${fileExtension}`) && !allowedTypes.includes(file.type)) {
+      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('File size should be less than 5MB');
+      return;
+    }
+
+    setFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFilePreview(event.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
@@ -68,86 +105,71 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
       cancelText: 'Cancel',
       onOk: () => {
         form.validateFields().then((values) => {
+          setLoading(true);
           const updatedServiceProvider = { ...values };
-          axios
-            .put(
-              `http://localhost:3000/serviceProviders/${serviceProvider.serviceProviderBIN}`,
-              updatedServiceProvider
-            )
-            .then((response) => {
-              if (response.status === 200) {
-                message.success('Service provider data updated successfully.');
-
-
-                // Retrieve the previous serviceProvider data from localStorage
-                const previousData = JSON.parse(localStorage.getItem('serviceProvidersData')) || [];
-
-                // Find the index of the updated serviceProvider in the previous data
-                const updatedIndex = previousData.findIndex((serviceProvider) => serviceProvider.serviceProviderBIN === updatedServiceProvider.serviceProviderBIN);
-
-                // Create a copy of the previous data
-                const updatedData = [...previousData];
-
-                // Get the previous serviceProvider data
-                const previousServiceProvider = updatedData[updatedIndex];
-
-                // Create a change object to track the changes
-                const changes = {};
-
-                // Compare each field of the updated serviceProvider with the previous serviceProvider
-                for (const key in updatedServiceProvider) {
-                  if (key !== 'serviceProviderBIN' && updatedServiceProvider[key] !== previousServiceProvider[key]) {
-                    changes[key] = {
-                      from: previousServiceProvider[key],
-                      to: updatedServiceProvider[key],
-                    };
-                  }
-                }
-
-                // Update the serviceProviderBIN if it has changed
-                if (updatedServiceProvider.serviceProviderBIN !== previousServiceProvider.serviceProviderBIN) {
-                  updatedData[updatedIndex].serviceProviderBIN = updatedServiceProvider.serviceProviderBIN;
-                  changes.serviceProviderBIN = {
-                    from: previousServiceProvider.serviceProviderBIN,
-                    to: updatedServiceProvider.serviceProviderBIN,
-                  };
-                }
-
-                // Add the changes object to the updated serviceProvider data
-                updatedServiceProvider.changes = changes;
-
-                // Replace the updated serviceProvider with the new serviceProvider data in the copy
-                updatedData[updatedIndex] = updatedServiceProvider;
-
-                // Update the serviceProvider data in localStorage
-                localStorage.setItem('serviceProviderData', JSON.stringify(updatedData));
-
-                // Create a new activity object for the service provider edit action
-                const editActivity = {
-                  adminName: `Admin ${adminData.user.FirstName}`,
-                  action: 'Edited',
-                  targetAdminName: `Service Provider ${updatedServiceProvider.serviceProviderName}`,
-                  timestamp: new Date().getTime(),
-                  updatedData: updatedServiceProvider,
-                };
-
-                // Save the admin activity to the database
-                axios.post('http://localhost:3000/admin-activity', editActivity, {
-                  headers: {
-                    Authorization: adminData.token,
-                  },
-                });
-
-                setServiceProviderData(updatedData);
-                setEditMode(false);
-                form.resetFields();
-              } else {
-                message.error('Failed to update service provider data.');
+          
+          if (file) {
+            const formData = new FormData();
+            Object.keys(values).forEach(key => {
+              if (key !== 'serviceProviderAuthorizationLetter') {
+                formData.append(key, values[key]);
               }
-            })
-            .catch((error) => {
-              message.error('Failed to update service provider data.');
             });
+            formData.append('serviceProviderAuthorizationLetter', file);
+            
+            axios
+              .put(`http://localhost:3000/serviceproviders/${serviceProvider.serviceProviderBIN}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+              })
+              .then((response) => {
+                if (response.status === 200) {
+                  message.success('Service provider data updated successfully.');
+                  fetchServiceProviders();
+                  setEditMode(false);
+                  form.resetFields();
+                  setFile(null);
+                  setFilePreview(null);
+                } else {
+                  message.error('Failed to update service provider data.');
+                }
+                setLoading(false);
+              })
+              .catch((error) => {
+                message.error('Failed to update service provider data.');
+                console.log(error);
+                setLoading(false);
+              });
+          } else {
+            axios
+              .put(`http://localhost:3000/serviceproviders/${serviceProvider.serviceProviderBIN}`, updatedServiceProvider)
+              .then((response) => {
+                if (response.status === 200) {
+                  message.success('Service provider data updated successfully.');
+                  fetchServiceProviders();
+                  setEditMode(false);
+                  form.resetFields();
+                } else {
+                  message.error('Failed to update service provider data.');
+                }
+                setLoading(false);
+              })
+              .catch((error) => {
+                message.error('Failed to update service provider data.');
+                console.log(error);
+                setLoading(false);
+              });
+          }
+
+          const editActivity = {
+            adminName: `Admin ${adminData.user.FirstName}`,
+            action: 'Edited',
+            targetAdminName: `Service Provider ${updatedServiceProvider.serviceProviderName}`,
+            timestamp: new Date().getTime(),
+          };
+
+          axios.post('http://localhost:3000/admin-activity', editActivity, {
+            headers: { Authorization: adminData.token },
+          }).catch(err => console.error('Activity log error:', err));
         });
       },
     });
@@ -166,31 +188,23 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
       cancelText: 'Cancel',
       onOk: () => {
         axios
-          .delete(`http://localhost:3000/serviceProviders/${serviceProviderBIN}`)
+          .delete(`http://localhost:3000/serviceproviders/${serviceProviderBIN}`)
           .then((response) => {
             if (response.status === 200) {
               message.success('Service provider deleted successfully.');
 
-              // Create a new activity object for the service provider delete action
               const deleteActivity = {
                 adminName: `Admin ${adminData.user.FirstName}`,
                 action: 'Deleted',
                 targetAdminName: `Service Provider ${deletedServiceProvider.serviceProviderName}`,
                 timestamp: new Date().getTime(),
-                deletedData: deletedServiceProvider,
               };
 
-              // Save the admin activity to the database
               axios.post('http://localhost:3000/admin-activity', deleteActivity, {
-                headers: {
-                  Authorization: adminData.token,
-                },
-              });
+                headers: { Authorization: adminData.token },
+              }).catch(err => console.error('Activity log error:', err));
 
-              const updatedData = serviceProviderData.filter(
-                (sp) => sp.serviceProviderBIN !== serviceProviderBIN
-              );
-              setServiceProviderData(updatedData);
+              fetchServiceProviders();
             } else {
               message.error('Failed to delete service provider.');
             }
@@ -204,162 +218,278 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const columns = [
     {
-      title: 'Service Provider BIN',
+      title: '#',
+      key: 'index',
+      render: (_, __, index) => <span className="sp-index">{index + 1}</span>,
+      width: 50,
+      fixed: 'left',
+    },
+    {
+      title: 'Provider BIN',
       dataIndex: 'serviceProviderBIN',
       key: 'serviceProviderBIN',
+      render: (text) => <span className="sp-bin">{text}</span>,
+      width: 120,
     },
     {
-      title: 'Service Provider Name',
+      title: 'Provider Name',
       dataIndex: 'serviceProviderName',
       key: 'serviceProviderName',
+      render: (text) => <span className="sp-name"><FaBuilding className="sp-icon-sm" /> {text}</span>,
+      width: 220,
+      ellipsis: false,
     },
     {
-      title: 'Services Offered',
+      title: 'Services',
       dataIndex: 'servicesOffered',
       key: 'servicesOffered',
+      render: (text) => <span className="sp-services">{text}</span>,
+      width: 180,
+      ellipsis: true,
     },
     {
-      title: 'Bank Name',
+      title: 'Bank',
       dataIndex: 'BankName',
       key: 'BankName',
+      render: (text) => <span className="sp-bank"><FaUniversity className="sp-icon-sm" /> {text}</span>,
+      width: 200,
+      ellipsis: false,
     },
     {
-      title: 'Bank Account Number',
+      title: 'Account',
       dataIndex: 'BankAccountNumber',
       key: 'BankAccountNumber',
+      render: (text) => <span className="sp-account">{text}</span>,
+      width: 130,
     },
     {
-      title: 'Phone Number',
+      title: 'Phone',
       dataIndex: 'phoneNumber',
       key: 'phoneNumber',
+      render: (text) => <span className="sp-phone"> {text}</span>,
+      width: 130,
     },
     {
-      title: 'Authorization Letter',
-      dataIndex: 'serviceProviderAuthorizationLetter',
-      key: 'serviceProviderAuthorizationLetter',
-      render: (_, serviceProvider) => (
-        <div>
-          {serviceProvider.serviceProviderAuthorizationLetter && (
-            <div>
-              <a href={`http://localhost:3000/${serviceProvider.serviceProviderAuthorizationLetter}`} download>
-                Authorization Letter
-              </a>
-              <Button
-                type="primary"
-                onClick={() => {
-                  const downloadLink = document.createElement('a');
-                  downloadLink.href = `http://localhost:3000/${serviceProvider.serviceProviderAuthorizationLetter}`;
-                  downloadLink.download = 'Authorization Letter';
-                  downloadLink.target = '_blank';
-                  downloadLink.click();
-                }}
-              >
-                Download
-              </Button>
-            </div>
-          )}
-        </div>
+      title: 'Auth Letter',
+      key: 'authLetter',
+      render: (_, provider) => (
+        provider.serviceProviderAuthorizationLetter ? (
+          <Button 
+            type="link" 
+            icon={<DownloadOutlined />} 
+            className="auth-download-btn"
+            onClick={() => {
+              const downloadLink = document.createElement('a');
+              downloadLink.href = `http://localhost:3000/${provider.serviceProviderAuthorizationLetter}`;
+              downloadLink.download = `auth-letter-${provider.serviceProviderBIN}`;
+              downloadLink.target = '_blank';
+              downloadLink.click();
+            }}
+          >
+            Download
+          </Button>
+        ) : (
+          <span className="no-file">No file</span>
+        )
       ),
+      width: 120,
     },
     {
       title: 'Action',
       key: 'action',
-      render: (_, serviceProvider) => (
-        <div>
-          <Button onClick={() => handleEdit(serviceProvider)} icon={<EditOutlined />} type="danger">
-            Edit
-          </Button>
-          <Button onClick={() => handleDelete(serviceProvider.serviceProviderBIN)} icon={<DeleteOutlined />} type="danger">
-            Delete
-          </Button>
+      width: 110,
+      fixed: 'right',
+      render: (_, provider) => (
+        <div className="action-buttons">
+          <Button 
+            onClick={() => handleEdit(provider)} 
+            icon={<EditOutlined />} 
+            className="action-btn edit-btn"
+          />
+          <Button 
+            onClick={() => handleDelete(provider.serviceProviderBIN)} 
+            icon={<DeleteOutlined />} 
+            className="action-btn delete-btn"
+          />
         </div>
       ),
     },
   ];
-  const handleSearch = (value) => {
-    setSearchInput(value);
-    const activity = {
-      adminName: `Admin ${adminData.user.FirstName}`,
-      action: 'Searched for',
-      targetAdminName: `${value} in Service Providers List`,
-      timestamp: new Date().getTime(),
-    };
 
-    // Save the admin activity to the database
-    axios.post('http://localhost:3000/admin-activity', activity, {
-      headers: {
-        Authorization: adminData.token,
-      },
-    });
+  const handleSearch = (e) => {
+    setSearchInput(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const filteredServiceProviders = serviceProviderData.filter((serviceProvider) =>
     serviceProvider &&
-    (serviceProvider.serviceProviderBIN.toLowerCase().includes(searchInput.toLowerCase()) ||
-      serviceProvider.serviceProviderName.toLowerCase().includes(searchInput.toLowerCase()) ||
-      serviceProvider.BankName.toLowerCase().includes(searchInput.toLowerCase()) ||
-      serviceProvider.servicesOffered.toLowerCase().includes(searchInput.toLowerCase()) ||
-      serviceProvider.BankAccountNumber.toLowerCase().includes(searchInput.toLowerCase()) ||
-      (typeof serviceProvider.phoneNumber === 'string' &&
-        serviceProvider.phoneNumber.toLowerCase().includes(searchInput.toLowerCase())))
+    (serviceProvider.serviceProviderBIN?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      serviceProvider.serviceProviderName?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      serviceProvider.BankName?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      serviceProvider.servicesOffered?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      serviceProvider.BankAccountNumber?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      serviceProvider.phoneNumber?.toLowerCase().includes(searchInput.toLowerCase()))
   );
 
-
   return (
-    <Dashboard isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} content={
-      <div>
-        <h1>Service Providers List</h1>
-        <Input.Search
-          placeholder="Search Service provider"
-          value={searchInput}
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ marginBottom: '16px' }}
-        />
-        <Table dataSource={filteredServiceProviders} columns={columns} scroll={{ x: true }} />        <Modal
-          title={editMode ? 'Edit Service Provider' : 'Create Service Provider'}
-          visible={editMode}
-          onCancel={() => {
-            setEditMode(false);
-            form.resetFields();
-          }}
-          footer={null}
-        >
-          <Form form={form}>
-            <Form.Item name="serviceProviderBIN" label="Service Provider BIN">
-              <Input />
-            </Form.Item>
-            <Form.Item name="serviceProviderName" label="Service Provider Name">
-              <Input />
-            </Form.Item>
-            <Form.Item name="servicesOffered" label="Services Offered">
-              <Input />
-            </Form.Item>
-            <Form.Item name="BankName" label="Bank Name">
-              <Input />
-            </Form.Item>
-            <Form.Item name="BankAccountNumber" label="Bank Account Number">
-              <Input />
-            </Form.Item>
-            <Form.Item name="phoneNumber" label="Phone Number">
-              <Input />
-            </Form.Item>
-            <Form.Item >
-              <label htmlFor="serviceProviderAuthorizationLetter">Authorization Letter:</label>
-              <input
-                type="file"
-                id="serviceProvider"
-                accept=".jpeg, .jpg, .png, .gif"
-              />
-              {serviceProviderAuthorizationLetterUrl && (
-                <img src={serviceProviderAuthorizationLetterUrl} alt="Auth Letter" style={{ width: '200px' }} />
-              )}
-            </Form.Item>
-            <Button type="primary" onClick={handleSave}>
-              Save
-            </Button>
-          </Form>
-        </Modal>
-      </div>}
+    <Dashboard isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} 
+      content={
+        <div className="sp-list-container">
+          <div className="sp-list-card">
+            {/* Header */}
+            <div className="sp-list-header">
+              <div className="sp-list-header-left">
+                <div className="sp-list-icon">
+                  <FaBuilding />
+                </div>
+                <div>
+                  <h1>Service Providers List</h1>
+                  <p>Manage all registered service providers</p>
+                </div>
+              </div>
+              <div className="sp-list-badge">
+                <FaUserPlus /> {filteredServiceProviders.length} Providers
+              </div>
+            </div>
+
+            <div className="sp-list-body">
+              {/* Search Bar */}
+              <div className="sp-search-wrapper">
+                <AntInput
+                  placeholder="Search providers by name, BIN, bank, phone or services..."
+                  value={searchInput}
+                  onChange={handleSearch}
+                  prefix={<SearchOutlined className="search-icon" />}
+                  className="sp-search-input"
+                  allowClear
+                />
+              </div>
+
+              {/* Table */}
+              <div className="sp-table-wrapper">
+                <Table 
+                  dataSource={filteredServiceProviders} 
+                  columns={columns} 
+                  scroll={{ x: 1260 }}
+                  pagination={{
+                    current: currentPage,
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: (total, range) => {
+                      const totalPages = Math.ceil(total / 10);
+                      return `Showing ${range[0]}-${range[1]} of ${total} entries (Page ${currentPage} of ${totalPages})`;
+                    },
+                    showQuickJumper: false,
+                    onChange: (page) => {
+                      setCurrentPage(page);
+                    },
+                    position: ['bottomCenter'],
+                  }}
+                  className="sp-table"
+                  rowClassName="sp-table-row"
+                  rowKey="serviceProviderBIN"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Edit Modal */}
+          <Modal
+            title={
+              <div className="modal-title">
+                <EditOutlined /> Edit Service Provider
+              </div>
+            }
+            open={editMode}
+            onCancel={() => {
+              setEditMode(false);
+              form.resetFields();
+              setFile(null);
+              setFilePreview(null);
+            }}
+            footer={null}
+            width={600}
+            className="sp-modal"
+          >
+            <Form form={form} layout="vertical" className="sp-edit-form">
+              <div className="modal-form-grid">
+                <Form.Item name="serviceProviderBIN" label="Provider BIN" rules={[{ required: true }]}>
+                  <Input disabled />
+                </Form.Item>
+                <Form.Item name="serviceProviderName" label="Provider Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="BankName" label="Bank Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="BankAccountNumber" label="Bank Account" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="phoneNumber" label="Phone Number" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </div>
+              
+              <Form.Item name="servicesOffered" label="Services Offered" rules={[{ required: true }]}>
+                <Input.TextArea rows={2} />
+              </Form.Item>
+
+              <Form.Item name="serviceProviderAuthorizationLetter" label="Authorization Letter">
+                <div className="modal-file-upload">
+                  {filePreview ? (
+                    <div className="modal-file-preview">
+                      <img src={filePreview} alt="Auth Letter" className="modal-file-img" />
+                      <Button 
+                        type="link" 
+                        danger 
+                        onClick={() => {
+                          setFile(null);
+                          setFilePreview(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <Upload 
+                      accept=".jpeg, .jpg, .png, .gif" 
+                      beforeUpload={() => false}
+                      onChange={handleFileChange}
+                      showUploadList={false}
+                    >
+                      <Button icon={<UploadOutlined />} className="upload-btn">
+                        Upload Authorization Letter
+                      </Button>
+                    </Upload>
+                  )}
+                  <p className="upload-hint">Supported: JPEG, JPG, PNG, GIF (Max 5MB)</p>
+                </div>
+              </Form.Item>
+
+              <div className="modal-actions">
+                <Button 
+                  onClick={() => {
+                    setEditMode(false);
+                    form.resetFields();
+                    setFile(null);
+                    setFilePreview(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="primary" 
+                  onClick={handleSave}
+                  loading={loading}
+                  className="modal-save-btn"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </Form>
+          </Modal>
+        </div>
+      }
     />
   );
 };
