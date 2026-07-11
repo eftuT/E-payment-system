@@ -1,0 +1,436 @@
+/* ServiceProviders.css */
+
+/* ========== CONTAINER ========== */
+.sp-container {
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+/* ========== HERO SECTION ========== */
+.sp-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.sp-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  transform: rotate(30deg);
+}
+
+.sp-hero-content {
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.sp-hero-icon {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 0.3rem;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.sp-hero h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 0.3rem 0;
+}
+
+.sp-hero p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1.2rem 0;
+}
+
+.sp-hero-divider {
+  width: 50px;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  margin: 0 auto 1.2rem;
+}
+
+/* ========== SEARCH BAR ========== */
+.sp-search-wrapper {
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.sp-search-icon {
+  padding: 0 0 0 1.2rem;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.sp-search-input {
+  flex: 1;
+  padding: 0.7rem 0.5rem;
+  border: none;
+  font-size: 0.9rem;
+  outline: none;
+  background: transparent;
+}
+
+.sp-search-input::placeholder {
+  color: #aaa;
+}
+
+.sp-search-btn {
+  padding: 0.7rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.sp-search-btn:hover {
+  background: #5a6fd6;
+  transform: scale(1.02);
+}
+
+/* ========== GRID SECTION ========== */
+.sp-grid-section {
+  padding: 1.5rem 2rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sp-grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.sp-grid-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.sp-count {
+  font-size: 0.8rem;
+  color: #888;
+  background: white;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== GRID ========== */
+.sp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* ========== CARD - MINIMIZED ========== */
+.sp-card {
+  position: relative;
+  background: white;
+  padding: 1.2rem 0.8rem 0.8rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  overflow: hidden;
+  border: 2px solid transparent;
+}
+
+.sp-card:hover,
+.sp-card.hovered {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
+}
+
+.sp-card-number {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #ddd;
+}
+
+.sp-card-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  background: #f0f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #667eea;
+  transition: all 0.3s ease;
+}
+
+.sp-card:hover .sp-card-icon {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  transform: scale(1.05);
+}
+
+.sp-card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.3rem 0;
+}
+
+.sp-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.5rem;
+  color: #22c55e;
+  background: #ecfdf5;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.sp-card-badge svg {
+  font-size: 0.4rem;
+}
+
+.sp-card-footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid #f5f6fa;
+}
+
+.sp-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #667eea;
+  transition: all 0.3s ease;
+}
+
+.sp-card:hover .sp-card-action {
+  gap: 0.7rem;
+}
+
+.sp-action-arrow {
+  font-size: 0.55rem;
+  transition: transform 0.3s ease;
+}
+
+.sp-card:hover .sp-action-arrow {
+  transform: translateX(3px);
+}
+
+.sp-card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.04) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.sp-card:hover .sp-card-glow {
+  opacity: 1;
+}
+
+/* ========== EMPTY ========== */
+.sp-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 12px;
+}
+
+.sp-empty-icon {
+  font-size: 2.5rem;
+  color: #ddd;
+  margin-bottom: 0.5rem;
+}
+
+.sp-empty h3 {
+  font-size: 1rem;
+  color: #333;
+  margin: 0 0 0.2rem 0;
+}
+
+.sp-empty p {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sp-hero {
+    padding: 1.8rem 1.5rem;
+  }
+
+  .sp-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .sp-hero p {
+    font-size: 0.85rem;
+  }
+
+  .sp-grid-section {
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .sp-grid-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .sp-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .sp-card {
+    padding: 1rem 0.6rem 0.6rem;
+  }
+
+  .sp-card-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .sp-card-name {
+    font-size: 0.75rem;
+  }
+
+  .sp-search-wrapper {
+    max-width: 100%;
+  }
+
+  .sp-search-icon {
+    padding-left: 0.8rem;
+  }
+
+  .sp-search-btn {
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sp-hero {
+    padding: 1.2rem 0.8rem;
+  }
+
+  .sp-hero h1 {
+    font-size: 1.2rem;
+  }
+
+  .sp-hero p {
+    font-size: 0.75rem;
+  }
+
+  .sp-hero-icon {
+    font-size: 2rem;
+  }
+
+  .sp-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .sp-grid-section {
+    padding: 0.6rem 0.6rem 1rem;
+  }
+
+  .sp-grid-header h2 {
+    font-size: 0.95rem;
+  }
+
+  .sp-count {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.6rem;
+  }
+
+  .sp-card {
+    padding: 0.8rem 0.4rem 0.5rem;
+    border-radius: 10px;
+  }
+
+  .sp-card-number {
+    display: none;
+  }
+
+  .sp-card-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .sp-card-name {
+    font-size: 0.65rem;
+  }
+
+  .sp-card-badge {
+    font-size: 0.4rem;
+    padding: 0px 6px;
+    margin-bottom: 0.3rem;
+  }
+
+  .sp-card-action {
+    font-size: 0.6rem;
+  }
+
+  .sp-search-icon {
+    display: none;
+  }
+
+  .sp-search-input {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .sp-search-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .sp-search-wrapper {
+    border-radius: 30px;
+  }
+}
