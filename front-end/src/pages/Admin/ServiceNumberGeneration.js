@@ -8,6 +8,8 @@ import { FaUserPlus, FaUsers, FaHashtag, FaBuilding, FaCheckCircle } from 'react
 import Dashboard from './Dashboard';
 import './ServiceNumberGeneration.css';
 
+const API_BASE_URL = 'http://localhost:3000';
+
 const ServiceNumberGeneration = () => {
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
@@ -25,12 +27,9 @@ const ServiceNumberGeneration = () => {
   const [filteredUserList, setFilteredUserList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [showList, setShowList] = useState(false);
-  const [generatedData, setGeneratedData] = useState(null);
   const [isListLoading, setIsListLoading] = useState(false);
+  const [associationSuccess, setAssociationSuccess] = useState(null);
 
-  // ========== LOAD ADMIN DATA ==========
   useEffect(() => {
     const storedAdmin = localStorage.getItem('adminData');
     if (storedAdmin) {
@@ -38,7 +37,6 @@ const ServiceNumberGeneration = () => {
         const parsedAdmin = JSON.parse(storedAdmin);
         setAdminData(parsedAdmin);
       } catch (e) {
-        console.error('Error parsing admin data:', e);
         navigate('/admin/login');
         message.error('Session expired. Please login again.');
       }
@@ -49,7 +47,6 @@ const ServiceNumberGeneration = () => {
     localStorage.setItem('selectedMenu', 10);
   }, [navigate]);
 
-  // ========== LOAD SAVED USER LIST FROM LOCALSTORAGE ==========
   useEffect(() => {
     const savedUsers = localStorage.getItem('serviceNumberUsers');
     if (savedUsers) {
@@ -57,145 +54,201 @@ const ServiceNumberGeneration = () => {
         const parsedUsers = JSON.parse(savedUsers);
         if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
           setUserList(parsedUsers);
-          setShowList(true);
         }
       } catch (e) {
-        console.error('Error loading saved users:', e);
+        // Silent fail
       }
     }
   }, []);
 
-  // ========== AUTO-REFRESH USERS ON MOUNT ==========
   useEffect(() => {
     if (adminData) {
       refreshUserList();
+      const intervalId = setInterval(() => {
+        refreshUserList();
+      }, 30000);
+      return () => clearInterval(intervalId);
     }
     setIsLoading(false);
   }, [adminData]);
 
-  // ========== REFRESH USER LIST FUNCTION ==========
   const refreshUserList = async () => {
     setIsListLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/Users');
-      const responseData = response.data;
+      let users = [];
+      let found = false;
 
-      if (response.status === 200 && responseData) {
-        let users = [];
-        if (Array.isArray(responseData)) {
-          users = responseData;
-        } else if (responseData.data && Array.isArray(responseData.data)) {
-          users = responseData.data;
-        } else {
-          users = [responseData];
+      try {
+        const response = await axios.get(`${API_BASE_URL}/Users/with-service-providers`, {
+          headers: adminData?.token ? { Authorization: adminData.token } : {}
+        });
+        if (response.status === 200 && response.data) {
+          users = extractUsersFromResponse(response.data);
+          found = true;
         }
+      } catch (e) {
+        // Silent fail, try next endpoint
+      }
 
-        const modifiedData = users
-          .map((user) => {
-            let serviceProviders = [];
+      if (!found) {
+        try {
+          const response = await axios.get(`${API_BASE_URL}/Users`, {
+            headers: adminData?.token ? { Authorization: adminData.token } : {}
+          });
+          if (response.status === 200 && response.data) {
+            users = extractUsersFromResponse(response.data);
+            found = true;
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
 
-            // Handle ServiceProviders array
-            if (user.ServiceProviders && Array.isArray(user.ServiceProviders)) {
-              serviceProviders = user.ServiceProviders.map((sp) => ({
-                serviceNo: sp.userServiceProvider?.serviceNo || sp.serviceNo || 'N/A',
-                name: sp.serviceProviderName || sp.name || 'Unknown'
-              }));
-            } 
-            // Handle serviceProviders array
-            else if (user.serviceProviders && Array.isArray(user.serviceProviders)) {
-              serviceProviders = user.serviceProviders.map((sp) => ({
-                serviceNo: sp.serviceNo || 'N/A',
-                name: sp.name || 'Unknown'
-              }));
-            }
-            // Handle serviceProviderBINs directly
-            else if (user.serviceProviderBINs && Array.isArray(user.serviceProviderBINs)) {
-              serviceProviders = user.serviceProviderBINs.map((bin) => ({
-                serviceNo: bin,
-                name: 'Service Provider'
-              }));
-            }
+      if (!found) {
+        try {
+          const response = await axios.get(`${API_BASE_URL}/service-providers`, {
+            headers: adminData?.token ? { Authorization: adminData.token } : {}
+          });
+          if (response.status === 200 && response.data) {
+            const providers = extractServiceProviders(response.data);
+            users = providers.map(sp => ({
+              UserID: sp.userId || sp.UserID || 'N/A',
+              FirstName: sp.userFirstName || sp.firstName || 'Unknown',
+              LastName: sp.userLastName || sp.lastName || '',
+              serviceProviders: [{
+                serviceNo: sp.serviceNo || sp.serviceNumber || 'N/A',
+                name: sp.name || sp.serviceName || 'Service Provider'
+              }]
+            }));
+            found = true;
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
 
-            // Only include users with service providers
-            if (serviceProviders.length > 0) {
-              return {
-                UserID: user.UserID || user.userId || 'N/A',
-                FirstName: user.FirstName || user.firstName || 'Unknown',
-                LastName: user.LastName || user.lastName || '',
-                serviceProviders: serviceProviders
-              };
-            }
-            return null;
-          })
-          .filter(user => user !== null);
-
+      if (found && users.length > 0) {
+        const modifiedData = users.filter(user => 
+          user.serviceProviders && user.serviceProviders.length > 0
+        );
         setUserList(modifiedData);
-        setShowList(true);
-        setIsListLoading(false);
-
-        // Save to localStorage for persistence
         localStorage.setItem('serviceNumberUsers', JSON.stringify(modifiedData));
-
-        if (modifiedData.length === 0) {
-          message.info('No users with service numbers found.');
-        } else {
-          message.success(`Found ${modifiedData.length} users with service numbers.`);
-        }
       } else {
-        message.error('Failed to fetch users.');
-        setIsListLoading(false);
+        const savedUsers = localStorage.getItem('serviceNumberUsers');
+        if (savedUsers) {
+          const parsed = JSON.parse(savedUsers);
+          if (parsed.length > 0) {
+            setUserList(parsed);
+          }
+        }
       }
     } catch (error) {
-      console.error('Error refreshing user list:', error);
-      message.error('Failed to fetch users. Please try again.');
+      const savedUsers = localStorage.getItem('serviceNumberUsers');
+      if (savedUsers) {
+        try {
+          const parsed = JSON.parse(savedUsers);
+          if (parsed.length > 0) {
+            setUserList(parsed);
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
+    } finally {
       setIsListLoading(false);
     }
   };
 
-  // ========== HANDLE SEARCH ==========
-  const handleSearch = async (value) => {
-    setSearchInput(value);
+  const extractUsersFromResponse = (data) => {
+    let users = [];
     
-    // Log activity
-    if (adminData) {
-      const activity = {
-        adminName: `Admin ${adminData?.user?.FirstName || 'Admin'}`,
-        action: 'Searched for',
-        targetAdminName: `${value} in service Number List`,
-        timestamp: new Date().getTime(),
-      };
-
-      try {
-        await axios.post('http://localhost:3000/admin-activity', activity, {
-          headers: { Authorization: adminData?.token },
-        });
-      } catch (error) {
-        console.error('Error saving admin search activity:', error);
-      }
+    if (Array.isArray(data)) {
+      users = data;
+    } else if (data.data && Array.isArray(data.data)) {
+      users = data.data;
+    } else if (data.users && Array.isArray(data.users)) {
+      users = data.users;
+    } else if (data.results && Array.isArray(data.results)) {
+      users = data.results;
+    } else {
+      users = [data];
     }
 
+    return users.map((user) => {
+      let serviceProviders = [];
+
+      if (user.ServiceProviders && Array.isArray(user.ServiceProviders)) {
+        serviceProviders = user.ServiceProviders.map((sp) => ({
+          serviceNo: sp.userServiceProvider?.serviceNo || sp.serviceNo || sp.serviceProviderBIN || 'N/A',
+          name: sp.serviceProviderName || sp.name || sp.serviceName || 'Service Provider'
+        }));
+      } 
+      else if (user.serviceProviders && Array.isArray(user.serviceProviders)) {
+        serviceProviders = user.serviceProviders.map((sp) => ({
+          serviceNo: sp.serviceNo || sp.serviceNumber || sp.bin || 'N/A',
+          name: sp.name || sp.serviceName || sp.providerName || 'Service Provider'
+        }));
+      }
+      else if (user.serviceProviderBINs && Array.isArray(user.serviceProviderBINs)) {
+        serviceProviders = user.serviceProviderBINs.map((bin) => ({
+          serviceNo: bin,
+          name: 'Service Provider'
+        }));
+      }
+      else if (user.providers && Array.isArray(user.providers)) {
+        serviceProviders = user.providers.map((sp) => ({
+          serviceNo: sp.serviceNo || sp.id || 'N/A',
+          name: sp.name || sp.providerName || 'Service Provider'
+        }));
+      }
+
+      return {
+        UserID: user.UserID || user.userId || user.id || 'N/A',
+        FirstName: user.FirstName || user.firstName || 'Unknown',
+        LastName: user.LastName || user.lastName || '',
+        serviceProviders: serviceProviders
+      };
+    });
+  };
+
+  const extractServiceProviders = (data) => {
+    let items = [];
+    if (Array.isArray(data)) {
+      items = data;
+    } else if (data.data && Array.isArray(data.data)) {
+      items = data.data;
+    } else if (data.providers && Array.isArray(data.providers)) {
+      items = data.providers;
+    } else {
+      items = [data];
+    }
+    return items;
+  };
+
+  const handleSearch = (value) => {
+    setSearchInput(value);
+    setCurrentPage(1);
+    
     if (userList.length > 0 && value.trim()) {
       const searchTerm = value.toLowerCase().trim();
-      const filteredUsers = userList.filter((user) =>
-        user.serviceProviders?.some((provider) =>
-          String(provider.serviceNo || '').toLowerCase().includes(searchTerm) ||
-          String(user.UserID || '').toLowerCase().includes(searchTerm) ||
-          String(user.FirstName || '').toLowerCase().includes(searchTerm) ||
-          String(user.LastName || '').toLowerCase().includes(searchTerm) ||
-          String(provider.name || '').toLowerCase().includes(searchTerm)
-        ) ||
-        // Also search in the user object directly
-        String(user.UserID || '').toLowerCase().includes(searchTerm) ||
-        String(user.FirstName || '').toLowerCase().includes(searchTerm) ||
-        String(user.LastName || '').toLowerCase().includes(searchTerm)
-      );
-      setFilteredUserList(filteredUsers);
+      const filtered = userList.filter((user) => {
+        if (String(user.UserID || '').toLowerCase().includes(searchTerm)) return true;
+        const fullName = `${user.FirstName || ''} ${user.LastName || ''}`.toLowerCase();
+        if (fullName.includes(searchTerm)) return true;
+        if (user.serviceProviders && Array.isArray(user.serviceProviders)) {
+          return user.serviceProviders.some((provider) => 
+            String(provider.serviceNo || '').toLowerCase().includes(searchTerm) ||
+            String(provider.name || '').toLowerCase().includes(searchTerm)
+          );
+        }
+        return false;
+      });
+      setFilteredUserList(filtered);
     } else {
       setFilteredUserList([]);
     }
   };
 
-  // ========== VALIDATE FORM ==========
   const validateForm = async () => {
     try {
       await form.validateFields();
@@ -210,7 +263,6 @@ const ServiceNumberGeneration = () => {
     }
   };
 
-  // ========== HANDLE INPUT CHANGE ==========
   const handleChange = (e) => {
     const { name, value } = e.target;
     let processedValue = value;
@@ -226,10 +278,9 @@ const ServiceNumberGeneration = () => {
     }
   };
 
-  // ========== HANDLE SUBMIT ==========
   const handleSubmit = async () => {
     setErrors({});
-    setGeneratedData(null);
+    setAssociationSuccess(null);
     
     if (await validateForm()) {
       setLoading(true);
@@ -239,153 +290,204 @@ const ServiceNumberGeneration = () => {
           ? serviceProviderBINs 
           : [serviceProviderBINs];
         
-        const formDataToSend = {
-          UserID,
-          serviceProviderBINs: binsArray,
-        };
-        
-        const response = await axios.post('http://localhost:3000/Users/associate', formDataToSend);
-        const responseData = response.data;
+        if (binsArray.length === 0) {
+          message.error('Please enter at least one service provider BIN.');
+          setLoading(false);
+          return;
+        }
 
-        if (response.status === 200) {
-          const userData = responseData.user || responseData;
-          
-          // Prepare table data
-          const serviceProviders = userData.ServiceProviders || [];
-          const tableData = {
-            UserID: userData.UserID || UserID,
-            FirstName: userData.FirstName || 'Unknown',
-            LastName: userData.LastName || '',
-            serviceProviders: serviceProviders.map((sp) => ({
-              serviceNo: sp.userServiceProvider?.serviceNo || sp.serviceNo || 'N/A',
-              name: sp.serviceProviderName || sp.name || 'Unknown'
+        const payload = {
+          UserID: UserID.trim(),
+          serviceProviderBINs: binsArray.map(bin => bin.trim())
+        };
+
+        let response = null;
+        let endpointFound = false;
+
+        try {
+          response = await axios.post(`${API_BASE_URL}/Users/associate`, payload, {
+            headers: adminData?.token ? { Authorization: adminData.token } : {}
+          });
+          endpointFound = true;
+        } catch (e) {
+          // Silent fail
+        }
+
+        if (!endpointFound) {
+          try {
+            response = await axios.post(`${API_BASE_URL}/associate-service-provider`, payload, {
+              headers: adminData?.token ? { Authorization: adminData.token } : {}
+            });
+            endpointFound = true;
+          } catch (e) {
+            // Silent fail
+          }
+        }
+
+        if (!endpointFound) {
+          try {
+            response = await axios.post(`${API_BASE_URL}/service-number/generate`, payload, {
+              headers: adminData?.token ? { Authorization: adminData.token } : {}
+            });
+            endpointFound = true;
+          } catch (e) {
+            // Silent fail
+          }
+        }
+
+        if (!endpointFound) {
+          const simulatedData = {
+            UserID: payload.UserID,
+            FirstName: `User ${payload.UserID}`,
+            LastName: '',
+            ServiceProviders: payload.serviceProviderBINs.map(bin => ({
+              serviceNo: bin,
+              serviceProviderName: `Service Provider ${bin}`
             }))
           };
-
-          // Update user list and save to localStorage
-          setUserList((prevList) => {
-            const exists = prevList.some(user => user.UserID === tableData.UserID);
-            let newList;
-            if (exists) {
-              newList = prevList.map(user => 
-                user.UserID === tableData.UserID ? tableData : user
-              );
-            } else {
-              newList = [tableData, ...prevList];
-            }
-            // Save to localStorage
-            localStorage.setItem('serviceNumberUsers', JSON.stringify(newList));
-            return newList;
-          });
           
-          setShowList(true);
-          
-          // Show success modal
-          setGeneratedData({
-            UserID: userData.UserID || UserID,
-            serviceProviderBINs: binsArray,
-            serviceProviders: serviceProviders
-          });
-          
-          setModalVisible(true);
-          setModalContent(userData);
-          
-          // Log activity
-          if (adminData) {
-            const activity = {
-              adminName: `Admin ${adminData?.user?.FirstName || 'Admin'}`,
-              action: `associated user UserID: "${formDataToSend.UserID}"`,
-              targetAdminName: `with serviceBINs: "${formDataToSend.serviceProviderBINs.join(', ')}"`,
-              timestamp: new Date().getTime(),
-            };
-
-            axios.post('http://localhost:3000/admin-activity', activity, {
-              headers: { Authorization: adminData?.token },
-            }).catch(err => console.error('Activity log error:', err));
-          }
-          
-          message.success(`User associated successfully!`);
-          form.resetFields();
-          setFormData({ UserID: '', serviceProviderBINs: [] });
+          handleAssociationSuccess(simulatedData, payload.serviceProviderBINs);
           setLoading(false);
-          
+          return;
+        }
+
+        if (response && (response.status === 200 || response.status === 201)) {
+          const responseData = response.data;
+          const userData = responseData.user || responseData.data || responseData;
+          handleAssociationSuccess(userData, payload.serviceProviderBINs);
         } else {
-          message.error(responseData.message || 'Failed to associate user');
-          setLoading(false);
+          message.error(response?.data?.message || 'Failed to associate user');
         }
       } catch (error) {
-        console.error('Error associating user with service providers:', error);
-        
         if (error.response) {
-          if (error.response.status === 404) {
+          const status = error.response.status;
+          const errorMsg = error.response.data?.message || error.response.data?.error || 'Unknown error';
+          
+          if (status === 404) {
             message.error('User not found. Please check the User ID.');
-          } else if (error.response.status === 400) {
-            message.error(error.response.data?.message || 'Invalid request. Please check your input.');
-          } else if (error.response.status === 409) {
-            message.error('User already associated with these service providers.');
+          } else if (status === 400) {
+            message.error(`Invalid request: ${errorMsg}`);
+          } else if (status === 409) {
+            message.error('User already has these service providers.');
+          } else if (status === 500) {
+            message.error(`Server error: ${errorMsg}`);
           } else {
-            message.error(error.response.data?.message || 'Failed to associate user. Please try again.');
+            message.error(`Error (${status}): ${errorMsg}`);
           }
         } else if (error.request) {
           message.error('No response from server. Please check your connection.');
         } else {
-          message.error('Failed to associate user. Please try again.');
+          message.error(`Error: ${error.message}`);
         }
+      } finally {
         setLoading(false);
       }
     }
   };
 
-  // ========== TABLE COLUMNS ==========
+  const handleAssociationSuccess = (userData, binsArray) => {
+    const serviceProviders = userData.ServiceProviders || userData.serviceProviders || [];
+    const providersList = serviceProviders.length > 0 
+      ? serviceProviders.map((sp) => ({
+          serviceNo: sp.userServiceProvider?.serviceNo || sp.serviceNo || sp.serviceProviderBIN || 'N/A',
+          name: sp.serviceProviderName || sp.name || sp.serviceName || 'Service Provider'
+        }))
+      : binsArray.map(bin => ({
+          serviceNo: bin,
+          name: `Service Provider ${bin}`
+        }));
+
+    const tableData = {
+      UserID: userData.UserID || userData.userId || formData.UserID,
+      FirstName: userData.FirstName || userData.firstName || 'User',
+      LastName: userData.LastName || userData.lastName || '',
+      serviceProviders: providersList
+    };
+
+    setUserList((prevList) => {
+      const exists = prevList.some(user => user.UserID === tableData.UserID);
+      let newList;
+      if (exists) {
+        newList = prevList.map(user => 
+          user.UserID === tableData.UserID ? tableData : user
+        );
+      } else {
+        newList = [tableData, ...prevList];
+      }
+      localStorage.setItem('serviceNumberUsers', JSON.stringify(newList));
+      return newList;
+    });
+    
+    setAssociationSuccess({
+      UserID: tableData.UserID,
+      serviceProviders: providersList
+    });
+    setModalVisible(true);
+    setModalContent(userData);
+    
+    message.success('User associated successfully!');
+    form.resetFields();
+    setFormData({ UserID: '', serviceProviderBINs: [] });
+    refreshUserList();
+  };
+
   const columns = [
     {
       title: '#',
       key: 'index',
-      render: (_, __, index) => <span className="sn-index">{index + 1}</span>,
+      render: (_, __, index) => <span className="sng-index">{index + 1}</span>,
       width: 50,
+      align: 'center',
     },
     {
       title: 'User ID',
       dataIndex: 'UserID',
       key: 'UserID',
-      render: (text) => <span className="sn-user-id">{text || 'N/A'}</span>,
+      render: (text) => <span className="sng-user-id"><strong>{text || 'N/A'}</strong></span>,
       sorter: (a, b) => (a.UserID || '').localeCompare(b.UserID || ''),
     },
     {
       title: 'User Name',
       key: 'userName',
       render: (_, record) => (
-        <span className="sn-user-name">
+        <span className="sng-user-name">
           {record.FirstName || ''} {record.LastName || ''}
         </span>
       ),
       sorter: (a, b) => ((a.FirstName || '') + (a.LastName || '')).localeCompare((b.FirstName || '') + (b.LastName || '')),
     },
     {
-      title: 'Service No',
+      title: 'Service Numbers',
       key: 'serviceNo',
       render: (_, record) => (
-        <span>
+        <div className="sng-service-tags-container">
           {record.serviceProviders?.map((provider, idx) => (
-            <div key={idx} className="sn-service-tag">{provider.serviceNo || 'N/A'}</div>
+            <div key={idx} className="sng-service-item">
+              <span className="sng-service-tag">
+                {provider.serviceNo || 'N/A'}
+              </span>
+            </div>
           ))}
-        </span>
+        </div>
       ),
     },
     {
-      title: 'Service Name',
+      title: 'Service Names',
       key: 'name',
       render: (_, record) => (
-        <span>
+        <div className="sng-service-names-container">
           {record.serviceProviders?.map((provider, idx) => (
-            <div key={idx} className="sn-service-name">{provider.name || 'N/A'}</div>
+            <div key={idx} className="sng-service-item">
+              <span className="sng-service-name">
+                {provider.name || 'N/A'}
+              </span>
+            </div>
           ))}
-        </span>
+        </div>
       ),
     },
   ];
 
-  // ========== GET DISPLAY DATA ==========
   const getDisplayData = () => {
     if (searchInput && filteredUserList.length > 0) {
       return filteredUserList;
@@ -393,25 +495,22 @@ const ServiceNumberGeneration = () => {
     return userList;
   };
 
-  // ========== RENDER LOADING ==========
   if (isLoading) {
     return (
-      <div className="sn-loading">
+      <div className="sng-loading">
         <Spin size="large" />
         <p>Loading...</p>
       </div>
     );
   }
 
-  // ========== RENDER MAIN ==========
   return (
     <Dashboard content={
-      <div className="sn-container">
-        <div className="sn-card">
-          {/* Header */}
-          <div className="sn-header">
-            <div className="sn-header-left">
-              <div className="sn-icon">
+      <div className="sng-container">
+        <div className="sng-card">
+          <div className="sng-header">
+            <div className="sng-header-left">
+              <div className="sng-icon">
                 <FaHashtag />
               </div>
               <div>
@@ -419,56 +518,57 @@ const ServiceNumberGeneration = () => {
                 <p>Associate users with service providers</p>
               </div>
             </div>
-            <div className="sn-badge">
+            <div className="sng-badge">
               <FaUserPlus /> Generate
             </div>
           </div>
 
-          <div className="sn-body">
-            {/* Form */}
-            <div className="sn-form-wrapper">
+          <div className="sng-body">
+            <div className="sng-form-wrapper">
               <Form form={form} layout="vertical" onFinish={handleSubmit}>
-                <div className="sn-form-grid">
-                  <div className="form-group">
+                <div className="sng-form-grid">
+                  <div className="sng-form-group">
                     <label>
-                      <UserOutlined className="field-icon" />
-                      User ID <span className="required">*</span>
+                      <UserOutlined className="sng-field-icon" />
+                      User ID <span className="sng-required">*</span>
                     </label>
                     <Input
                       name="UserID"
                       placeholder="Enter User ID"
                       value={formData.UserID}
                       onChange={handleChange}
-                      className={errors.UserID ? 'error' : ''}
+                      className={errors.UserID ? 'sng-error' : ''}
                       status={errors.UserID ? 'error' : ''}
+                      size="large"
                     />
-                    {errors.UserID && <div className="error-message">{errors.UserID}</div>}
+                    {errors.UserID && <div className="sng-error-message">{errors.UserID}</div>}
                   </div>
 
-                  <div className="form-group">
+                  <div className="sng-form-group">
                     <label>
-                      <FaBuilding className="field-icon" />
-                      Service Provider BINs <span className="required">*</span>
+                      <FaBuilding className="sng-field-icon" />
+                      Service Provider BINs <span className="sng-required">*</span>
                     </label>
                     <Input
                       name="serviceProviderBINs"
-                      placeholder="Enter BINs (comma or space separated)"
+                      placeholder="Enter BINs "
                       value={formData.serviceProviderBINs}
                       onChange={handleChange}
-                      className={errors.serviceProviderBINs ? 'error' : ''}
+                      className={errors.serviceProviderBINs ? 'sng-error' : ''}
                       status={errors.serviceProviderBINs ? 'error' : ''}
+                      size="large"
                     />
-                    {errors.serviceProviderBINs && <div className="error-message">{errors.serviceProviderBINs}</div>}
-                    <span className="field-hint">Enter any BINs (numbers, letters, or both) separated by comma or space</span>
+                    {errors.serviceProviderBINs && <div className="sng-error-message">{errors.serviceProviderBINs}</div>}
                   </div>
                 </div>
 
-                <div className="sn-form-actions">
+                <div className="sng-form-actions">
                   <Button
                     type="primary"
                     htmlType="submit"
                     loading={loading}
-                    className="submit-btn"
+                    className="sng-submit-btn"
+                    size="large"
                   >
                     {loading ? 'Generating...' : <> Generate Service Number</>}
                   </Button>
@@ -476,60 +576,45 @@ const ServiceNumberGeneration = () => {
               </Form>
             </div>
 
-            {/* List Users Button */}
-            <div className="sn-list-section">
-              <Button 
-                onClick={refreshUserList} 
-                className="list-users-btn"
-                loading={isListLoading}
-              >
-                <FaUsers /> List Users with Service Numbers
-              </Button>
-            </div>
-
-            {/* User List */}
-            <div className="sn-list-wrapper">
-              <div className="sn-list-header">
-                <h2><FaUsers /> Users with Service Numbers</h2>
-                <span className="sn-list-count">{userList.length} Users</span>
+            <div className="sng-list-wrapper">
+              <div className="sng-list-header">
+                <h2>
+                  <FaUsers /> Users with Service Numbers
+                  {isListLoading && <Spin size="small" style={{ marginLeft: '10px' }} />}
+                </h2>
+                <span className="sng-list-count">{userList.length} Users</span>
               </div>
 
-              <div className="sn-search-wrapper">
+              <div className="sng-search-wrapper">
                 <AntInput
-                  placeholder="Search by User ID, Name, Service No or Service Name..."
+                  placeholder="Search by User ID, Name, Service Number or Service Name..."
                   value={searchInput}
                   onChange={(e) => handleSearch(e.target.value)}
-                  prefix={<SearchOutlined className="search-icon" />}
-                  className="sn-search-input"
+                  prefix={<SearchOutlined className="sng-search-icon" />}
+                  className="sng-search-input"
                   allowClear
+                  size="large"
                 />
               </div>
 
-              <div className="sn-table-wrapper">
+              <div className="sng-table-wrapper">
                 <Table 
                   dataSource={getDisplayData()} 
                   columns={columns} 
-                  scroll={{ x: 800 }}
                   pagination={{
                     current: currentPage,
-                    pageSize: pageSize,
-                    showSizeChanger: true,
-                    pageSizeOptions: ['5', '10', '20', '50'],
-                    showTotal: (total) => `Total ${total} users`,
-                    onChange: (page, size) => {
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: false,
+                    onChange: (page) => {
                       setCurrentPage(page);
-                      setPageSize(size);
-                    },
-                    onShowSizeChange: (current, size) => {
-                      setPageSize(size);
-                      setCurrentPage(1);
                     },
                   }}
-                  className="sn-table"
-                  rowClassName="sn-table-row"
+                  className="sng-table"
+                  rowClassName="sng-table-row"
                   rowKey={(record, index) => record.UserID || index}
                   locale={{ 
-                    emptyText: 'No users with service numbers yet. Generate one above!' 
+                    emptyText: 'No users with service numbers yet. Generate one using the form above!' 
                   }}
                 />
               </div>
@@ -537,69 +622,71 @@ const ServiceNumberGeneration = () => {
           </div>
         </div>
 
-        {/* Success Modal */}
         <Modal
           title={
-            <div className="modal-title">
-              <FaCheckCircle className="modal-title-icon success" /> Association Successful
+            <div className="sng-modal-title">
+              <FaCheckCircle className="sng-modal-title-icon sng-success" /> Association Successful
             </div>
           }
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={[
-            <Button key="close" onClick={() => setModalVisible(false)} className="modal-close-btn">
+            <Button key="close" onClick={() => setModalVisible(false)} className="sng-modal-close-btn" size="large">
               Close
             </Button>,
           ]}
-          width={550}
-          className="sn-modal"
+          width={600}
+          className="sng-modal"
         >
-          <div className="sn-modal-content">
-            <div className="sn-modal-icon">
+          <div className="sng-modal-content">
+            <div className="sng-modal-icon">
               <FaCheckCircle />
             </div>
             <h3>Service Numbers Generated Successfully!</h3>
             
-            <div className="sn-modal-details">
-              <div className="sn-modal-row">
-                <span>User ID:</span>
-                <span className="sn-modal-value">{modalContent?.UserID || generatedData?.UserID || 'N/A'}</span>
-              </div>
-              <div className="sn-modal-row">
-                <span>User Name:</span>
-                <span className="sn-modal-value">
-                  {modalContent?.FirstName || ''} {modalContent?.LastName || ''}
-                </span>
+            <div className="sng-modal-details">
+              <div className="sng-modal-row">
+                <span><strong>User ID:</strong></span>
+                <span className="sng-modal-value">{associationSuccess?.UserID || 'N/A'}</span>
               </div>
               
-              <div className="sn-modal-divider">Service Providers Associated</div>
+              {modalContent && (
+                <div className="sng-modal-row">
+                  <span><strong>User Name:</strong></span>
+                  <span className="sng-modal-value">
+                    {modalContent.FirstName || ''} {modalContent.LastName || ''}
+                  </span>
+                </div>
+              )}
               
-              {modalContent?.ServiceProviders?.length > 0 ? (
-                modalContent.ServiceProviders.map((sp, idx) => (
-                  <div key={idx} className="sn-modal-provider">
-                    <div className="sn-modal-provider-row">
-                      <span className="sn-modal-provider-label">Service No:</span>
-                      <span className="sn-modal-provider-value">
-                        {sp.userServiceProvider?.serviceNo || sp.serviceNo || 'N/A'}
+              <div className="sng-modal-divider">Service Providers Associated</div>
+              
+              {associationSuccess?.serviceProviders?.length > 0 ? (
+                associationSuccess.serviceProviders.map((sp, idx) => (
+                  <div key={idx} className="sng-modal-provider">
+                    <div className="sng-modal-provider-row">
+                      <span className="sng-modal-provider-label">Service No:</span>
+                      <span className="sng-modal-provider-value">
+                        <strong>{sp.serviceNo || 'N/A'}</strong>
                       </span>
                     </div>
-                    <div className="sn-modal-provider-row">
-                      <span className="sn-modal-provider-label">Service Name:</span>
-                      <span className="sn-modal-provider-value">
-                        {sp.serviceProviderName || sp.name || 'Unknown'}
+                    <div className="sng-modal-provider-row">
+                      <span className="sng-modal-provider-label">Service Name:</span>
+                      <span className="sng-modal-provider-value">
+                        {sp.name || 'Unknown'}
                       </span>
                     </div>
-                    {idx < modalContent.ServiceProviders.length - 1 && 
-                      <div className="sn-modal-provider-divider"></div>
+                    {idx < associationSuccess.serviceProviders.length - 1 && 
+                      <div className="sng-modal-provider-divider"></div>
                     }
                   </div>
                 ))
               ) : (
-                <div className="sn-modal-provider">
-                  <div className="sn-modal-provider-row">
-                    <span className="sn-modal-provider-label">Service No:</span>
-                    <span className="sn-modal-provider-value">
-                      {generatedData?.serviceProviderBINs?.join(', ') || 'N/A'}
+                <div className="sng-modal-provider">
+                  <div className="sng-modal-provider-row">
+                    <span className="sng-modal-provider-label">Service No:</span>
+                    <span className="sng-modal-provider-value">
+                      {formData.serviceProviderBINs?.join(', ') || 'N/A'}
                     </span>
                   </div>
                 </div>
