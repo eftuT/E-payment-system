@@ -8,7 +8,7 @@ import './UpdatePassword.css';
 
 const UpdatePassword = () => {
   const [password, setPassword] = useState('');
-  const [Email, setEmail] = useState(localStorage.getItem('Email') || '');
+  const [Email] = useState(localStorage.getItem('Email') || '');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(false);
