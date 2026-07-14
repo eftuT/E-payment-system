@@ -6,18 +6,15 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
   FaReceipt, 
-  FaFileDownload, 
   FaFilePdf, 
   FaImage,
   FaHistory,
   FaCreditCard,
   FaCalendarAlt,
-  FaMoneyBillWave,
-  FaUser,
   FaCheckCircle
 
 } from 'react-icons/fa';
-import { MdPayment, MdDownload, MdReceipt } from 'react-icons/md';
+import { MdPayment, MdReceipt } from 'react-icons/md';
 import Header from "./Header";
 import "./PaymentHistory.css";
 

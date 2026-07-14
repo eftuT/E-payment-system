@@ -8,17 +8,15 @@ import {
   FaArrowRight, 
   FaCheckCircle,
   FaCreditCard,
-  FaShieldAlt,
   FaUserCheck
 } from 'react-icons/fa';
-import { MdPayment, MdPerson, MdPeople } from 'react-icons/md';
+import { MdPayment } from 'react-icons/md';
 import Header from './Header';
 import './ServiceNumber.css';
 
 const ServiceNumber = () => {
-  const [userData] = useState(null); // Removed setUserData
   const [serviceNumber, setServiceNumber] = useState('');
-  const [serviceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN')); // Removed setServiceProviderBIN
+  const [serviceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN')); 
   const [user, setUser] = useState(null);
   const [paymentFor, setPaymentFor] = useState('');
   const [errors, setErrorMessage] = useState('');
@@ -29,7 +27,6 @@ const ServiceNumber = () => {
     localStorage.setItem("selectedMenu", 5);
   }, []);
 
-  // Fixed: Added missing dependencies
   useEffect(() => {
     const fetchData = async () => {
       try {
