@@ -6,7 +6,6 @@ import axios from "axios";
 import { 
   MailOutlined, 
   CheckCircleOutlined,
-  ClockCircleOutlined,
   DollarOutlined,
   UserOutlined,
   BankOutlined,
@@ -16,7 +15,6 @@ import {
   FaCreditCard, 
   FaReceipt, 
   FaCalendarAlt,
-  FaMoneyBillWave,
   FaCheckCircle,
   FaArrowRight
 } from "react-icons/fa";
@@ -26,15 +24,15 @@ import Header from "./Header";
 import "./Payment.css";
 
 const Payment = () => {
-  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem("userData")));
-  const [serviceNo, setServiceNumber] = useState(localStorage.getItem('serviceNo'));
-  const [serviceProvidersBIN, setServiceProvidersBIN] = useState(localStorage.getItem('serviceProviderBIN'));
+  const [userData] = useState(JSON.parse(localStorage.getItem("userData"))); // Removed setUserData
+  const [serviceNo] = useState(localStorage.getItem('serviceNo')); // Removed setServiceNumber
+  const [serviceProvidersBIN] = useState(localStorage.getItem('serviceProviderBIN')); // Removed setServiceProvidersBIN
   const [user, setUser] = useState(null);
   const [payerId, setPayerId] = useState();
   const [payments, setPayments] = useState([]);
   const [userbill, setUserBill] = useState(null);
   const [banks, setBanks] = useState([]);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // form is actually used in the JSX, so we keep it
   const [userId, setUserId] = useState();
   const [downloadModalVisible, setDownloadModalVisible] = useState(false);
   const formRef = useRef(null);
@@ -56,6 +54,7 @@ const Payment = () => {
     localStorage.setItem("userSelectedMenu", 4);
   }, []);
 
+  // Fixed useEffect dependencies
   useEffect(() => {
     if (!userData) {
       navigate("/users");
@@ -93,7 +92,7 @@ const Payment = () => {
 
     fetchData();
     fetchBanks();
-  }, []);
+  }, [navigate, serviceNo, serviceProvidersBIN, userData]); // Added all missing dependencies
 
   const handlePayment = (billNumber, serviceProviderBIN) => {
     setShowBankAccountForm(true);
