@@ -4,8 +4,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FaUser, FaLock, FaEye, FaEyeSlash, FaUserCircle,
-  FaShieldAlt, FaSignInAlt, FaHome, FaInfoCircle, FaEnvelope
+ FaEye, FaEyeSlash, FaUserCircle,
+  FaShieldAlt
 } from 'react-icons/fa';
 import companyLogo from '../../image/logoimage.jpg';
 import adminImage from '../../image/payment.png';
@@ -18,7 +18,6 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  // Removed: isLoggedIn state (not used)
 
   const handleIdentifierChange = (e) => {
     setIdentifier(e.target.value);
