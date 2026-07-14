@@ -6,7 +6,7 @@ import {
   PhoneOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
-import { Button, message, Form, Input, Upload, Spin } from 'antd';
+import { Button, message, Form, Input, Spin } from 'antd';
 import { 
   FaUserPlus, 
   FaBuilding, 
@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import './ServiceProviderRegistration.css';
 
 const ServiceProviderRegistrationForm = () => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     serviceProviderBIN: '',
@@ -276,8 +276,6 @@ const ServiceProviderRegistrationForm = () => {
                     />
                     {errors.serviceProviderName && <div className="error-message">{errors.serviceProviderName}</div>}
                   </div>
-
-                
 
                   {/* Bank Name */}
                   <div className="form-group">

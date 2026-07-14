@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import './Transaction.css';
 
 const PaymentList = () => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [paymentData, setPaymentData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
