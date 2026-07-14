@@ -1,7 +1,6 @@
-/* UsersList.css */
+/* PaymentList.css */
 
-/* ========== LOADING ========== */
-.users-loading {
+.payment-loading {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -10,19 +9,19 @@
   background: #f0f2f5;
 }
 
-.users-loading p {
+.payment-loading p {
   margin-top: 1rem;
   color: #666;
 }
 
 /* ========== CONTAINER ========== */
-.users-container {
+.payment-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0.5rem;
 }
 
-.users-card {
+.payment-card {
   background: white;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
@@ -30,7 +29,7 @@
 }
 
 /* ========== HEADER ========== */
-.users-header {
+.payment-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -39,13 +38,13 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.users-header-left {
+.payment-header-left {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.users-icon {
+.payment-icon {
   width: 48px;
   height: 48px;
   border-radius: 12px;
@@ -57,20 +56,20 @@
   font-size: 1.5rem;
 }
 
-.users-header-left h1 {
+.payment-header-left h1 {
   font-size: 1.3rem;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
 }
 
-.users-header-left p {
+.payment-header-left p {
   font-size: 0.85rem;
   color: #666;
   margin: 0;
 }
 
-.users-badge {
+.payment-badge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -83,16 +82,16 @@
 }
 
 /* ========== BODY ========== */
-.users-body {
+.payment-body {
   padding: 1.5rem 2rem 2rem;
 }
 
 /* ========== SEARCH ========== */
-.users-search-wrapper {
+.payment-search-wrapper {
   margin-bottom: 1.5rem;
 }
 
-.users-search-input {
+.payment-search-input {
   border-radius: 10px !important;
   border: 2px solid #e0e0e0 !important;
   padding: 0.5rem 1rem !important;
@@ -100,12 +99,12 @@
   transition: all 0.3s ease !important;
 }
 
-.users-search-input:hover {
+.payment-search-input:hover {
   border-color: #667eea !important;
 }
 
-.users-search-input:focus,
-.users-search-input-focused {
+.payment-search-input:focus,
+.payment-search-input-focused {
   border-color: #667eea !important;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08) !important;
 }
@@ -116,16 +115,16 @@
 }
 
 /* ========== TABLE ========== */
-.users-table-wrapper {
+.payment-table-wrapper {
   overflow-x: auto;
 }
 
-.users-table .ant-table {
+.payment-table .ant-table {
   border-radius: 12px;
   overflow: hidden;
 }
 
-.users-table .ant-table-thead > tr > th {
+.payment-table .ant-table-thead > tr > th {
   background: #f8f9ff;
   color: #555;
   font-weight: 600;
@@ -136,73 +135,51 @@
   border-bottom: 2px solid #e8ecff;
 }
 
-.users-table .ant-table-tbody > tr > td {
+.payment-table .ant-table-tbody > tr > td {
   padding: 0.7rem 1rem;
   border-bottom: 1px solid #f5f6fa;
   font-size: 0.85rem;
   color: #333;
 }
 
-.users-table-row:hover > td {
+.payment-table-row:hover > td {
   background: #fafbff !important;
 }
 
-/* ===== USER INFO - PROFILE BESIDE NAME ===== */
-.user-info-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
+/* ===== TABLE CELLS ===== */
+.payment-index {
+  color: #999;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
-.user-full-name {
-  font-weight: 500;
-  color: #1a1a2e;
-  font-size: 0.9rem;
-}
-
-/* ===== AVATAR STYLES ===== */
-.user-avatar-img {
-  border: 2px solid #667eea;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.user-avatar-initial {
-  border: 2px solid #667eea;
-  font-weight: 700;
-  font-size: 1rem;
-  color: white;
-  flex-shrink: 0;
-}
-
-/* ===== OTHER CELLS ===== */
-.user-id {
+.payment-transaction {
   font-weight: 600;
   color: #667eea;
   font-family: monospace;
   font-size: 0.8rem;
 }
 
-.user-email {
+.payment-date {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   color: #555;
 }
 
-.user-phone {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+.payment-amount {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.payment-payer {
   color: #555;
+  font-family: monospace;
+  font-size: 0.8rem;
 }
 
-.user-username {
-  color: #333;
-  font-weight: 500;
-}
-
-.user-gender {
+.payment-method {
   display: inline-block;
   background: #f0f1ff;
   color: #667eea;
@@ -210,38 +187,61 @@
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 500;
-  text-transform: capitalize;
 }
 
-.user-address {
+.payment-reference {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.payment-icon-sm {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+/* ===== VIEW BUTTON ===== */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  color: #555;
+  justify-content: center;
+  font-size: 0.85rem;
 }
 
-.user-icon-sm {
-  font-size: 0.7rem;
+.view-btn {
+  background: #f0f1ff;
   color: #667eea;
 }
 
+.view-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: scale(1.05);
+}
+
 /* ========== PAGINATION ========== */
-.users-table .ant-pagination {
-  margin-top: 1.5rem !important;
+.payment-table .ant-pagination {
+  margin-top: 1.2rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
   gap: 0.5rem !important;
 }
 
-.users-table .ant-pagination-total-text {
+.payment-table .ant-pagination-total-text {
   font-size: 0.85rem !important;
   color: #666 !important;
   margin-right: auto !important;
   font-weight: 500 !important;
 }
 
-.users-table .ant-pagination-item {
+.payment-table .ant-pagination-item {
   border-radius: 50% !important;
   border: 1px solid #e0e0e0 !important;
   min-width: 32px !important;
@@ -258,12 +258,12 @@
   padding: 0 !important;
 }
 
-.users-table .ant-pagination-item:hover {
+.payment-table .ant-pagination-item:hover {
   border-color: #667eea !important;
   transform: scale(1.05);
 }
 
-.users-table .ant-pagination-item a {
+.payment-table .ant-pagination-item a {
   color: #555 !important;
   display: flex !important;
   align-items: center !important;
@@ -273,19 +273,19 @@
   border-radius: 50% !important;
 }
 
-.users-table .ant-pagination-item-active {
+.payment-table .ant-pagination-item-active {
   background: linear-gradient(135deg, #667eea, #764ba2) !important;
   border-color: #667eea !important;
   transform: scale(1.05);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.users-table .ant-pagination-item-active a {
+.payment-table .ant-pagination-item-active a {
   color: #ffffff !important;
 }
 
-.users-table .ant-pagination-prev,
-.users-table .ant-pagination-next {
+.payment-table .ant-pagination-prev,
+.payment-table .ant-pagination-next {
   border-radius: 50% !important;
   border: 1px solid #e0e0e0 !important;
   min-width: 32px !important;
@@ -299,14 +299,14 @@
   padding: 0 !important;
 }
 
-.users-table .ant-pagination-prev:hover:not(.ant-pagination-disabled),
-.users-table .ant-pagination-next:hover:not(.ant-pagination-disabled) {
+.payment-table .ant-pagination-prev:hover:not(.ant-pagination-disabled),
+.payment-table .ant-pagination-next:hover:not(.ant-pagination-disabled) {
   border-color: #667eea !important;
   transform: scale(1.05);
 }
 
-.users-table .ant-pagination-prev .ant-pagination-item-link,
-.users-table .ant-pagination-next .ant-pagination-item-link {
+.payment-table .ant-pagination-prev .ant-pagination-item-link,
+.payment-table .ant-pagination-next .ant-pagination-item-link {
   border: none !important;
   display: flex !important;
   align-items: center !important;
@@ -320,58 +320,159 @@
   padding: 0 !important;
 }
 
-.users-table .ant-pagination-prev:hover:not(.ant-pagination-disabled) .ant-pagination-item-link,
-.users-table .ant-pagination-next:hover:not(.ant-pagination-disabled) .ant-pagination-item-link {
+.payment-table .ant-pagination-prev:hover:not(.ant-pagination-disabled) .ant-pagination-item-link,
+.payment-table .ant-pagination-next:hover:not(.ant-pagination-disabled) .ant-pagination-item-link {
   color: #667eea !important;
 }
 
-.users-table .ant-pagination-prev.ant-pagination-disabled,
-.users-table .ant-pagination-next.ant-pagination-disabled {
+.payment-table .ant-pagination-prev.ant-pagination-disabled,
+.payment-table .ant-pagination-next.ant-pagination-disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
   border-color: #e8e8e8 !important;
 }
 
-/* Remove page size changer as we're fixing it to 10 */
-.users-table .ant-pagination-options {
-  display: none !important;
+.payment-table .ant-pagination-options .ant-select-selector {
+  border-radius: 20px !important;
+  border: 1px solid #e0e0e0 !important;
+  height: 32px !important;
+  padding: 0 0.8rem !important;
+  font-size: 0.85rem !important;
+  color: #555 !important;
+  transition: all 0.3s ease !important;
+  background: #ffffff !important;
+}
+
+.payment-table .ant-pagination-options .ant-select-selector:hover {
+  border-color: #667eea !important;
+}
+
+/* ========== MODAL ========== */
+.payment-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.payment-modal .ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 1.2rem 1.5rem;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.modal-title-icon {
+  color: #667eea;
+  font-size: 1.2rem;
+}
+
+.payment-details-modal {
+  padding: 0.5rem 0;
+}
+
+.payment-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-item label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 0;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #f5f6fa;
+}
+
+.detail-value.highlight {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.detail-value.amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.detail-icon {
+  font-size: 0.7rem;
+  color: #999;
+  margin-right: 0.3rem;
 }
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .users-header {
+  .payment-header {
     flex-direction: column;
     text-align: center;
     gap: 0.8rem;
     padding: 1.2rem;
   }
 
-  .users-header-left {
+  .payment-header-left {
     flex-direction: column;
   }
 
-  .users-body {
+  .payment-body {
     padding: 1rem;
   }
 
-  .users-badge {
+  .payment-badge {
     font-size: 0.7rem;
     padding: 0.3rem 0.8rem;
   }
 
-  .users-table .ant-pagination {
+  .payment-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-item.full-width {
+    grid-column: 1;
+  }
+
+  .payment-modal {
+    max-width: 100%;
+    margin: 0.5rem;
+  }
+
+  .payment-table .ant-pagination {
     flex-wrap: wrap !important;
     justify-content: center !important;
   }
 
-  .users-table .ant-pagination-total-text {
+  .payment-table .ant-pagination-total-text {
     width: 100% !important;
     text-align: center !important;
     margin-right: 0 !important;
     margin-bottom: 0.5rem !important;
   }
 
-  .users-table .ant-pagination-item {
+  .payment-table .ant-pagination-item {
     min-width: 28px !important;
     width: 28px !important;
     height: 28px !important;
@@ -379,8 +480,8 @@
     font-size: 0.75rem !important;
   }
 
-  .users-table .ant-pagination-prev,
-  .users-table .ant-pagination-next {
+  .payment-table .ant-pagination-prev,
+  .payment-table .ant-pagination-next {
     min-width: 28px !important;
     width: 28px !important;
     height: 28px !important;
@@ -388,26 +489,32 @@
 }
 
 @media (max-width: 480px) {
-  .users-header-left h1 {
+  .payment-header-left h1 {
     font-size: 1.1rem;
   }
 
-  .users-header-left p {
+  .payment-header-left p {
     font-size: 0.75rem;
   }
 
-  .users-search-input {
+  .payment-search-input {
     height: 38px !important;
     font-size: 0.85rem !important;
   }
 
-  .users-table .ant-table-thead > tr > th,
-  .users-table .ant-table-tbody > tr > td {
+  .payment-table .ant-table-thead > tr > th,
+  .payment-table .ant-table-tbody > tr > td {
     padding: 0.5rem 0.6rem;
     font-size: 0.75rem;
   }
 
-  .users-table .ant-pagination-item {
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .payment-table .ant-pagination-item {
     min-width: 24px !important;
     width: 24px !important;
     height: 24px !important;
@@ -415,18 +522,10 @@
     font-size: 0.7rem !important;
   }
 
-  .users-table .ant-pagination-prev,
-  .users-table .ant-pagination-next {
+  .payment-table .ant-pagination-prev,
+  .payment-table .ant-pagination-next {
     min-width: 24px !important;
     width: 24px !important;
     height: 24px !important;
-  }
-
-  .user-info-wrapper {
-    gap: 0.5rem;
-  }
-
-  .user-full-name {
-    font-size: 0.75rem;
   }
 }
