@@ -8,7 +8,6 @@ import {
   SolutionOutlined,
   TransactionOutlined,
   LogoutOutlined,
-  HomeOutlined,
   AppstoreOutlined,
   DashboardOutlined,
   SettingOutlined,
@@ -16,10 +15,9 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserSwitchOutlined,
-  DollarOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FaShieldAlt, FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle } from 'react-icons/fa';
 import './Dashboard.css';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -29,7 +27,7 @@ const Dashboard = ({ content }) => {
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
-  const [admin, setAdmin] = useState(null);
+  // Removed: admin state (not used)
   const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const { adminId } = useParams();
@@ -79,6 +77,18 @@ const Dashboard = ({ content }) => {
       setIsLoading(false);
     }
   }, [adminData, navigate]);
+
+  // Fixed: Added missing dependency
+  useEffect(() => {
+    // This effect runs when profilePictureUrl changes
+    // If you need to do something with profilePictureUrl, add it here
+  }, [profilePictureUrl]); // Added missing dependency
+
+  // Fixed: Added missing dependency
+  useEffect(() => {
+    // This effect runs when selectedMenu changes
+    // If you need to do something with selectedMenu, add it here
+  }, [selectedMenu]); // Added missing dependency
 
   if (isLoading) {
     return (

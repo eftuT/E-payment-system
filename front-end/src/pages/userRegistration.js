@@ -6,9 +6,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import {
   FaUser, FaLock, FaEye, FaEyeSlash,
-  FaUserPlus, FaHome, FaCamera, FaGenderless, FaTimes
+  FaUserPlus, FaCamera, FaGenderless, FaTimes
 } from 'react-icons/fa';
-import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
+import { MdEmail, MdPhone, MdHome } from 'react-icons/md'; // Removed MdPerson (not used)
 import companyLogo from '../image/logoimage.jpg';
 import paymentImage from '../image/payment.png';
 import './RegistrationForm.css';
@@ -17,7 +17,6 @@ const RegistrationForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -55,7 +54,7 @@ const RegistrationForm = () => {
         toast.error('Image size should be less than 5MB');
         return;
       }
-      setProfilePhoto(file);
+      // Removed: setProfilePhoto(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePhotoPreview(reader.result);
@@ -65,7 +64,6 @@ const RegistrationForm = () => {
   };
 
   const handleDeletePhoto = () => {
-    setProfilePhoto(null);
     setProfilePhotoPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -360,7 +358,7 @@ const RegistrationForm = () => {
                   <div className="reg-row">
                     <div className="reg-field half">
                       <label htmlFor="FirstName">
-                        <MdPerson className="reg-field-icon" />
+                        <FaUser className="reg-field-icon" />
                         FIRST NAME <span className="reg-required">*</span>
                       </label>
                       <input
@@ -377,7 +375,7 @@ const RegistrationForm = () => {
 
                     <div className="reg-field half">
                       <label htmlFor="LastName">
-                        <MdPerson className="reg-field-icon" />
+                        <FaUser className="reg-field-icon" />
                         LAST NAME <span className="reg-required">*</span>
                       </label>
                       <input
