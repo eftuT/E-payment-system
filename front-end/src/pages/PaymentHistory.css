@@ -1,0 +1,559 @@
+/* PaymentHistory.css */
+
+/* ========== CONTAINER ========== */
+.ph-container {
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+/* ========== MAIN ========== */
+.ph-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 2rem;
+}
+
+/* ========== HEADER ========== */
+.ph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1.2rem 1.8rem;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.ph-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ph-header-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.ph-header-left h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.ph-header-left p {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+}
+
+.ph-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f0f1ff;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  color: #667eea;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.ph-badge-icon {
+  font-size: 0.9rem;
+}
+
+/* ========== TABLE WRAPPER ========== */
+.ph-table-wrapper {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* ========== TABLE STYLES ========== */
+.ph-table .ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ph-table .ant-table-thead > tr > th {
+  background: #f8f9ff;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid #e8ecff;
+}
+
+.ph-table .ant-table-tbody > tr > td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #f5f6fa;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.ph-table-row:hover > td {
+  background: #fafbff !important;
+}
+
+/* ========== TABLE CELLS ========== */
+.ph-transaction-id {
+  font-weight: 600;
+  color: #667eea;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.ph-method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f0f1ff;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.ph-method-icon {
+  font-size: 0.6rem;
+}
+
+.ph-description {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.ph-reference {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.ph-amount {
+  font-weight: 700;
+  color: #22c55e;
+  font-size: 0.9rem;
+}
+
+.ph-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.ph-date-icon {
+  font-size: 0.6rem;
+  color: #999;
+}
+
+/* ========== ACTIONS ========== */
+.ph-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ph-action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.ph-action-btn.picture {
+  background: #f0f1ff;
+  color: #667eea;
+}
+
+.ph-action-btn.picture:hover {
+  background: #667eea;
+  color: white;
+  transform: scale(1.05);
+}
+
+.ph-action-btn.pdf {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.ph-action-btn.pdf:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.05);
+}
+
+/* ========== EMPTY STATE ========== */
+.ph-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.ph-empty-icon {
+  font-size: 4rem;
+  color: #ddd;
+  margin-bottom: 1rem;
+}
+
+.ph-empty h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0 0 0.3rem;
+}
+
+.ph-empty p {
+  color: #999;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ========== MODAL ========== */
+.ph-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ph-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.ph-modal-icon {
+  color: #667eea;
+  font-size: 1.3rem;
+}
+
+.ph-modal .ant-modal-footer {
+  border-top: 1px solid #f0f2f5;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.ph-modal-btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ph-modal-btn.picture {
+  background: #f0f1ff;
+  color: #667eea;
+}
+
+.ph-modal-btn.picture:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.ph-modal-btn.pdf {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.ph-modal-btn.pdf:hover {
+  background: #ef4444;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.ph-modal-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.ph-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 2rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== RECEIPT ========== */
+.payment-details-modal {
+  padding: 0.5rem 0;
+}
+
+.ph-receipt {
+  background: #fafbff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #f0f2f5;
+}
+
+.ph-receipt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid #f0f2f5;
+  margin-bottom: 0.8rem;
+}
+
+.ph-receipt-icon {
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.ph-receipt-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.ph-receipt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ph-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  border-bottom: 1px solid #f5f6fa;
+}
+
+.ph-receipt-row:last-child {
+  border-bottom: none;
+}
+
+.ph-receipt-value {
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.ph-receipt-value.amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.ph-receipt-footer {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 2px solid #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.ph-receipt-check {
+  font-size: 1.2rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .ph-main {
+    padding: 1rem 1.5rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .ph-main {
+    padding: 0.8rem 1rem 1.2rem;
+  }
+
+  .ph-header {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .ph-header-left {
+    width: 100%;
+  }
+
+  .ph-header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .ph-header-left p {
+    font-size: 0.7rem;
+  }
+
+  .ph-header-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .ph-header-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 1rem;
+    align-self: flex-start;
+  }
+
+  .ph-table-wrapper {
+    padding: 0.5rem;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+
+  .ph-actions {
+    gap: 0.3rem;
+  }
+
+  .ph-action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .ph-modal .ant-modal-content {
+    margin: 0.5rem;
+  }
+
+  .ph-receipt {
+    padding: 1rem;
+  }
+
+  .ph-receipt-row {
+    font-size: 0.75rem;
+    padding: 0.3rem 0;
+  }
+
+  .ph-receipt-value.amount {
+    font-size: 1rem;
+  }
+
+  .ph-modal-btn {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ph-main {
+    padding: 0.5rem 0.5rem 0.8rem;
+  }
+
+  .ph-header {
+    padding: 0.8rem;
+    border-radius: 10px;
+  }
+
+  .ph-header-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+
+  .ph-header-left h1 {
+    font-size: 1rem;
+  }
+
+  .ph-header-badge {
+    font-size: 0.65rem;
+  }
+
+  .ph-table .ant-table-thead > tr > th,
+  .ph-table .ant-table-tbody > tr > td {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .ph-transaction-id {
+    font-size: 0.65rem;
+  }
+
+  .ph-amount {
+    font-size: 0.75rem;
+  }
+
+  .ph-date {
+    font-size: 0.65rem;
+  }
+
+  .ph-actions {
+    gap: 0.2rem;
+  }
+
+  .ph-action-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .ph-empty {
+    padding: 2rem 1rem;
+  }
+
+  .ph-empty-icon {
+    font-size: 3rem;
+  }
+
+  .ph-empty h3 {
+    font-size: 1rem;
+  }
+
+  .ph-receipt {
+    padding: 0.8rem;
+  }
+
+  .ph-receipt-row {
+    font-size: 0.65rem;
+  }
+
+  .ph-receipt-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .ph-receipt-footer {
+    font-size: 0.7rem;
+  }
+
+  .ph-modal .ant-modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ph-modal-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
