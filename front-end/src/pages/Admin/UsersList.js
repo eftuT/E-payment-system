@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import './UsersList.css';
 
 const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [userData, setUserData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
