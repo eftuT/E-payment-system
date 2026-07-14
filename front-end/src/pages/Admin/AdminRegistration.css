@@ -1,0 +1,560 @@
+/* AdminRegistration.css */
+
+/* ========== CONTAINER ========== */
+.admin-reg-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+.admin-reg-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* ========== HEADER ========== */
+.admin-reg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8f9ff, #f0f1ff);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-reg-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-reg-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.admin-reg-header-left h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.admin-reg-header-left p {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.admin-reg-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* ========== BODY ========== */
+.admin-reg-body {
+  padding: 2rem;
+}
+
+/* ========== PROFILE PHOTO - CIRCULAR ========== */
+.profile-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-photo-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 0.5rem;
+}
+
+.profile-photo-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #667eea;
+}
+
+.profile-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed #ccc;
+}
+
+.placeholder-icon {
+  font-size: 2.5rem;
+  color: #999;
+}
+
+.delete-photo-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff4444;
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.6rem;
+  padding: 0;
+  z-index: 10;
+}
+
+.delete-photo-btn:hover {
+  background: #cc0000;
+  transform: scale(1.1);
+}
+
+.upload-photo-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #667eea;
+  color: white;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  padding: 0;
+}
+
+.upload-photo-btn:hover {
+  background: #5a6fd6;
+  transform: scale(1.1);
+}
+
+.upload-hint {
+  font-size: 0.6rem;
+  color: #999;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* ========== FORM - CONSISTENT BOX DESIGNS ========== */
+.admin-reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+
+.field-icon {
+  color: #667eea;
+  font-size: 0.9rem;
+
+}
+
+.required {
+  color: #ff4444;
+}
+
+/* ===== UNIFIED INPUT/ SELECT/ PASSWORD STYLES ===== */
+.form-group .ant-input,
+.form-group .ant-input-password,
+.form-group .ant-select-selector,
+.form-group .ant-picker {
+  width: 100% !important;
+  height: 42px !important;
+  padding: 0.5rem 0.8rem !important;
+  border-radius: 10px !important;
+  border: 2px solid #e0e0e0 !important;
+  background: #ffffff !important;
+  font-size: 0.9rem !important;
+  color: #333 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+}
+
+/* ===== FIX FOR PASSWORD FIELD - REMOVE EXTRA BOX ===== */
+.form-group .ant-input-password {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.form-group .ant-input-password .ant-input {
+  height: 100% !important;
+  padding: 0.5rem 0.8rem !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.form-group .ant-input-password .ant-input:focus {
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Password toggle icon - position properly */
+.form-group .ant-input-password .ant-input-password-icon {
+  padding-right: 0.8rem !important;
+  color: #667eea !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+.form-group .ant-input-password .ant-input-password-icon:hover {
+  color: #5a6fd6 !important;
+}
+
+/* ===== FIX FOR ANT DESIGN INPUT GROUP WRAPPER ===== */
+.form-group .ant-input-group-wrapper {
+  display: block !important;
+  width: 100% !important;
+}
+
+.form-group .ant-input-group {
+  display: flex !important;
+  align-items: center !important;
+  border-radius: 10px !important;
+  border: 2px solid #e0e0e0 !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-group .ant-input-group .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  height: 38px !important;
+  padding: 0.5rem 0.8rem !important;
+  background: transparent !important;
+}
+
+.form-group .ant-input-group .ant-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.form-group .ant-input-group .ant-input-group-addon {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* ===== HIDE ANY EXTRA PASSWORD BOXES ===== */
+.form-group .ant-input-password .ant-input-password .ant-input {
+  display: none !important;
+}
+
+/* ===== FOCUS STATES ===== */
+.form-group .ant-input:focus,
+.form-group .ant-input-password:focus-within,
+.form-group .ant-input-group:focus-within,
+.form-group .ant-select-focused .ant-select-selector,
+.form-group .ant-picker-focused,
+.form-group .ant-input-textarea textarea:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08) !important;
+  outline: none !important;
+}
+
+/* ===== HOVER STATES ===== */
+.form-group .ant-input:hover,
+.form-group .ant-input-password:hover,
+.form-group .ant-input-group:hover,
+.form-group .ant-select-selector:hover,
+.form-group .ant-picker:hover,
+.form-group .ant-input-textarea textarea:hover {
+  border-color: #667eea !important;
+}
+
+/* ===== ERROR STATES ===== */
+.form-group .ant-input.error,
+.form-group .ant-input-password.error,
+.form-group .ant-input-group.error,
+.form-group .ant-select.error .ant-select-selector,
+.form-group .ant-picker.error,
+.form-group .ant-input-textarea textarea.error {
+  border-color: #ff4444 !important;
+  background: #fff5f5 !important;
+}
+
+.form-group .ant-input.error:focus,
+.form-group .ant-input-password.error:focus-within,
+.form-group .ant-input-group.error:focus-within,
+.form-group .ant-select.error .ant-select-selector:focus,
+.form-group .ant-picker.error:focus,
+.form-group .ant-input-textarea textarea.error:focus {
+  box-shadow: 0 0 0 4px rgba(255, 68, 68, 0.08) !important;
+}
+
+/* ===== DISABLED STATES ===== */
+.form-group .ant-input[disabled],
+.form-group .ant-input-password[disabled],
+.form-group .ant-input-group[disabled],
+.form-group .ant-select-disabled .ant-select-selector,
+.form-group .ant-picker[disabled],
+.form-group .ant-input-textarea textarea[disabled] {
+  background: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.form-input-disabled {
+  background: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+/* TextArea specific - keeping consistent but allowing height */
+.form-group .ant-input-textarea {
+  height: auto !important;
+}
+
+.form-group .ant-input-textarea textarea {
+  min-height: 80px !important;
+  padding: 0.5rem 0.8rem !important;
+  border-radius: 10px !important;
+  border: 2px solid #e0e0e0 !important;
+  background: #ffffff !important;
+  font-size: 0.9rem !important;
+  color: #333 !important;
+  transition: all 0.3s ease !important;
+  resize: vertical !important;
+  font-family: inherit !important;
+}
+
+/* Select specific overrides */
+.form-group .ant-select {
+  width: 100% !important;
+}
+
+.form-group .ant-select-selector {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 0.8rem !important;
+}
+
+.form-group .ant-select-selection-item,
+.form-group .ant-select-selection-placeholder {
+  line-height: 40px !important;
+}
+
+/* Picker (Date/Time) specific */
+.form-group .ant-picker {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 0.8rem !important;
+}
+
+.form-group .ant-picker-input {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.form-group .ant-picker-input input {
+  height: auto !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* ===== SELECT DROPDOWN ICON ===== */
+.form-group .ant-select-arrow {
+  color: #667eea !important;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error-message {
+  color: #ff4444;
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+/* ========== ACTIONS ========== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.submit-btn {
+  padding: 0.6rem 2.5rem !important;
+  height: auto !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.submit-btn:disabled {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
+
+/* ========== LOADING ========== */
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.admin-loading p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .admin-reg-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+
+  .admin-reg-header-left {
+    flex-direction: column;
+  }
+
+  .admin-reg-body {
+    padding: 1.2rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .form-group.full-width {
+    grid-column: 1;
+  }
+
+  .admin-reg-badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
+
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-reg-header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .admin-reg-header-left p {
+    font-size: 0.75rem;
+  }
+
+  .profile-photo-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .placeholder-icon {
+    font-size: 2rem;
+  }
+
+  .upload-photo-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.6rem;
+  }
+
+  .delete-photo-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.5rem;
+  }
+
+  .form-group .ant-input,
+  .form-group .ant-input-password,
+  .form-group .ant-select-selector,
+  .form-group .ant-picker {
+    height: 38px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .form-group .ant-input-textarea textarea {
+    min-height: 70px !important;
+    font-size: 0.85rem !important;
+  }
+}

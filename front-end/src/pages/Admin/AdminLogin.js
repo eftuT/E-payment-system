@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
-import { Form, Button, message, Input } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  FaUser, FaLock, FaEye, FaEyeSlash, FaUserCircle,
+  FaShieldAlt, FaSignInAlt, FaHome, FaInfoCircle, FaEnvelope
+} from 'react-icons/fa';
 import companyLogo from '../../image/logoimage.jpg';
+import adminImage from '../../image/payment.png';
+import './AdminLogin.css';
 
 const AdminLogin = () => {
-  // State variables
   const [Identifier, setIdentifier] = useState('');
   const [Password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [adminData, setAdminData] = useState([]);
 
   const handleIdentifierChange = (e) => {
     setIdentifier(e.target.value);
+    setErrorMessage('');
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
+    setErrorMessage('');
   };
 
-  const handleSubmit = async () => {
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
 
     try {
       const response = await fetch('http://localhost:3000/api/admin/login', {
@@ -36,172 +51,160 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (data && data.token ) {
-          if(data.user.Role === "Admin" || data.user.Role === "SuperAdmin"){
-          localStorage.setItem('adminToken', data.token);
-          localStorage.setItem('adminData', JSON.stringify(data)); // Store adminData as JSON
-          setIsLoggedIn(true);
-          console.log('Admin logged in successfully');
-          message.success('Admin logged in successfully');
-          localStorage.setItem('isLoggedInAdmin', true);
-          console.log(`${data.token},${data.user.id}`);
-          console.log(localStorage.getItem('adminData'));
-          console.log(localStorage.getItem('isLoggedInAdmin'));
-          navigate(`/admin/dashboard/${data.user.id}`);
-        } else if (data.user.Role !== 'Admin' && data.user.Role !== 'SuperAdmin') {
-          message.error('You are not authorized to access the admin panel');
-          console.error('Unauthorized access');
-        }
-      }else {
+        if (data && data.token) {
+          if (data.user.Role === "Admin" || data.user.Role === "SuperAdmin") {
+            localStorage.setItem('adminToken', data.token);
+            localStorage.setItem('adminData', JSON.stringify(data));
+            setIsLoggedIn(true);
+            console.log('Admin logged in successfully');
+            message.success('Admin logged in successfully');
+            localStorage.setItem('isLoggedInAdmin', true);
+            console.log(`${data.token},${data.user.id}`);
+            console.log(localStorage.getItem('adminData'));
+            console.log(localStorage.getItem('isLoggedInAdmin'));
+            navigate(`/admin/dashboard/${data.user.id}`);
+          } else if (data.user.Role !== 'Admin' && data.user.Role !== 'SuperAdmin') {
+            setErrorMessage('You are not authorized to access the admin panel');
+            message.error('You are not authorized to access the admin panel');
+            console.error('Unauthorized access');
+          }
+        } else {
+          setErrorMessage('Invalid server response');
           message.error('server error');
           console.error('Invalid server response:', data);
         }
       } else {
+        setErrorMessage('Invalid username or password');
         message.error('Admin login failed');
         message.error('insert valid UserName and Password');
         console.error('Admin login failed:', data.error);
       }
     } catch (error) {
+      setErrorMessage('An error occurred during admin login');
       message.error('An error occurred during admin login');
       console.error('An error occurred during admin login:', error);
     }
 
     setLoading(false);
-    setIdentifier('');
-    setPassword('');
   };
 
   return (
-    <div
-      style={{
-        boxSizing: 'border-box',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif',
-        fontSize: '16px',
-        height: '100vh', // Set the height of the container to 100% viewport height
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#435165',
-      }}
-    >
-
-      <div className='logo' style={{ position: 'absolute', top: '66px', left: '16px' }}>
-        <img src={companyLogo} alt='company logo' />
-        <div className='company-name'>
-          E-payment-system
-          <div className='slogan'>your trusted online payment system</div>
+    <div className="admin-login-container">
+      <ToastContainer />
+      
+      <header className="admin-login-header">
+        <div className="header-content">
+          <div className="logo-section">
+            <img src={companyLogo} alt="company-logo" className="company-logo" />
+            <div className="company-info">
+              <h1>E-Payment-System</h1>
+              <p className="slogan">your trusted online payment system</p>
+            </div>
+          </div>
+          
         </div>
-      </div>
+      </header>
 
-      <div
-        className="login"
-        style={{
-          width: '400px',
-          backgroundColor: '#ffffff',
-          boxShadow: '0 0 15px 0 rgba(200, 243, 7, 0.3)',
-          margin: '150px auto',
-          paddingBottom: '15px',
-        }}
-      >
-        <h1
-          style={{
-            textAlign: 'center',
-            color: '#5b6574',
-            fontSize: '24px',
-            padding: '20px 0 20px 0',
-            borderBottom: '1px solid #dee0e4',
-          }}
-        >
-          Login
-        </h1>
-        <Form style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          paddingTop: '20px'
-        }} className="form" onFinish={handleSubmit}>
-          <label
-            htmlFor="identifier"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '50px',
-              height: '50px',
-              backgroundColor: '#3274d6',
-              color: '#ffffff',
-            }}
-          >
-            <UserOutlined className="icon" style={{ color: 'white' }} />
-          </label>
-          <input
-            type="text"
-            name="identifier"
-            placeholder="Username or Email"
-            id="identifier"
-            required
-            value={Identifier}
-            onChange={handleIdentifierChange}
-            style={{
-              width: '310px',
-              height: '50px',
-              border: '1px solid #dee0e4',
-              marginBottom: '20px',
-              padding: '0 15px',
-            }}
-          />
-          <label
-            htmlFor="password"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '50px',
-              height: '50px',
-              backgroundColor: '#3274d6',
-              color: '#ffffff',
-            }}
-          >
-            <LockOutlined className="icon" style={{ color: 'white' }} />
-          </label>
-          <Input.Password
-            type="password"
-            name="password"
-            placeholder="Password"
-            id="password"
-            required
-            value={Password}
-            onChange={handlePasswordChange}
-            style={{
-              width: '310px',
-              height: '50px',
-              border: '1px solid #dee0e4',
-              marginBottom: '20px',
-              padding: '0 15px',
-            }}
-          />
-          <Button
-            className=".button"
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            disabled={loading}
-            style={{
-              width: '100%',
-              marginTop: '20px',
-              backgroundColor: '#3274d6',
-              border: '0',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              transition: 'background-color 0.2s',
-              height: '50px',
-            }}
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </Button>
-        </Form>
-      </div>
+      <main className="admin-login-main">
+        <div className="admin-login-wrapper">
+          <div className="admin-login-image-side">
+            <div className="image-content">
+              <div className="image-overlay">
+                <div className="admin-badge">
+                  <FaShieldAlt className="shield-icon" />
+                </div>
+                <h2>Admin Portal</h2>
+                <p>Secure access to the payment management system</p>
+                <img src={adminImage} alt="Admin System" className="side-image" />
+              </div>
+            </div>
+          </div>
+          <div className="admin-login-form-side">
+            <div className="admin-login-card">
+              <div className="profile-icon-container">
+                <FaUserCircle className="profile-icon" />
+                <span className="admin-label">Admin</span>
+              </div>
+
+              <div className="login-title-section">
+                <h2 className="login-title">Admin Login</h2>
+              </div>
+
+              <form onSubmit={handleSubmit} className="admin-login-form">
+                <div className="form-group">
+                  <label htmlFor="identifier" className="form-label">
+                    USERNAME OR EMAIL
+                  </label>
+                  <div className="input-wrapper">
+                    <input
+                      id="identifier"
+                      type="text"
+                      name="identifier"
+                      value={Identifier}
+                      onChange={handleIdentifierChange}
+                      placeholder="Enter your username or email"
+                      className={`form-input ${errorMessage ? 'error' : ''}`}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password" className="form-label">
+                    PASSWORD
+                  </label>
+                  <div className="input-wrapper password-input-wrapper">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={Password}
+                      onChange={handlePasswordChange}
+                      placeholder="Enter your password"
+                      className={`form-input ${errorMessage ? 'error' : ''}`}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={togglePasswordVisibility}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                {errorMessage && (
+                  <div className="error-message">{errorMessage}</div>
+                )}
+
+                <div className="forgot-password">
+                  <Link to="/admin/reset-password">Forgot Password?</Link>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-submit admin-btn-submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner">⟳</span> Logging in...
+                    </>
+                  ) : (
+                    <>
+                    Log In
+                    </>
+                  )}
+                </button>
+
+             
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
