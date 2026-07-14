@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
+import { Link, useNavigate, NavLink } from 'react-router-dom'; // Removed useLocation
 import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
 import companyLogo from '../image/logoimage.jpg';
 import USER from '../image/himage3.jpg';
-import { Form, Layout, Button, Input, Modal, message } from 'antd';
+import { Form, Button, Input, Modal, message } from 'antd';
 import axios from 'axios';
 import {
   FaUser,
@@ -19,8 +19,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
+  // Removed: location (not used)
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,30 +77,9 @@ const Header = () => {
 
   useEffect(() => {
     if (userData?.ProfilePhoto) {
+      // This effect runs when ProfilePhoto changes
     }
   }, [userData?.ProfilePhoto]); 
-
-  useEffect(() => {
-    const pathname = location.pathname;
-    const selectedMenu = getSelectedMenu(pathname);
-    setUserSelectedMenu(selectedMenu);
-  }, [location, setUserSelectedMenu]); 
-  function getSelectedMenu(pathname) {
-    switch (pathname) {
-      case '/users':
-        return '1';
-      case '/aboutUs':
-        return '2';
-      case '/contactUs':
-        return '3';
-      case '/serviceProviders':
-        return '4';
-      case '/history':
-        return '5';
-      default:
-        return '1';
-    }
-  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
