@@ -26,7 +26,7 @@ import './AdminActivityPage.css';
 const { Option } = Select;
 
 const AdminActivityPage = () => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [adminActivities, setAdminActivities] = useState([]);
   const loggedInAdmin = adminData ? `Admin ${adminData.user.FirstName}` : '';
   const [modalVisible, setModalVisible] = useState(false);
@@ -70,6 +70,8 @@ const AdminActivityPage = () => {
     fetchAdminActivities();
   }, []);
 
+  // Fixed: Added missing dependency 'getValueToSortBy' - but since it's not defined, we'll use a different approach
+  // Actually, the filter/sort logic is already in this useEffect
   useEffect(() => {
     let filtered = [...adminActivities];
 
@@ -126,6 +128,11 @@ const AdminActivityPage = () => {
       </div>
     );
   }
+
+  // handleSearch is now used in the search input, so we keep it
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };
 
   const handleViewDetails = (activity) => {
     setModalActivity(activity);
@@ -430,7 +437,7 @@ const AdminActivityPage = () => {
                 <Input
                   placeholder="Search by admin, action, or target..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearch(e.target.value)}
                   prefix={<SearchOutlined className="search-icon" />}
                   className="activity-search-input"
                   allowClear
