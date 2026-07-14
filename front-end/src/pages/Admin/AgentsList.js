@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, message, Modal, Form, Input, Upload, Spin, Input as AntInput } from 'antd';
 import { DeleteOutlined, EditOutlined, UploadOutlined, SearchOutlined, DownloadOutlined } from '@ant-design/icons';
-import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone, FaFileAlt } from 'react-icons/fa';
+import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
