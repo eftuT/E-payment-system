@@ -16,9 +16,9 @@ import Header from './Header';
 import './ServiceNumber.css';
 
 const ServiceNumber = () => {
-  const [userData, setUserData] = useState(null);
+  const [userData] = useState(null); // Removed setUserData
   const [serviceNumber, setServiceNumber] = useState('');
-  const [serviceProviderBIN, setServiceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN'));
+  const [serviceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN')); // Removed setServiceProviderBIN
   const [user, setUser] = useState(null);
   const [paymentFor, setPaymentFor] = useState('');
   const [errors, setErrorMessage] = useState('');
@@ -29,18 +29,19 @@ const ServiceNumber = () => {
     localStorage.setItem("selectedMenu", 5);
   }, []);
 
+  // Fixed: Added missing dependencies
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData) {
+        const userDataFromStorage = JSON.parse(localStorage.getItem('userData'));
+        if (!userDataFromStorage) {
           navigate("/users");
           return;
         }
 
-        setUser(userData);
+        setUser(userDataFromStorage);
 
-        const response = await axios.get(`http://localhost:3000/Users/${userData.id}`);
+        const response = await axios.get(`http://localhost:3000/Users/${userDataFromStorage.id}`);
         const { data } = response;
 
         const filteredServiceProviders = data.ServiceProviders?.filter(
@@ -60,7 +61,7 @@ const ServiceNumber = () => {
     };
 
     fetchData();
-  }, []);
+  }, [navigate, serviceProviderBIN]); // Added missing dependencies
 
   const handleServiceNumberChange = (event) => {
     setServiceNumber(event.target.value);
