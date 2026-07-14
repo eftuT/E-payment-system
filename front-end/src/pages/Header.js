@@ -3,27 +3,24 @@ import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
 import companyLogo from '../image/logoimage.jpg';
 import USER from '../image/himage3.jpg';
-import { Form, Layout, Button, Input, Modal, message, Menu } from 'antd';
+import { Form, Layout, Button, Input, Modal, message } from 'antd';
 import axios from 'axios';
 import {
-  FaUser, FaLock, FaEye, FaEyeSlash,
+  FaUser,
   FaUserPlus, FaHome, FaCamera, FaGenderless
 } from 'react-icons/fa';
-import { MdEmail, MdPerson, MdLock, MdPhone, MdHome } from 'react-icons/md';
+import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
 import './Header.css';
 
-const { Sider } = Layout;
 
 const Header = () => {
-  // State variables
   const [userData, setUserData] = useState(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  // Removed: isLoggedInUser state and setter (not used)
   const navigate = useNavigate();
   const location = useLocation();
-  const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
+  const [setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +39,6 @@ const Header = () => {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedInUser');
-    // Removed: setIsLoggedInUser(loggedIn === 'true');
 
     if (loggedIn === 'true') {
       try {
@@ -80,15 +76,11 @@ const Header = () => {
     };
   }, [isSmallScreen]);
 
-  // Fixed: Added missing dependency - userData.ProfilePicture
   useEffect(() => {
-    // This effect runs when userData.ProfilePicture changes
-    // If you need to do something with the profile picture, add it here
     if (userData?.ProfilePhoto) {
-      // Handle profile picture update if needed
+      
     }
-  }, [userData?.ProfilePhoto]); // Added missing dependency
-
+  }, [userData?.ProfilePhoto]); 
   useEffect(() => {
     const pathname = location.pathname;
     const selectedMenu = getSelectedMenu(pathname);
@@ -120,9 +112,6 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const handleMenuSelect = ({ key }) => {
-    setUserSelectedMenu([key]);
-  };
 
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
@@ -198,7 +187,6 @@ const Header = () => {
     });
   };
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (userData) {
       const firstName = userData.FirstName || '';
@@ -208,7 +196,6 @@ const Header = () => {
     return 'U';
   };
 
-  // Check if user is logged in
   const isLoggedInUser = localStorage.getItem('isLoggedInUser') === 'true';
 
   return (
