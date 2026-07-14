@@ -11,7 +11,6 @@ import {
   SortAscendingOutlined,
   SortDescendingOutlined,
   EyeOutlined,
-  UserOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { 
@@ -36,7 +35,7 @@ const AdminActivityPage = () => {
   const [filteredActivities, setFilteredActivities] = useState([]);
   const [sortOption, setSortOption] = useState('time');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
@@ -70,8 +69,7 @@ const AdminActivityPage = () => {
     fetchAdminActivities();
   }, []);
 
-  // Fixed: Added missing dependency 'getValueToSortBy' - but since it's not defined, we'll use a different approach
-  // Actually, the filter/sort logic is already in this useEffect
+  
   useEffect(() => {
     let filtered = [...adminActivities];
 
@@ -129,7 +127,6 @@ const AdminActivityPage = () => {
     );
   }
 
-  // handleSearch is now used in the search input, so we keep it
   const handleSearch = (value) => {
     setSearchTerm(value);
   };
@@ -188,7 +185,6 @@ const AdminActivityPage = () => {
     return parts[0].charAt(0).toUpperCase();
   };
 
-  // ========== EXTRACT TARGET TYPE ==========
   const getTargetType = (targetName) => {
     if (!targetName) return 'Unknown';
     const lower = targetName.toLowerCase();
@@ -200,10 +196,8 @@ const AdminActivityPage = () => {
     return 'Other';
   };
 
-  // ========== GET TARGET NAME WITHOUT PREFIX ==========
   const getCleanTargetName = (targetName) => {
     if (!targetName) return 'N/A';
-    // Remove prefixes like "Agent ", "Service Provider ", "Admin ", "User ", "Bill "
     const prefixes = ['Agent ', 'Service Provider ', 'Admin ', 'User ', 'Bill '];
     let cleanName = targetName;
     for (const prefix of prefixes) {
@@ -215,7 +209,6 @@ const AdminActivityPage = () => {
     return cleanName || targetName;
   };
 
-  // ========== RENDER MODAL CONTENT ==========
   const renderModalContent = () => {
     if (!modalActivity) {
       return <div className="modal-empty">No details available</div>;
@@ -229,12 +222,10 @@ const AdminActivityPage = () => {
     const isEdited = actionLower.includes('edit');
     const isDeleted = actionLower.includes('delete');
 
-    // Get display data
     let displayData = changedData || {};
 
     return (
       <div className="modal-content">
-        {/* Basic Info */}
         <div className="modal-info-grid">
           <div className="modal-info-item">
             <span className="modal-info-label">Admin</span>
@@ -258,7 +249,6 @@ const AdminActivityPage = () => {
           </div>
         </div>
 
-        {/* Data - For Registered, Edited, Deleted */}
         {displayData && Object.keys(displayData).length > 0 && (
           <>
             <div className="modal-divider"></div>
@@ -292,7 +282,6 @@ const AdminActivityPage = () => {
                     });
                   }
                   
-                  // For regular key-value pairs (registered or deleted data)
                   const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                   let displayValue = value;
                   if (typeof value === 'object') {
@@ -317,7 +306,6 @@ const AdminActivityPage = () => {
     );
   };
 
-  // ========== COLUMNS ==========
   const columns = [
     {
       title: '#',
