@@ -1,0 +1,410 @@
+/* Header.css */
+
+/* ========== HEADER STYLES ========== */
+.app-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ========== LOGO SECTION ========== */
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ========== 3D SPINNING LOGO ANIMATION (from your original style.css) ========== */
+.spinning-logo {
+  transition: transform 0.3s;
+  animation: rotateY 2s linear infinite;
+}
+
+@keyframes rotateY {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.spinning-logo:hover {
+  transform: scale(1.1);
+}
+
+.company-info h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.slogan {
+  font-size: 0.7rem;
+  color: #666;
+  margin: 0;
+}
+
+/* ========== NAVIGATION ========== */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  background: #f0f0ff;
+  color: #667eea;
+}
+
+.nav-link.active {
+  color: #667eea;
+  background: #f0f0ff;
+}
+
+/* ========== USER SECTION ========== */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.user-profile:hover {
+  background: #f0f0ff;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #667eea;
+}
+
+.profile-avatar-initial {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  border: 2px solid #667eea;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  color: #ff4444;
+  background: #fff5f5;
+}
+
+.login-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.login-link:hover {
+  background: #f0f0ff;
+}
+
+.login-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+/* ========== MOBILE MENU ========== */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #333;
+  padding: 0.4rem;
+}
+
+.mobile-menu-btn:hover {
+  color: #667eea;
+}
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: 1rem 0;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0.8rem;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  color: #666;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.mobile-nav-link:hover {
+  background: #f0f0ff;
+  color: #667eea;
+}
+
+.mobile-nav-link.active {
+  color: #667eea;
+  background: #f0f0ff;
+}
+
+.mobile-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  color: #ff4444;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-logout-btn:hover {
+  background: #fff5f5;
+}
+
+/* ========== EDIT MODAL STYLES ========== */
+.edit-profile-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.edit-profile-modal .ant-modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.edit-profile-modal .ant-modal-body {
+  padding: 20px 0;
+}
+
+.modal-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #f5f5f5;
+}
+
+select.form-input {
+  background-color: white;
+  cursor: pointer;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .desktop-nav {
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.6rem 1rem;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .mobile-menu {
+    display: flex;
+  }
+
+  .company-info h1 {
+    font-size: 1rem;
+  }
+
+  .slogan {
+    font-size: 0.6rem;
+  }
+
+  .company-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-section {
+    gap: 0.4rem;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .profile-avatar,
+  .profile-avatar-initial {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .modal-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .company-info h1 {
+    font-size: 0.85rem;
+  }
+
+  .company-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-nav {
+    gap: 0.5rem;
+  }
+
+  .login-link {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .profile-avatar,
+  .profile-avatar-initial {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+}

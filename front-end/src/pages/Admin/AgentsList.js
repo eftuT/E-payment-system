@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, message, Modal, Form, Input, Upload, Spin } from 'antd';
-import { DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { Table, Button, message, Modal, Form, Input, Upload, Spin, Input as AntInput } from 'antd';
+import { DeleteOutlined, EditOutlined, UploadOutlined, SearchOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
+import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone, FaFileAlt, FaSearch, FaDownload } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
-
+import './AgentsList.css';
 
 const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
   const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
@@ -15,21 +16,24 @@ const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
   const [agentAuthorizationLetterUrl, setAgentAuthorizationLetterUrl] = useState();
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
-  
   
   const fetchAgents = async () => {
     try {
       const response = await axios.get('http://localhost:3000/agents');
       setAgentData(response.data);
-      localStorage.setItem('agentData', JSON.stringify(response.data)); // Store agent data in localStorage
+      localStorage.setItem('agentData', JSON.stringify(response.data));
     } catch (error) {
       message.error('Failed to fetch agents.');
     }
   };
 
-  
- useEffect(() => {
+  useEffect(() => {
     if (!adminData) {
       setTimeout(() => {
         navigate('/admin/login');
@@ -42,23 +46,54 @@ const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
     fetchAgents();
   }, [adminData, navigate]);
 
-
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="agents-loading">
         <Spin size="large" />
-        <p>Please wait while we check your login status...</p>
+        <p>Loading...</p>
       </div>
     );
   }
-
-
- 
 
   const handleEdit = (agent) => {
     form.setFieldsValue(agent);
     setEditMode(true);
     setAgent(agent);
+    if (agent.agentAuthorizationLetter) {
+      setFilePreview(`http://localhost:3000/${agent.agentAuthorizationLetter}`);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const handleFileChange = (info) => {
+    const file = info.file?.originFileObj || info.file;
+    if (!file) {
+      setFile(null);
+      setFilePreview(null);
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(`image/${fileExtension}`) && !allowedTypes.includes(file.type)) {
+      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('File size should be less than 5MB');
+      return;
+    }
+
+    setFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFilePreview(event.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
@@ -70,89 +105,79 @@ const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
       cancelText: 'Cancel',
       onOk: () => {
         form.validateFields().then((values) => {
+          setLoading(true);
           const updatedAgent = { ...values };
-          axios
-            .put(`http://localhost:3000/agents/${agent.agentBIN}`, updatedAgent)
-            .then((response) => {
-              if (response.status === 200) {
-                message.success('Agent data updated successfully.');
-  
-                // Retrieve the previous agent data from localStorage
-                const previousData = JSON.parse(localStorage.getItem('agentData')) || [];
-  
-                // Find the index of the updated agent in the previous data
-                const updatedIndex = previousData.findIndex((agent) => agent.agentBIN === updatedAgent.agentBIN);
-  
-                // Create a copy of the previous data
-                const updatedData = [...previousData];
-  
-                // Get the previous agent data
-                const previousAgent = updatedData[updatedIndex];
-  
-                // Create a change object to track the changes
-                const changes = {};
-  
-                // Compare each field of the updated agent with the previous agent
-                for (const key in updatedAgent) {
-                  if ( key !== 'agentBIN' && updatedAgent[key] !== previousAgent[key]) {
-                    changes[key] = {
-                      from: previousAgent[key],
-                      to: updatedAgent[key],
-                    };
-                  }
-                }
-  
-                // Update the agentBIN if it has changed
-                if (updatedAgent.agentBIN !== previousAgent.agentBIN) {
-                  updatedData[updatedIndex].agentBIN = updatedAgent.agentBIN;
-                  changes.agentBIN = {
-                    from: previousAgent.agentBIN,
-                    to: updatedAgent.agentBIN,
-                  };
-                }
-  
-                // Add the changes object to the updated agent data
-                updatedAgent.changes = changes;
-  
-                // Replace the updated agent with the new agent data in the copy
-                updatedData[updatedIndex] = updatedAgent;
-  
-                // Update the agent data in localStorage
-                localStorage.setItem('agentData', JSON.stringify(updatedData));
-  
-                // Create a new activity object for the agent edit action
-                const editActivity = {
-                  adminName: `Admin ${adminData.user.FirstName}`,
-                  action: 'Edited',
-                  targetAdminName: `Agent ${updatedAgent.agentName}`,
-                  timestamp: new Date().getTime(),
-                  changedData: updatedAgent,
-                };
-  
-                 axios.post('http://localhost:3000/admin-activity', editActivity, {
-                  headers: {
-                    Authorization: adminData.token,
-                  },
-                });
-  
-                setEditMode(false);
-                form.resetFields();
-              } else {
-                message.error('Failed to update agent data.');
+          
+          if (file) {
+            const formData = new FormData();
+            Object.keys(values).forEach(key => {
+              if (key !== 'agentAuthorizationLetter') {
+                formData.append(key, values[key]);
               }
-            })
-            .catch((error) => {
-              message.error('Failed to update agent data.');
-              console.log(error);
             });
+            formData.append('agentAuthorizationLetter', file);
+            
+            axios
+              .put(`http://localhost:3000/agents/${agent.agentBIN}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+              })
+              .then((response) => {
+                if (response.status === 200) {
+                  message.success('Agent data updated successfully.');
+                  fetchAgents();
+                  setEditMode(false);
+                  form.resetFields();
+                  setFile(null);
+                  setFilePreview(null);
+                } else {
+                  message.error('Failed to update agent data.');
+                }
+                setLoading(false);
+              })
+              .catch((error) => {
+                message.error('Failed to update agent data.');
+                console.log(error);
+                setLoading(false);
+              });
+          } else {
+            axios
+              .put(`http://localhost:3000/agents/${agent.agentBIN}`, updatedAgent)
+              .then((response) => {
+                if (response.status === 200) {
+                  message.success('Agent data updated successfully.');
+                  fetchAgents();
+                  setEditMode(false);
+                  form.resetFields();
+                } else {
+                  message.error('Failed to update agent data.');
+                }
+                setLoading(false);
+              })
+              .catch((error) => {
+                message.error('Failed to update agent data.');
+                console.log(error);
+                setLoading(false);
+              });
+          }
+
+          const editActivity = {
+            adminName: `Admin ${adminData.user.FirstName}`,
+            action: 'Edited',
+            targetAdminName: `Agent ${updatedAgent.agentName}`,
+            timestamp: new Date().getTime(),
+          };
+
+          axios.post('http://localhost:3000/admin-activity', editActivity, {
+            headers: { Authorization: adminData.token },
+          }).catch(err => console.error('Activity log error:', err));
         });
       },
     });
   };
 
   const handleDelete = (agentBIN) => {
-    const deletedAgent = agentData.find((agent) => agent.agentBIN === agentBIN); // Find the agent to be deleted
-  
+    const deletedAgent = agentData.find((agent) => agent.agentBIN === agentBIN);
+
     Modal.confirm({
       title: 'Confirm Delete',
       content: 'Are you sure you want to delete this agent?',
@@ -165,24 +190,19 @@ const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
           .then((response) => {
             if (response.status === 200) {
               message.success('Agent deleted successfully.');
-  
-              // Create a new activity object for the agent delete action
+              
               const deleteActivity = {
                 adminName: `Admin ${adminData.user.FirstName}`,
                 action: 'Deleted',
                 targetAdminName: `Agent ${deletedAgent.agentName}`,
                 timestamp: new Date().getTime(),
-                changedData: deletedAgent,
               };
-  
+
               axios.post('http://localhost:3000/admin-activity', deleteActivity, {
-                headers: {
-                  Authorization: adminData.token,
-                },
-              });
-  
-              const updatedData = agentData.filter((agent) => agent.agentBIN !== agentBIN);
-              setAgentData(updatedData);
+                headers: { Authorization: adminData.token },
+              }).catch(err => console.error('Activity log error:', err));
+
+              fetchAgents();
             } else {
               message.error('Failed to delete agent.');
             }
@@ -196,153 +216,253 @@ const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const columns = [
     {
+      title: '#',
+      key: 'index',
+      render: (_, __, index) => <span className="agent-index">{index + 1}</span>,
+      width: 50,
+    },
+    {
       title: 'Agent BIN',
       dataIndex: 'agentBIN',
       key: 'agentBIN',
+      render: (text) => <span className="agent-bin">{text}</span>,
     },
     {
       title: 'Agent Name',
       dataIndex: 'agentName',
       key: 'agentName',
+      render: (text) => <span className="agent-name"><FaBuilding className="agent-icon-sm" /> {text}</span>,
     },
     {
-      title: 'Agent Email',
+      title: 'Email',
       dataIndex: 'agentEmail',
       key: 'agentEmail',
+      render: (text) => <span className="agent-email"><FaEnvelope className="agent-icon-sm" /> {text}</span>,
     },
     {
-      title: 'Services Offered',
-      dataIndex: 'servicesOffered',
-      key: 'servicesOffered',
-    },
-    {
-      title: 'Phone Number',
+      title: 'Phone',
       dataIndex: 'phoneNumber',
       key: 'phoneNumber',
+      render: (text) => <span className="agent-phone"><FaPhone className="agent-icon-sm" /> {text}</span>,
     },
     {
-      title: 'Authorization Letter',
-      dataIndex: 'agentAuthorizationLetter',
-      key: 'agentAuthorizationLetter',
+      title: 'Services',
+      dataIndex: 'servicesOffered',
+      key: 'servicesOffered',
+      render: (text) => <span className="agent-services">{text}</span>,
+    },
+    {
+      title: 'Auth Letter',
+      key: 'authLetter',
       render: (_, agent) => (
-        <div>
-          {agent.agentAuthorizationLetter && (
-            <div>
-              <a href={`http://localhost:3000/${agent.agentAuthorizationLetter}`} download>
-                Authorization Letter
-              </a>
-              <Button
-                type="primary"
-                onClick={() => {
-                  const downloadLink = document.createElement('a');
-                  downloadLink.href = `http://localhost:3000/${agent.agentAuthorizationLetter}`;
-                  downloadLink.download = 'Authorization Letter';
-                  downloadLink.target = '_blank';
-                  downloadLink.click();
-                }}
-              >
-                Download
-              </Button>
-            </div>
-          )}
-        </div>
+        agent.agentAuthorizationLetter ? (
+          <Button 
+            type="link" 
+            icon={<DownloadOutlined />} 
+            className="auth-download-btn"
+            onClick={() => {
+              const downloadLink = document.createElement('a');
+              downloadLink.href = `http://localhost:3000/${agent.agentAuthorizationLetter}`;
+              downloadLink.download = `auth-letter-${agent.agentBIN}`;
+              downloadLink.target = '_blank';
+              downloadLink.click();
+            }}
+          >
+            Download
+          </Button>
+        ) : (
+          <span className="no-file">No file</span>
+        )
       ),
     },
     {
       title: 'Action',
       key: 'action',
+      width: 150,
       render: (_, agent) => (
-        <div>
-          <Button onClick={() => handleEdit(agent)} icon={<EditOutlined />} type="danger">Edit</Button>
-          <Button onClick={() => handleDelete(agent.agentBIN)} icon={<DeleteOutlined />} type="danger">Delete</Button>
+        <div className="action-buttons">
+          <Button 
+            onClick={() => handleEdit(agent)} 
+            icon={<EditOutlined />} 
+            className="action-btn edit-btn"
+          />
+          <Button 
+            onClick={() => handleDelete(agent.agentBIN)} 
+            icon={<DeleteOutlined />} 
+            className="action-btn delete-btn"
+          />
         </div>
       ),
     },
   ];
 
-  const handleSearch = async (value) => {
-    setSearchInput(value);
-    try {
-      const activity = {
-      adminName: `Admin ${adminData.user.FirstName}`,
-      action: 'Searched for',
-      targetAdminName: `${value} in Agent List`,
-      timestamp: new Date().getTime(),
-    };
-
-      // Save the admin activity to the database
-    axios.post('http://localhost:3000/admin-activity', activity, {
-      headers: {
-        Authorization: adminData.token,
-      },
-    });
-  
-    } catch (error) {
-      console.error('Error saving admin search activity:', error);
-    }
+  const handleSearch = (e) => {
+    setSearchInput(e.target.value);
   };
 
   const filteredAgents = agentData.filter((agent) =>
     agent &&
-    (agent.agentBIN.toLowerCase().includes(searchInput.toLowerCase()) ||
-      agent.agentName.toLowerCase().includes(searchInput.toLowerCase()) ||
-      agent.agentEmail.toLowerCase().includes(searchInput.toLowerCase()) ||
-      agent.servicesOffered.toLowerCase().includes(searchInput.toLowerCase()) ||
-      (typeof agent.phoneNumber === 'string' &&
-        agent.phoneNumber.toLowerCase().includes(searchInput.toLowerCase())))
+    (agent.agentBIN?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      agent.agentName?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      agent.agentEmail?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      agent.servicesOffered?.toLowerCase().includes(searchInput.toLowerCase()) ||
+      agent.phoneNumber?.toLowerCase().includes(searchInput.toLowerCase()))
   );
 
-
-
   return (
-    <Dashboard isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} content={
-      <div>
-        <h1>Agents List</h1>
-        <Input.Search
-          placeholder="Search agents"
-          value={searchInput}
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ marginBottom: '16px' }}
-        />
+    <Dashboard isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} 
+      content={
+        <div className="agents-list-container">
+          <div className="agents-list-card">
+            {/* Header */}
+            <div className="agents-list-header">
+              <div className="agents-list-header-left">
+                <div className="agents-list-icon">
+                  <FaBuilding />
+                </div>
+                <div>
+                  <h1>Agents List</h1>
+                  <p>Manage all registered agents</p>
+                </div>
+              </div>
+              <div className="agents-list-badge">
+                <FaUserPlus /> {filteredAgents.length} Agents
+              </div>
+            </div>
 
-        <Table dataSource={filteredAgents} columns={columns} scroll={{ x: true }} />
+            <div className="agents-list-body">
+              {/* Search Bar */}
+              <div className="agents-search-wrapper">
+                <AntInput
+                  placeholder="Search agents by name, BIN, email, phone or services..."
+                  value={searchInput}
+                  onChange={handleSearch}
+                  prefix={<SearchOutlined className="search-icon" />}
+                  className="agents-search-input"
+                  allowClear
+                />
+              </div>
 
-        <Modal
-          title={editMode ? 'Edit Agent' : 'Create Agent'}
-          visible={editMode}
-          onCancel={() => {
-            setEditMode(false);
-            form.resetFields();
-          }}
-          footer={null}
-        >
-          <Form form={form}>
-            <Form.Item name="agentBIN" label="Agent BIN">
-              <Input />
-            </Form.Item>
-            <Form.Item name="agentName" label="Agent Name">
-              <Input />
-            </Form.Item>
-            <Form.Item name="agentEmail" label="Agent Email">
-              <Input />
-            </Form.Item>
-            <Form.Item name="servicesOffered" label="Services Offered">
-              <Input />
-            </Form.Item>
-            <Form.Item name="phoneNumber" label="Phone Number">
-              <Input />
-            </Form.Item>
-            <Form.Item name="agentAuthorizationLetter" label="Agent Authorization Letter">
-              <Upload accept=".jpeg, .jpg, .png, .gif" beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Select File</Button>
-              </Upload>
-            </Form.Item>
-            <Button type="primary" onClick={handleSave}>
-              Save
-            </Button>
-          </Form>
-        </Modal>
-      </div>}
+              {/* Table */}
+              <div className="agents-table-wrapper">
+                <Table 
+                  dataSource={filteredAgents} 
+                  columns={columns} 
+                  scroll={{ x: 900 }}
+                  pagination={{
+                    showSizeChanger: true,
+                    showTotal: (total, range) => {
+                      const totalPages = Math.ceil(total / pageSize);
+                      return `Showing ${range[0]}-${range[1]} of ${totalPages} pages`;
+                    },
+                    showQuickJumper: false,
+                  }}
+                  className="agents-table"
+                  rowClassName="agents-table-row"
+                  rowKey="agentBIN"
+                  onChange={(pagination) => {
+                    setCurrentPage(pagination.current);
+                    setPageSize(pagination.pageSize);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Edit Modal */}
+          <Modal
+            title={
+              <div className="modal-title">
+                <EditOutlined /> Edit Agent
+              </div>
+            }
+            open={editMode}
+            onCancel={() => {
+              setEditMode(false);
+              form.resetFields();
+              setFile(null);
+              setFilePreview(null);
+            }}
+            footer={null}
+            width={600}
+            className="agents-modal"
+          >
+            <Form form={form} layout="vertical" className="agents-edit-form">
+              <div className="modal-form-grid">
+                <Form.Item name="agentBIN" label="Agent BIN" rules={[{ required: true }]}>
+                  <Input disabled />
+                </Form.Item>
+                <Form.Item name="agentName" label="Agent Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="agentEmail" label="Agent Email" rules={[{ required: true, type: 'email' }]}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="phoneNumber" label="Phone Number" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </div>
+              
+              <Form.Item name="servicesOffered" label="Services Offered" rules={[{ required: true }]}>
+                <Input.TextArea rows={2} />
+              </Form.Item>
+
+              <Form.Item name="agentAuthorizationLetter" label="Authorization Letter">
+                <div className="modal-file-upload">
+                  {filePreview ? (
+                    <div className="modal-file-preview">
+                      <img src={filePreview} alt="Auth Letter" className="modal-file-img" />
+                      <Button 
+                        type="link" 
+                        danger 
+                        onClick={() => {
+                          setFile(null);
+                          setFilePreview(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <Upload 
+                      accept=".jpeg, .jpg, .png, .gif" 
+                      beforeUpload={() => false}
+                      onChange={handleFileChange}
+                      showUploadList={false}
+                    >
+                      <Button icon={<UploadOutlined />} className="upload-btn">
+                        Upload Authorization Letter
+                      </Button>
+                    </Upload>
+                  )}
+                  <p className="upload-hint">Supported: JPEG, JPG, PNG, GIF (Max 5MB)</p>
+                </div>
+              </Form.Item>
+
+              <div className="modal-actions">
+                <Button 
+                  onClick={() => {
+                    setEditMode(false);
+                    form.resetFields();
+                    setFile(null);
+                    setFilePreview(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="primary" 
+                  onClick={handleSave}
+                  loading={loading}
+                  className="modal-save-btn"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </Form>
+          </Modal>
+        </div>
+      }
     />
   );
 };
