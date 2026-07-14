@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import {
   FaUser, FaLock, FaEye, FaEyeSlash,
-  FaUserPlus, FaHome, FaCamera, FaGenderless, FaTimes
+  FaUserPlus, FaCamera, FaGenderless, FaTimes
 } from 'react-icons/fa';
 import { MdEmail, MdPhone, MdHome } from 'react-icons/md'; // Removed MdPerson (not used)
 import companyLogo from '../image/logoimage.jpg';
