@@ -1,0 +1,315 @@
+/* BillGeneration.css */
+
+/* ========== LOADING ========== */
+.bill-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.bill-loading p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+/* ========== CONTAINER ========== */
+.bill-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+.bill-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* ========== HEADER ========== */
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8f9ff, #f0f1ff);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bill-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bill-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.bill-header-left h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.bill-header-left p {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.bill-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* ========== BODY ========== */
+.bill-body {
+  padding: 2rem;
+}
+
+/* ========== FORM ========== */
+.bill-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid #f0f1ff;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.field-icon {
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.required {
+  color: #ff4444;
+}
+
+/* ===== INPUT STYLES ===== */
+.form-group .ant-input {
+  width: 100% !important;
+  height: 42px !important;
+  padding: 0.5rem 0.8rem !important;
+  border-radius: 10px !important;
+  border: 2px solid #e0e0e0 !important;
+  background: #ffffff !important;
+  font-size: 0.9rem !important;
+  color: #333 !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-group .ant-input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08) !important;
+  outline: none !important;
+}
+
+.form-group .ant-input.error {
+  border-color: #ff4444 !important;
+  background: #fff5f5 !important;
+}
+
+.form-group .ant-input[disabled] {
+  background: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+/* ===== STATUS GROUP ===== */
+.status-group {
+  margin-top: 0.5rem;
+}
+
+.status-input {
+  background: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  color: #22c55e !important;
+  font-weight: 600 !important;
+  border-color: #e0e0e0 !important;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error-message {
+  color: #ff4444;
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+/* ========== FORM ACTIONS ========== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.submit-btn {
+  padding: 0.6rem 2.5rem !important;
+  height: auto !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.submit-btn:disabled {
+  opacity: 0.7 !important;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .bill-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+
+  .bill-header-left {
+    flex-direction: column;
+  }
+
+  .bill-body {
+    padding: 1.2rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .form-group.full-width {
+    grid-column: 1;
+  }
+
+  .bill-badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
+
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .bill-header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .bill-header-left p {
+    font-size: 0.75rem;
+  }
+
+  .bill-body {
+    padding: 1rem;
+  }
+
+  .form-group .ant-input {
+    height: 38px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .submit-btn {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1.5rem !important;
+  }
+}
+
+/* Add to existing BillGeneration.css */
+
+.found-id {
+  font-size: 0.7rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.found-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  background: #f0fdf4;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  margin-top: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.found-label {
+  font-size: 0.7rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.found-value {
+  font-size: 0.85rem;
+  color: #16a34a;
+  font-weight: 600;
+}

@@ -1,0 +1,480 @@
+/* AdminsList.css */
+
+/* ========== LOADING ========== */
+.admins-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.admins-loading p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+/* ========== CONTAINER ========== */
+.admins-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+.admins-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* ========== HEADER ========== */
+.admins-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8f9ff, #f0f1ff);
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.admins-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admins-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.admins-header-left h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.admins-header-left p {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.admins-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* ========== BODY ========== */
+.admins-body {
+  padding: 1.5rem 2rem 2rem;
+}
+
+/* ========== SEARCH ========== */
+.admins-search-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.admins-search-input {
+  border-radius: 10px ;
+  border: 2px solid #e0e0e0 ;
+  padding: 0.5rem 1rem ;
+  height: 44px ;
+  transition: all 0.3s ease ;
+  background: #fafafa ;
+}
+
+.admins-search-input:hover {
+  border-color: #667eea ;
+}
+
+.admins-search-input:focus,
+.admins-search-input-focused {
+  border-color: #667eea ;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08) ;
+  background: #ffffff ;
+}
+
+.search-icon {
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+/* ========== TABLE ========== */
+.admins-table-wrapper {
+  overflow-x: auto;
+}
+
+.admins-table .ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e8ecf0;
+}
+
+/* ===== TABLE HEADER ===== */
+.admins-table .ant-table-thead > tr > th {
+  background: #f8f9ff;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid #e8ecf0;
+  border-right: 1px solid #e8ecf0;
+}
+
+.admins-table .ant-table-thead > tr > th:last-child {
+  border-right: none;
+}
+
+/* ===== TABLE BODY ===== */
+.admins-table .ant-table-tbody > tr > td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #e8ecf0;
+  font-size: 0.85rem;
+  color: #333;
+  border-right: 1px solid #e8ecf0;
+}
+
+.admins-table .ant-table-tbody > tr > td:last-child {
+  border-right: none;
+}
+
+/* ===== TABLE ROW HOVER ===== */
+.admins-table-row:hover > td {
+  background: #fafbff ;
+}
+
+/* ===== TABLE ROW STRIPED ===== */
+.admins-table .ant-table-tbody > tr:nth-child(even) > td {
+  background: #fafafa;
+}
+
+.admins-table .ant-table-tbody > tr:nth-child(even):hover > td {
+  background: #fafbff ;
+}
+
+/* ===== NO BORDER ON LAST ROW ===== */
+.admins-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+/* ===== ADMIN INFO - PROFILE BESIDE NAME ===== */
+.admin-info-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.admin-full-name {
+  font-weight: 500;
+  color: #1a1a2e;
+  font-size: 0.9rem;
+}
+
+/* ===== AVATAR STYLES ===== */
+.admin-avatar-img {
+  border: 2px solid #667eea;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin-avatar-initial {
+  border: 2px solid #667eea;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* ===== OTHER CELLS ===== */
+.admin-gender {
+  display: inline-block;
+  background: #f0f1ff;
+  color: #667eea;
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.admin-username {
+  color: #333;
+  font-weight: 500;
+}
+
+.admin-email {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #555;
+}
+
+.admin-phone {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #555;
+}
+
+.admin-address {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #555;
+}
+
+.admin-role {
+  display: inline-block;
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.admin-icon-sm {
+  font-size: 0.7rem;
+  color: #667eea;
+}
+
+.admin-index {
+  color: #999;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* ========== PAGINATION ========== */
+.admins-table .ant-pagination {
+  margin-top: 1.2rem ;
+  display: flex ;
+  align-items: center ;
+  justify-content: flex-end ;
+  gap: 0.5rem ;
+}
+
+.admins-table .ant-pagination-total-text {
+  font-size: 0.85rem ;
+  color: #666 ;
+  margin-right: auto ;
+  font-weight: 500 ;
+}
+
+.admins-table .ant-pagination-item {
+  border-radius: 50% ;
+  border: 1px solid #e0e0e0 ;
+  min-width: 32px ;
+  width: 32px ;
+  height: 32px ;
+  line-height: 30px ;
+  font-size: 0.85rem ;
+  transition: all 0.3s ease ;
+  text-align: center ;
+  display: flex ;
+  align-items: center ;
+  justify-content: center ;
+  background: #ffffff ;
+  padding: 0 ;
+}
+
+.admins-table .ant-pagination-item:hover {
+  border-color: #667eea ;
+  transform: scale(1.05);
+}
+
+.admins-table .ant-pagination-item a {
+  color: #555 ;
+  display: flex ;
+  align-items: center ;
+  justify-content: center ;
+  width: 100% ;
+  height: 100% ;
+  border-radius: 50% ;
+}
+
+.admins-table .ant-pagination-item-active {
+  background: linear-gradient(135deg, #667eea, #764ba2) ;
+  border-color: #667eea ;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.admins-table .ant-pagination-item-active a {
+  color: #ffffff ;
+}
+
+.admins-table .ant-pagination-prev,
+.admins-table .ant-pagination-next {
+  border-radius: 50% ;
+  border: 1px solid #e0e0e0 ;
+  min-width: 32px ;
+  width: 32px ;
+  height: 32px ;
+  display: flex ;
+  align-items: center ;
+  justify-content: center ;
+  transition: all 0.3s ease ;
+  background: #ffffff ;
+  padding: 0 ;
+}
+
+.admins-table .ant-pagination-prev:hover:not(.ant-pagination-disabled),
+.admins-table .ant-pagination-next:hover:not(.ant-pagination-disabled) {
+  border-color: #667eea ;
+  transform: scale(1.05);
+}
+
+.admins-table .ant-pagination-prev .ant-pagination-item-link,
+.admins-table .ant-pagination-next .ant-pagination-item-link {
+  border: none ;
+  display: flex ;
+  align-items: center ;
+  justify-content: center ;
+  color: #555 ;
+  font-size: 0.8rem ;
+  border-radius: 50% ;
+  width: 100% ;
+  height: 100% ;
+  background: transparent ;
+  padding: 0 ;
+}
+
+.admins-table .ant-pagination-prev:hover:not(.ant-pagination-disabled) .ant-pagination-item-link,
+.admins-table .ant-pagination-next:hover:not(.ant-pagination-disabled) .ant-pagination-item-link {
+  color: #667eea ;
+}
+
+.admins-table .ant-pagination-prev.ant-pagination-disabled,
+.admins-table .ant-pagination-next.ant-pagination-disabled {
+  opacity: 0.4 ;
+  cursor: not-allowed ;
+  border-color: #e8e8e8 ;
+}
+
+/* Hide page size changer - fixed at 10 per page */
+.admins-table .ant-pagination-options {
+  display: none !important;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .admins-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+
+  .admins-header-left {
+    flex-direction: column;
+  }
+
+  .admins-body {
+    padding: 1rem;
+  }
+
+  .admins-badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .admins-table .ant-pagination {
+    flex-wrap: wrap ;
+    justify-content: center ;
+  }
+
+  .admins-table .ant-pagination-total-text {
+    width: 100% ;
+    text-align: center ;
+    margin-right: 0 ;
+    margin-bottom: 0.5rem ;
+  }
+
+  .admins-table .ant-pagination-item {
+    min-width: 28px ;
+    width: 28px ;
+    height: 28px ;
+    line-height: 26px ;
+    font-size: 0.75rem ;
+  }
+
+  .admins-table .ant-pagination-prev,
+  .admins-table .ant-pagination-next {
+    min-width: 28px ;
+    width: 28px ;
+    height: 28px ;
+  }
+
+  .admins-table .ant-table {
+    border: none ;
+  }
+
+  .admins-table .ant-table-thead > tr > th,
+  .admins-table .ant-table-tbody > tr > td {
+    border-right: none ;
+  }
+}
+
+@media (max-width: 480px) {
+  .admins-header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .admins-header-left p {
+    font-size: 0.75rem;
+  }
+
+  .admins-search-input {
+    height: 38px ;
+    font-size: 0.85rem ;
+  }
+
+  .admins-table .ant-table-thead > tr > th,
+  .admins-table .ant-table-tbody > tr > td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .admins-table .ant-pagination-item {
+    min-width: 24px ;
+    width: 24px ;
+    height: 24px ;
+    line-height: 22px ;
+    font-size: 0.7rem ;
+  }
+
+  .admins-table .ant-pagination-prev,
+  .admins-table .ant-pagination-next {
+    min-width: 24px ;
+    width: 24px ;
+    height: 24px ;
+  }
+
+  .admin-info-wrapper {
+    gap: 0.5rem;
+  }
+
+  .admin-full-name {
+    font-size: 0.75rem;
+  }
+}
