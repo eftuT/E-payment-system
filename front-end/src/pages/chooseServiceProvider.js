@@ -13,7 +13,7 @@ import Header from './Header';
 import './ServiceProviders.css';
 
 const ServiceProvidersDetails = () => {
-  const [userData, setUserData] = useState(localStorage.getItem('userData'));
+  const [userData] = useState(localStorage.getItem('userData')); // Removed setUserData
   const navigate = useNavigate();
   const [serviceProviderData, setServiceProviderData] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -26,7 +26,7 @@ const ServiceProvidersDetails = () => {
     }
     fetchServiceProviders();
     localStorage.setItem("userSelectedMenu", 5);
-  }, []);
+  }, [navigate, userData]); // Added missing dependencies
 
   const fetchServiceProviders = async () => {
     try {
