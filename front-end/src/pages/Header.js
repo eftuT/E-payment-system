@@ -20,7 +20,6 @@ const Header = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  // ✅ FIXED: Correct useState syntax
   const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
@@ -79,7 +78,6 @@ const Header = () => {
 
   useEffect(() => {
     if (userData?.ProfilePhoto) {
-      // This effect runs when ProfilePhoto changes
     }
   }, [userData?.ProfilePhoto]); 
 
@@ -87,8 +85,7 @@ const Header = () => {
     const pathname = location.pathname;
     const selectedMenu = getSelectedMenu(pathname);
     setUserSelectedMenu(selectedMenu);
-  }, [location, setUserSelectedMenu]); // Added setUserSelectedMenu to dependencies
-
+  }, [location, setUserSelectedMenu]); 
   function getSelectedMenu(pathname) {
     switch (pathname) {
       case '/users':
