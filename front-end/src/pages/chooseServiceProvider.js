@@ -6,9 +6,7 @@ import {
   FaArrowRight, 
   FaBuilding, 
   FaSearch,
-  FaShieldAlt
 } from 'react-icons/fa';
-import { MdPayment } from 'react-icons/md';
 import Header from './Header';
 import './ServiceProviders.css';
 
