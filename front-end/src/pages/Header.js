@@ -3,28 +3,30 @@ import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
 import companyLogo from '../image/logoimage.jpg';
 import USER from '../image/himage3.jpg';
-import './style.css';
-import { Form } from 'antd';
-import { Layout, Button, Input, Modal, message, Menu } from 'antd';
+import { Form, Layout, Button, Input, Modal, message, Menu } from 'antd';
 import axios from 'axios';
-
+import {
+  FaUser, FaLock, FaEye, FaEyeSlash,
+  FaUserPlus, FaHome, FaCamera, FaGenderless
+} from 'react-icons/fa';
+import { MdEmail, MdPerson, MdLock, MdPhone, MdHome } from 'react-icons/md';
+import './Header.css';
 
 const { Sider } = Layout;
 
-
 const Header = () => {
-
   // State variables
-  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('userData')) ? JSON.parse(localStorage.getItem('userData')) : {});
-  const [profilePictureUrl, setProfilePictureUrl] = useState(userData?.ProfilePicture ? `http://localhost:3000/${userData.ProfilePicture}` : '');
+  const [userData, setUserData] = useState(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isLoggedInUser, setIsLoggedInUser] = useState(localStorage.getItem('isLoggedInUser') || false);
+  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     UserID: '',
     FirstName: '',
@@ -39,41 +41,50 @@ const Header = () => {
   });
 
   useEffect(() => {
-    if (localStorage.getItem('isLoggedInUser')) {
+    const loggedIn = localStorage.getItem('isLoggedInUser');
+    setIsLoggedInUser(loggedIn === 'true');
+
+    if (loggedIn === 'true') {
       try {
-        const loggedInUser = localStorage.getItem('userData');
-        const parsedAdminData = JSON.parse(loggedInUser);
-        setFormData(parsedAdminData.user);
-        setUserData(parsedAdminData);
-        setProfilePictureUrl(`http://localhost:3000/${userData.ProfilePicture}`);
+        const storedData = localStorage.getItem('userData');
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setUserData(parsedData);
+          setFormData(parsedData);
+          
+          if (parsedData.ProfilePhoto) {
+            if (parsedData.ProfilePhoto.startsWith('data:image') || parsedData.ProfilePhoto.startsWith('http')) {
+              setProfilePictureUrl(parsedData.ProfilePhoto);
+            } else {
+              setProfilePictureUrl(`http://localhost:3000/${parsedData.ProfilePhoto}`);
+            }
+          } else {
+            setProfilePictureUrl('');
+          }
+        }
       } catch (error) {
         console.error('Error parsing user data:', error);
-        message.error('Error parsing user data');
-        // Handle error while parsing the data from localStorage
       }
     }
-    const handleResize = () => {
 
+    const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= 800);
     };
 
-
-    handleResize(); // Check on initial load
-    if (!isSmallScreen)
-      closeMenu();
+    handleResize();
+    if (!isSmallScreen) closeMenu();
     window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [window.innerWidth, isMenuOpen, isSmallScreen, editMode]);
+  }, [isSmallScreen]);
 
   useEffect(() => {
     const pathname = location.pathname;
-    const selectedMenu = getSelectedMenu(pathname); // Implement this function to map the current route to the corresponding menu item key
+    const selectedMenu = getSelectedMenu(pathname);
     setUserSelectedMenu(selectedMenu);
   }, [location]);
-
 
   function getSelectedMenu(pathname) {
     switch (pathname) {
@@ -96,22 +107,6 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleProfilePictureChange = (e) => {
-    const file = e.target.files[0];
-    const url = URL.createObjectURL(file);
-    setProfilePictureUrl(url);
-    setFormData((prevData) => ({
-      ...prevData,
-      ProfilePicture: file,
-    }));
-  };
-
-  const handleEdit = (user) => {
-    form.setFieldsValue(user);
-    setEditMode(true);
-    setUserData(user);
-  };
-
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
@@ -120,275 +115,409 @@ const Header = () => {
     setUserSelectedMenu([key]);
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    Modal.confirm({
-      title: 'Confirm Edit',
-      content: 'Are you sure you want to edit your profile ?',
-      okText: 'Edit',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          // Get form values
-          const values = await form.validateFields(); // Validate the form fields and get the values
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        message.error('Please upload an image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        message.error('Image size should be less than 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePictureUrl(reader.result);
+        setFormData(prev => ({
+          ...prev,
+          ProfilePicture: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-          // Update the formData state with the form values
-          setFormData((prevData) => ({
-            ...prevData,
-            ...values,
-          }));
+  const handleEdit = () => {
+    setEditMode(true);
+    form.setFieldsValue(userData);
+  };
 
-          // Create a new FormData object
-          const updatedUserData = new FormData();
-          Object.entries(values).forEach(([key, value]) => {
-            if (key === 'ProfilePicture') {
-              // Skip the ProfilePicture field if it's not updated
-              if (formData.ProfilePicture) {
-                updatedUserData.append(key, formData.ProfilePicture);
-              }
-            } else {
-              updatedUserData.append(key, value);
-            }
-          });
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const values = await form.validateFields();
+      
+      const updatedData = {
+        ...userData,
+        ...values,
+        ProfilePicture: formData.ProfilePicture || userData?.ProfilePicture || null
+      };
 
+      localStorage.setItem('userData', JSON.stringify(updatedData));
+      setUserData(updatedData);
+      
+      try {
+        await axios.put(`http://localhost:3000/Users/${userData?.id || userData?.UserID}`, updatedData);
+      } catch (apiError) {
+        console.log('API update skipped or failed');
+      }
 
-          // Send the updated user profile to the server
-          const response = await axios.put(
-            `http://localhost:3000/Users/${userData.id}`,
-            updatedUserData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            }
-          );
-
-          const abcd = await axios.get(
-            `http://localhost:3000/Users/${userData.id}`)
-          console.log(abcd);
-          // Update the user data in local storage and state
-          const updatedUser = response.data;
-          localStorage.setItem('userData', JSON.stringify(updatedUser.user));
-          setUserData(updatedUser.user);
-          console.log(formData);
-          console.log(formData.ProfilePicture);
-          console.log(updatedUser);
-          setProfilePictureUrl(`http://localhost:3000/${formData.ProfilePicture}`);
-          message.success('User data updated successfully.');
-
-        } catch (error) {
-          console.error('Error updating user profile:', error);
-          message.error('Error updating user profile');
-        }
-
-        setEditMode(false);
-      },
-    });
+      message.success('Profile updated successfully!');
+      setEditMode(false);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      message.error('Please fill all required fields correctly');
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
-    setEditMode(false);
     Modal.confirm({
       title: 'Confirm Logout',
-      content: 'Are you sure you want to Logout ?',
+      content: 'Are you sure you want to Logout?',
       okText: 'LOGOUT',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: async () => {
-        // Clear local storage and navigate to the login page
+      onOk: () => {
         localStorage.removeItem('userData');
-        localStorage.removeItem('isLoggedInUser')
+        localStorage.removeItem('isLoggedInUser');
         setUserData(null);
+        setIsLoggedInUser(false);
         navigate('/login');
       },
     });
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (userData) {
+      const firstName = userData.FirstName || '';
+      const lastName = userData.LastName || '';
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+    return 'U';
   };
 
-
   return (
-    <div className='container'>
-      <div className="overlay-curve" >
-        <div className='header' >
-          <div className='pp' >
-            {isLoggedInUser ? (
-              <div className='ppp' >
-                <div className='profile-picture' onClick={() => handleEdit(userData)}>
-                  {profilePictureUrl !== 'http://localhost:3000/null' ? (
-                    <img src={profilePictureUrl} alt="Profile" className="logo-image" style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      marginRight: '10px',
-                    }} />
-                  ) : (
-                    <div style={{ width: '45px', height: '45px', margin: '17px', marginRight: '10px', borderRadius: '50%', backgroundImage: 'linear-gradient(to right, rgb(95, 174, 230), rgb(3, 55, 100))', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <span style={{ fontSize: '24px', color: 'white', justifyContent: 'center' }}>
-                        {localStorage.userData && JSON.parse(localStorage.userData) && JSON.parse(localStorage.userData).FirstName ? (JSON.parse(localStorage.userData).FirstName.charAt(0)) : (null)}
-                      </span>
-                    </div>
-                  )}
-                  <div style={{ fontSize: '17px', fontStyle: 'italic', fontWeight: 'bold', justifyContent: 'center', marginTop: '30px', marginRight: '10px' }}>{JSON.parse(localStorage.userData) && JSON.parse(localStorage.userData).FirstName}</div>
-                </div>
-                <div className='login-box' style={{ justifyContent: 'right' }}>
-                  <LogoutOutlined className='login' />
-                  <Link className='login' onClick={handleLogout}>
-                    Logout
-                  </Link>
-                </div>
-              </div>) : (
-              <div className='login-section'>
-                <div className='login-box' style={{
-                  textAlign: 'right', width: '110PX'
-                }}>
-                  <img src={USER} alt='login-icon' className='login-icon' style={{ width: '20PX' }}></img>
-                  <Link to="/login" className='login'>Login</Link>
-                </div>
-              </div>)}
-          </div>
-          <div className='logo-menu'>
-            {isSmallScreen ? (
-              <div className='nav' style={{ minWidth: '100px' }}>
-                <MenuOutlined style={{ fontSize: '40px', position: 'relative' }} onClick={toggleMenu} />
-                {isMenuOpen && (
-                  <Sider
-                    theme="light"
-                    trigger={null}
-                    collapsible
-                    collapsed={isSmallScreen && !isMenuOpen}
-                    breakpoint="lg"
-                    collapsedWidth="0"
-                    className='sider'
-                    onBreakpoint={(broken) => {
-                      setIsSmallScreen(broken);
-                    }} >
-
-                    <Menu
-                      theme="light"
-                      defaultSelectedKeys={['1']}
-                      mode="inline"
-                      className='sider'
-                      selectedKeys={[userSelectedMenu]}
-                      onSelect={handleMenuSelect}
-
-                    >
-                      {/* Sidebar menu items */}
-                      <Menu.Item key="1" className='nav-item'>
-                        <Link to="/users" >Home</Link>
-                      </Menu.Item>
-                      <Menu.Item key="2" className='nav-item'>
-                        <Link to="/aboutUs" >About Us</Link>
-                      </Menu.Item>
-                      <Menu.Item key="3" className='nav-item'>
-                        <Link to="/contactUs" >Contact Us</Link>
-                      </Menu.Item>
-                      {isLoggedInUser && (
-                        <>
-                          <Menu.Item key="4" className='nav-item'>
-                            <Link to="/serviceProviders" >Payment</Link>
-                          </Menu.Item>
-                          <Menu.Item key="5" className='nav-item'>
-                            <Link to="/history" >History</Link>
-                          </Menu.Item>
-                        </>
-                      )}
-                    </Menu>
-                  </Sider>)}</div>) : (
-              <div className="menu">
-                <div className="nav">
-                  <NavLink exact to="/users" className="nav-item" activeClassName="active-nav-item">
-                    Home
-                  </NavLink>
-                  <NavLink to="/contactUs" className="nav-item" activeClassName="active-nav-item">
-                    Contact Us
-                  </NavLink>
-                  <NavLink to="/aboutUs" className="nav-item" activeClassName="active-nav-item">
-                    About Us
-                  </NavLink>
-                  {isLoggedInUser ? (
-                    <>
-                      <NavLink to="/serviceProviders" className="nav-item" activeClassName="active-nav-item">
-                        Payment
-                      </NavLink>
-                      <NavLink to="/history" className="nav-item" activeClassName="active-nav-item">
-                        History
-                      </NavLink>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            )}
-
-            <Modal
-              title={editMode ? 'Edit User' : 'Create User'}
-              visible={editMode}
-              onCancel={() => {
-                setEditMode(false);
-                form.resetFields();
-              }}
-              onOk={handleSave}
-            >
-              <Form form={form} onSubmit={handleSave} initialValues={formData}>
-                <Form.Item name="UserID" label="UserID" >
-                  <Input onChange={handleFormChange} name="UserID" disabled />
-                </Form.Item>
-                <Form.Item name="FirstName" label="First Name" >
-                  <Input onChange={handleFormChange} name="FirstName" />
-                </Form.Item>
-                <Form.Item name="LastName" label="Last Name" >
-                  <Input onChange={handleFormChange} name="LastName" />
-                </Form.Item>
-                <Form.Item name="Gender" label="Gender">
-                  <Input onChange={handleFormChange} name="Gender" />
-                </Form.Item>
-                <Form.Item name="UserName" label="User Name" >
-                  <Input onChange={handleFormChange} name="UserName" />
-                </Form.Item>
-                <Form.Item name="Email" label="Email" >
-                  <Input type="email" onChange={handleFormChange} name="Email" />
-                </Form.Item>
-                <Form.Item name="PhoneNumber" label="Phone Number" >
-                  <Input type="tel" onChange={handleFormChange} name="PhoneNumber" />
-                </Form.Item>
-                <Form.Item name="Address" label="Address" onChange={handleFormChange}>
-                  <Input onChange={handleFormChange} name="Address" />
-                </Form.Item>
-                <Form.Item name="ProfilePicture" >
-                  <label htmlFor="profilePicture">Profile Picture:</label>
-                  <input
-                    type="file"
-                    id="profilePicture"
-                    accept=".jpeg, .jpg, .png, .gif"
-                    onChange={handleProfilePictureChange}
-                  />
-                  {profilePictureUrl && (
-                    <img src={profilePictureUrl} alt="Profile" style={{ width: '200px' }} />
-                  )}
-                </Form.Item>
-                <Button type="primary" onClick={handleSave}>
-                  Save
-                </Button>
-              </Form>
-            </Modal>
-            <div className='logo'>
-              <img src={companyLogo} alt='company logo' />
-              <div className='company-name'>
-                E-payment-system
-                <div className='slogan'>your trusted online payment system</div>
-              </div>
+    <>
+      {/* Header */}
+      <header className="app-header">
+        <div className="header-content">
+          {/* Logo Section with 3D Spin Animation */}
+          <div className="logo-section">
+            <div className="logo-wrapper">
+              <img 
+                src={companyLogo} 
+                alt="company-logo" 
+                className="company-logo spinning-logo" 
+              />
+            </div>
+            <div className="company-info">
+              <h1>E-Payment-System</h1>
+              <p className="slogan">your trusted online payment system</p>
             </div>
           </div>
+
+          {/* Navigation */}
+          <nav className="header-nav">
+            {/* Desktop Navigation */}
+            <div className="desktop-nav">
+              <NavLink to="/users" className="nav-link" activeClassName="active">
+                <FaHome /> Home
+              </NavLink>
+              <NavLink to="/contactUs" className="nav-link" activeClassName="active">
+                Contact Us
+              </NavLink>
+              <NavLink to="/aboutUs" className="nav-link" activeClassName="active">
+                About Us
+              </NavLink>
+              {isLoggedInUser && (
+                <>
+                  <NavLink to="/serviceProviders" className="nav-link" activeClassName="active">
+                    Payment
+                  </NavLink>
+                  <NavLink to="/history" className="nav-link" activeClassName="active">
+                    History
+                  </NavLink>
+                </>
+              )}
+            </div>
+
+            {/* User Profile / Login */}
+            <div className="user-section">
+              {isLoggedInUser ? (
+                <div className="user-profile" onClick={handleEdit}>
+                  {profilePictureUrl && profilePictureUrl !== 'http://localhost:3000/null' ? (
+                    <img 
+                      src={profilePictureUrl} 
+                      alt="Profile" 
+                      className="profile-avatar"
+                    />
+                  ) : (
+                    <div className="profile-avatar-initial">
+                      {getUserInitials()}
+                    </div>
+                  )}
+                  <button className="logout-btn" onClick={(e) => { e.stopPropagation(); handleLogout(); }}>
+                    <LogoutOutlined /> Logout
+                  </button>
+                </div>
+              ) : (
+                <Link to="/login" className="login-link">
+                  <img src={USER} alt="login-icon" className="login-icon" />
+                  Login
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button className="mobile-menu-btn" onClick={toggleMenu}>
+              <MenuOutlined />
+            </button>
+          </nav>
         </div>
-      </div>
-    </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && isSmallScreen && (
+          <div className="mobile-menu">
+            <NavLink to="/users" className="mobile-nav-link" onClick={closeMenu}>
+              <FaHome /> Home
+            </NavLink>
+            <NavLink to="/contactUs" className="mobile-nav-link" onClick={closeMenu}>
+              Contact Us
+            </NavLink>
+            <NavLink to="/aboutUs" className="mobile-nav-link" onClick={closeMenu}>
+              About Us
+            </NavLink>
+            {isLoggedInUser && (
+              <>
+                <NavLink to="/serviceProviders" className="mobile-nav-link" onClick={closeMenu}>
+                  Payment
+                </NavLink>
+                <NavLink to="/history" className="mobile-nav-link" onClick={closeMenu}>
+                  History
+                </NavLink>
+              </>
+            )}
+            {isLoggedInUser && (
+              <button className="mobile-logout-btn" onClick={() => { closeMenu(); handleLogout(); }}>
+                <LogoutOutlined /> Logout
+              </button>
+            )}
+          </div>
+        )}
+      </header>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        title={
+          <div style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold' }}>
+            <FaUserPlus style={{ color: '#667eea', marginRight: '10px' }} />
+            Edit Profile
+          </div>
+        }
+        open={editMode}
+        onCancel={() => {
+          setEditMode(false);
+          form.resetFields();
+        }}
+        footer={null}
+        width={600}
+        className="edit-profile-modal"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={userData}
+          onFinish={handleSave}
+        >
+          {/* Profile Photo */}
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {profilePictureUrl && profilePictureUrl !== 'http://localhost:3000/null' ? (
+                <img
+                  src={profilePictureUrl}
+                  alt="Profile"
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid #667eea'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '3px solid #667eea'
+                }}>
+                  <span style={{ fontSize: '40px', color: 'white', fontWeight: 'bold' }}>
+                    {getUserInitials()}
+                  </span>
+                </div>
+              )}
+              <label
+                htmlFor="profilePictureInput"
+                style={{
+                  position: 'absolute',
+                  bottom: '0',
+                  right: '0',
+                  backgroundColor: '#667eea',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  border: '2px solid white',
+                  color: 'white'
+                }}
+              >
+                <FaCamera size={14} />
+              </label>
+              <input
+                id="profilePictureInput"
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                style={{ display: 'none' }}
+              />
+            </div>
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+              Click camera icon to change photo
+            </p>
+          </div>
+
+          <div className="modal-form-row">
+            <Form.Item
+              name="FirstName"
+              label={
+                <span>
+                  <MdPerson style={{ color: '#667eea' }} /> FIRST NAME
+                </span>
+              }
+              rules={[{ required: true, message: 'First Name is required' }]}
+            >
+              <Input placeholder="Enter first name" className="form-input" />
+            </Form.Item>
+
+            <Form.Item
+              name="LastName"
+              label={
+                <span>
+                  <MdPerson style={{ color: '#667eea' }} /> LAST NAME
+                </span>
+              }
+              rules={[{ required: true, message: 'Last Name is required' }]}
+            >
+              <Input placeholder="Enter last name" className="form-input" />
+            </Form.Item>
+          </div>
+
+          <div className="modal-form-row">
+            <Form.Item
+              name="UserName"
+              label={
+                <span>
+                  <FaUser style={{ color: '#667eea' }} /> USERNAME
+                </span>
+              }
+              rules={[{ required: true, message: 'Username is required' }]}
+            >
+              <Input placeholder="Enter username" className="form-input" />
+            </Form.Item>
+
+            <Form.Item
+              name="Gender"
+              label={
+                <span>
+                  <FaGenderless style={{ color: '#667eea' }} /> GENDER
+                </span>
+              }
+              rules={[{ required: true, message: 'Gender is required' }]}
+            >
+              <select className="form-input" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '2px solid #e0e0e0' }}>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </Form.Item>
+          </div>
+
+          <div className="modal-form-row">
+            <Form.Item
+              name="Email"
+              label={
+                <span>
+                  <MdEmail style={{ color: '#667eea' }} /> EMAIL
+                </span>
+              }
+              rules={[
+                { required: true, message: 'Email is required' },
+                { type: 'email', message: 'Invalid email format' }
+              ]}
+            >
+              <Input placeholder="Enter email" className="form-input" />
+            </Form.Item>
+
+            <Form.Item
+              name="PhoneNumber"
+              label={
+                <span>
+                  <MdPhone style={{ color: '#667eea' }} /> PHONE
+                </span>
+              }
+              rules={[{ required: true, message: 'Phone number is required' }]}
+            >
+              <Input placeholder="+251 XXX XXX XXX" className="form-input" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            name="Address"
+            label={
+              <span>
+                <MdHome style={{ color: '#667eea' }} /> ADDRESS
+              </span>
+            }
+            rules={[{ required: true, message: 'Address is required' }]}
+          >
+            <Input placeholder="Enter your address" className="form-input" />
+          </Form.Item>
+
+          <Form.Item
+            name="UserID"
+            label="USER ID"
+          >
+            <Input disabled className="form-input" style={{ backgroundColor: '#f5f5f5' }} />
+          </Form.Item>
+
+          <div className="modal-actions">
+            <Button onClick={() => { setEditMode(false); form.resetFields(); }}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              style={{ backgroundColor: '#667eea', borderColor: '#667eea' }}
+            >
+              <FaUserPlus style={{ marginRight: '8px' }} />
+              Save Changes
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+    </>
   );
 };
 

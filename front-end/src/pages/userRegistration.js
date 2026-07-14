@@ -5,10 +5,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import {
-  FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash,
+  FaUser, FaLock, FaEye, FaEyeSlash,
   FaUserPlus, FaHome, FaCamera, FaGenderless, FaTimes
 } from 'react-icons/fa';
-import { MdEmail, MdPerson, MdLock, MdPhone, MdHome } from 'react-icons/md';
+import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
 import companyLogo from '../image/logoimage.jpg';
 import paymentImage from '../image/payment.png';
 import './RegistrationForm.css';
@@ -22,7 +22,6 @@ const RegistrationForm = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Auto-generate UserID
   const getNextUserID = () => {
     const timestamp = Date.now().toString();
     const randomNumber = Math.floor(Math.random() * 10000).toString();
@@ -43,9 +42,8 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(false);
 
-  // Handle profile photo upload
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -66,7 +64,6 @@ const RegistrationForm = () => {
     }
   };
 
-  // Delete profile photo
   const handleDeletePhoto = () => {
     setProfilePhoto(null);
     setProfilePhotoPreview(null);
@@ -79,7 +76,6 @@ const RegistrationForm = () => {
     fileInputRef.current.click();
   };
 
-  // Validation
   const validateField = (name, value) => {
     const newErrors = {};
 
@@ -128,18 +124,19 @@ const RegistrationForm = () => {
     return newErrors;
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched({ ...touched, [name]: true });
-    const fieldError = validateField(name, value);
-    setErrors({ ...errors, ...fieldError });
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleClearErrors = () => {
+    if (submitted) {
+      setErrors({});
+      setSubmitted(false);
     }
   };
 
@@ -155,7 +152,6 @@ const RegistrationForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Check if user exists
   const checkUserExists = async (email) => {
     try {
       const response = await axios.get('http://localhost:3000/Users');
@@ -218,6 +214,7 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     
     if (!validateForm()) {
       const firstError = Object.keys(errors)[0];
@@ -246,7 +243,6 @@ const RegistrationForm = () => {
         return;
       }
 
-      // Prepare data for submission - send as JSON, not FormData
       const submitData = {
         UserID: formData.UserID,
         FirstName: formData.FirstName,
@@ -257,18 +253,11 @@ const RegistrationForm = () => {
         PhoneNumber: formData.PhoneNumber,
         Email: formData.Email,
         Address: formData.Address,
-        ProfilePhoto: profilePhotoPreview || null // Store the base64 image or null
+        ProfilePhoto: profilePhotoPreview || null
       };
-
-      console.log('Submitting data:', submitData);
 
       const response = await axios.post('http://localhost:3000/Users', submitData, {
         headers: { 'Content-Type': 'application/json' }
-      });
-      
-      toast.success('🎉 Registration successful!', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
       });
       
       message.success('Registered successfully!');
@@ -281,7 +270,6 @@ const RegistrationForm = () => {
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      console.error('Error response:', error.response?.data);
       toast.error('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -292,114 +280,88 @@ const RegistrationForm = () => {
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   return (
-    <div className="registration-container">
+    <div className="reg-page" onClick={handleClearErrors}>
       <ToastContainer />
       
       {/* Header */}
-      <header className="registration-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <img src={companyLogo} alt="company-logo" className="company-logo" />
-            <div className="company-info">
+      <header className="reg-header">
+        <div className="reg-header-content">
+          <div className="reg-logo-section">
+            <img src={companyLogo} alt="company-logo" className="reg-company-logo" />
+            <div className="reg-company-info">
               <h1>E-Payment-System</h1>
-              <p className="slogan">your trusted online payment system</p>
+              <p className="reg-slogan">your trusted online payment system</p>
             </div>
           </div>
-          <nav className="header-nav">
-            <Link to="/users" className="nav-link">
-              <FaHome /> Home
-            </Link>
+          <nav className="reg-header-nav">
+            <Link to="/users" className="reg-nav-link">Home</Link>
+            <Link to="/aboutUs" className="reg-nav-link">About Us</Link>
+            <Link to="/contactUs" className="reg-nav-link">Contact Us</Link>
           </nav>
         </div>
       </header>
 
-      {/* Main Content with Side by Side Layout */}
-      <main className="registration-main">
-        <div className="registration-wrapper">
+      {/* Main Content */}
+      <main className="reg-main">
+        <div className="reg-wrapper">
           {/* Left Side - Image */}
-          <div className="registration-image-side">
-            <div className="image-content">
-              <div className="image-overlay">
-                <h2>Device Entry Portal</h2>
-                <p>The smart solution for seamless device entry and secure exit management.</p>
+          <div className="reg-image-side">
+            <div className="reg-image-content">
+              <div className="reg-image-overlay">
+                <h2>E-payment System</h2>
+                <p>The smart solution for seamless payment.</p>
               </div>
-              <img src={paymentImage} alt="Payment System" className="side-image" />
+              <img src={paymentImage} alt="Payment System" className="reg-side-image" />
             </div>
           </div>
 
-          {/* Right Side - Registration Form */}
-          <div className="registration-form-side">
-            <div className="registration-card">
-              <div className="registration-title-section">
-                <h2 className="registration-title">
-                  <FaUserPlus className="title-icon" />
-                  Employee Registration
+          {/* Right Side - Form */}
+          <div className="reg-form-side">
+            <div className="reg-card">
+              <div className="reg-title-section">
+                <h2 className="reg-title">
+                  <FaUserPlus className="reg-title-icon" />
+                  User Registration
                 </h2>
-                <p className="registration-subtitle">
-                  Create your account to access the device entry portal
-                </p>
+                <p className="reg-subtitle">Create your account for your easy payment</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="registration-form">
-                {/* Hidden UserID */}
-                <input
-                  type="hidden"
-                  name="UserID"
-                  value={formData.UserID}
-                />
+              <form onSubmit={handleSubmit} className="reg-form">
+                <input type="hidden" name="UserID" value={formData.UserID} />
 
                 {/* Profile Photo */}
-                <div className="profile-upload-section">
-                  <div className="profile-photo-container">
+                <div className="reg-profile-section">
+                  <div className="reg-profile-container">
                     {profilePhotoPreview ? (
                       <>
-                        <img 
-                          src={profilePhotoPreview} 
-                          alt="Profile" 
-                          className="profile-photo-preview"
-                        />
-                        <button
-                          type="button"
-                          className="delete-photo-btn"
-                          onClick={handleDeletePhoto}
-                          title="Delete photo"
-                        >
+                        <img src={profilePhotoPreview} alt="Profile" className="reg-profile-preview" />
+                        <button type="button" className="reg-delete-photo" onClick={handleDeletePhoto} title="Delete photo">
                           <FaTimes />
                         </button>
                       </>
                     ) : (
-                      <div className="profile-photo-placeholder">
-                        <FaUser className="placeholder-icon" />
+                      <div className="reg-profile-placeholder">
+                        <FaUser className="reg-placeholder-icon" />
                       </div>
                     )}
-                    <button
-                      type="button"
-                      className="upload-photo-btn"
-                      onClick={triggerFileInput}
-                    >
+                    <button type="button" className="reg-upload-photo" onClick={triggerFileInput}>
                       <FaCamera />
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      style={{ display: 'none' }}
-                    />
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
                   </div>
-                  <p className="upload-hint">
+                  <p className="reg-upload-hint">
                     {profilePhotoPreview ? 'CLICK X TO DELETE' : 'UPLOAD PROFILE PHOTO'}
                   </p>
                 </div>
 
                 {/* Form Fields */}
-                <div className="form-fields">
+                <div className="reg-fields">
                   {/* First Name & Last Name */}
-                  <div className="form-row">
-                    <div className="form-group half">
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="FirstName">
-                        <MdPerson className="input-icon" />
-                        FIRST NAME <span className="required">*</span>
+                        <MdPerson className="reg-field-icon" />
+                        FIRST NAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="FirstName"
@@ -407,19 +369,16 @@ const RegistrationForm = () => {
                         name="FirstName"
                         value={formData.FirstName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter first name"
-                        className={`form-input ${errors.FirstName && touched.FirstName ? 'error' : ''}`}
+                        className="reg-input"
                       />
-                      {errors.FirstName && touched.FirstName && (
-                        <div className="error-message">{errors.FirstName}</div>
-                      )}
+                      {errors.FirstName && submitted && <div className="reg-error">{errors.FirstName}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="LastName">
-                        <MdPerson className="input-icon" />
-                        LAST NAME <span className="required">*</span>
+                        <MdPerson className="reg-field-icon" />
+                        LAST NAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="LastName"
@@ -427,22 +386,19 @@ const RegistrationForm = () => {
                         name="LastName"
                         value={formData.LastName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter last name"
-                        className={`form-input ${errors.LastName && touched.LastName ? 'error' : ''}`}
+                        className="reg-input"
                       />
-                      {errors.LastName && touched.LastName && (
-                        <div className="error-message">{errors.LastName}</div>
-                      )}
+                      {errors.LastName && submitted && <div className="reg-error">{errors.LastName}</div>}
                     </div>
                   </div>
 
                   {/* Username & Gender */}
-                  <div className="form-row">
-                    <div className="form-group half">
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="UserName">
-                        <FaUser className="input-icon" />
-                        USERNAME <span className="required">*</span>
+                        <FaUser className="reg-field-icon" />
+                        USERNAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="UserName"
@@ -450,54 +406,32 @@ const RegistrationForm = () => {
                         name="UserName"
                         value={formData.UserName}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter username"
-                        className={`form-input ${errors.UserName && touched.UserName ? 'error' : ''}`}
+                        className="reg-input"
                       />
-                      {errors.UserName && touched.UserName && (
-                        <div className="error-message">{errors.UserName}</div>
-                      )}
+                      {errors.UserName && submitted && <div className="reg-error">{errors.UserName}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label>
-                        <FaGenderless className="input-icon" />
-                        GENDER <span className="required">*</span>
+                        <FaGenderless className="reg-field-icon" />
+                        GENDER <span className="reg-required">*</span>
                       </label>
-                      <div className="gender-options">
-                        <label className={`gender-option ${formData.Gender === 'male' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="Gender"
-                            value="male"
-                            checked={formData.Gender === 'male'}
-                            onChange={handleChange}
-                          />
-                          <span>Male</span>
-                        </label>
-                        <label className={`gender-option ${formData.Gender === 'female' ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="Gender"
-                            value="female"
-                            checked={formData.Gender === 'female'}
-                            onChange={handleChange}
-                          />
-                          <span>Female</span>
-                        </label>
-                      </div>
-                      {errors.Gender && (
-                        <div className="error-message">{errors.Gender}</div>
-                      )}
+                      <select name="Gender" value={formData.Gender} onChange={handleChange} className="reg-input">
+                        <option value="" disabled>Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                      {errors.Gender && submitted && <div className="reg-error">{errors.Gender}</div>}
                     </div>
                   </div>
 
                   {/* Email & Phone */}
-                  <div className="form-row">
-                    <div className="form-group half">
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="Email">
-                        <MdEmail className="input-icon" />
-                        EMAIL <span className="required">*</span>
+                        <MdEmail className="reg-field-icon" />
+                        EMAIL <span className="reg-required">*</span>
                       </label>
                       <input
                         id="Email"
@@ -505,19 +439,16 @@ const RegistrationForm = () => {
                         name="Email"
                         value={formData.Email}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="Enter email"
-                        className={`form-input ${errors.Email && touched.Email ? 'error' : ''}`}
+                        className="reg-input"
                       />
-                      {errors.Email && touched.Email && (
-                        <div className="error-message">{errors.Email}</div>
-                      )}
+                      {errors.Email && submitted && <div className="reg-error">{errors.Email}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="PhoneNumber">
-                        <MdPhone className="input-icon" />
-                        PHONE <span className="required">*</span>
+                        <MdPhone className="reg-field-icon" />
+                        PHONE <span className="reg-required">*</span>
                       </label>
                       <input
                         id="PhoneNumber"
@@ -525,82 +456,65 @@ const RegistrationForm = () => {
                         name="PhoneNumber"
                         value={formData.PhoneNumber}
                         onChange={handleChange}
-                        onBlur={handleBlur}
                         placeholder="+251 XXX XXX XXX"
-                        className={`form-input ${errors.PhoneNumber && touched.PhoneNumber ? 'error' : ''}`}
+                        className="reg-input"
                       />
-                      {errors.PhoneNumber && touched.PhoneNumber && (
-                        <div className="error-message">{errors.PhoneNumber}</div>
-                      )}
+                      {errors.PhoneNumber && submitted && <div className="reg-error">{errors.PhoneNumber}</div>}
                     </div>
                   </div>
 
                   {/* Password & Confirm */}
-                  <div className="form-row">
-                    <div className="form-group half">
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="Password">
-                        <FaLock className="input-icon" />
-                        PASSWORD <span className="required">*</span>
+                        <FaLock className="reg-field-icon" />
+                        PASSWORD <span className="reg-required">*</span>
                       </label>
-                      <div className="password-input-wrapper">
+                      <div className="reg-password-wrapper">
                         <input
                           id="Password"
                           type={showPassword ? 'text' : 'password'}
                           name="Password"
                           value={formData.Password}
                           onChange={handleChange}
-                          onBlur={handleBlur}
                           placeholder="Enter password"
-                          className={`form-input ${errors.Password && touched.Password ? 'error' : ''}`}
+                          className="reg-input"
                         />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={togglePasswordVisibility}
-                        >
+                        <button type="button" className="reg-password-toggle" onClick={togglePasswordVisibility}>
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.Password && touched.Password && (
-                        <div className="error-message">{errors.Password}</div>
-                      )}
+                      {errors.Password && submitted && <div className="reg-error">{errors.Password}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="ConfirmPassword">
-                        <FaLock className="input-icon" />
-                        CONFIRM <span className="required">*</span>
+                        <FaLock className="reg-field-icon" />
+                        CONFIRM <span className="reg-required">*</span>
                       </label>
-                      <div className="password-input-wrapper">
+                      <div className="reg-password-wrapper">
                         <input
                           id="ConfirmPassword"
                           type={showConfirmPassword ? 'text' : 'password'}
                           name="ConfirmPassword"
                           value={formData.ConfirmPassword}
                           onChange={handleChange}
-                          onBlur={handleBlur}
                           placeholder="Confirm password"
-                          className={`form-input ${errors.ConfirmPassword && touched.ConfirmPassword ? 'error' : ''}`}
+                          className="reg-input"
                         />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={toggleConfirmPasswordVisibility}
-                        >
+                        <button type="button" className="reg-password-toggle" onClick={toggleConfirmPasswordVisibility}>
                           {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.ConfirmPassword && touched.ConfirmPassword && (
-                        <div className="error-message">{errors.ConfirmPassword}</div>
-                      )}
+                      {errors.ConfirmPassword && submitted && <div className="reg-error">{errors.ConfirmPassword}</div>}
                     </div>
                   </div>
 
                   {/* Address */}
-                  <div className="form-group">
+                  <div className="reg-field">
                     <label htmlFor="Address">
-                      <MdHome className="input-icon" />
-                      ADDRESS <span className="required">*</span>
+                      <MdHome className="reg-field-icon" />
+                      ADDRESS <span className="reg-required">*</span>
                     </label>
                     <input
                       id="Address"
@@ -608,36 +522,25 @@ const RegistrationForm = () => {
                       name="Address"
                       value={formData.Address}
                       onChange={handleChange}
-                      onBlur={handleBlur}
                       placeholder="Enter your residential address"
-                      className={`form-input ${errors.Address && touched.Address ? 'error' : ''}`}
+                      className="reg-input"
                     />
-                    {errors.Address && touched.Address && (
-                      <div className="error-message">{errors.Address}</div>
-                    )}
+                    {errors.Address && submitted && <div className="reg-error">{errors.Address}</div>}
                   </div>
 
                   {/* Submit */}
-                  <button
-                    type="submit"
-                    className="btn-submit"
-                    disabled={isLoading}
-                  >
+                  <button type="submit" className="reg-submit" disabled={isLoading}>
                     {isLoading ? (
-                      <>
-                        <span className="spinner">⟳</span> Registering...
-                      </>
+                      <><span className="reg-spinner">⟳</span> Registering...</>
                     ) : (
-                      <>
-                        Register <FaUserPlus />
-                      </>
+                      <>Register <FaUserPlus /></>
                     )}
                   </button>
                 </div>
 
                 {/* Footer */}
-                <div className="registration-footer">
-                  <p className="login-link">
+                <div className="reg-footer">
+                  <p className="reg-login-link">
                     Already have an account? <Link to="/login">Login here</Link>
                   </p>
                 </div>
