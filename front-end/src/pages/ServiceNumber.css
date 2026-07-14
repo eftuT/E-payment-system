@@ -1,0 +1,503 @@
+/* ServiceNumber.css */
+
+/* ========== CONTAINER ========== */
+.sn-container {
+  min-height: 100vh;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== MAIN ========== */
+.sn-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ========== CARD ========== */
+.sn-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+  max-width: 540px;
+  width: 100%;
+  overflow: hidden;
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== CARD HEADER ========== */
+.sn-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 2rem 1.8rem;
+  text-align: center;
+  position: relative;
+}
+
+.sn-card-header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 20px solid #764ba2;
+}
+
+.sn-header-icon {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.sn-card-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 0.2rem 0;
+}
+
+.sn-card-header p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* ========== CARD BODY ========== */
+.sn-card-body {
+  padding: 2rem 2rem 1.5rem;
+}
+
+/* ========== OPTIONS ========== */
+.sn-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.sn-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: #fafafa;
+}
+
+.sn-option:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.sn-option.active {
+  border-color: #667eea;
+  background: #f0f1ff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.12);
+}
+
+.sn-option input[type="radio"] {
+  display: none;
+}
+
+.sn-option-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.sn-option-icon.self {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.sn-option-icon.other {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.sn-option.active .sn-option-icon {
+  transform: scale(1.05);
+}
+
+.sn-option-text h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.1rem 0;
+}
+
+.sn-option-text p {
+  font-size: 0.7rem;
+  color: #999;
+  margin: 0;
+}
+
+.sn-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #22c55e;
+  font-size: 1rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease;
+}
+
+.sn-option.active .sn-option-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ========== ERROR ========== */
+.sn-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  text-align: center;
+  background: #fef2f2;
+  padding: 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* ========== USER DETAILS ========== */
+.sn-user-details {
+  background: #f8f9ff;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid #e8ecff;
+}
+
+.sn-user-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sn-user-icon {
+  color: #667eea;
+  font-size: 1rem;
+}
+
+.sn-user-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.sn-user-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.sn-user-field label {
+  font-size: 0.6rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.sn-user-field p {
+  font-size: 0.85rem;
+  color: #1a1a2e;
+  font-weight: 500;
+  margin: 0.1rem 0 0;
+}
+
+/* ========== INPUT GROUP ========== */
+.sn-input-group {
+  margin-bottom: 1.5rem;
+}
+
+.sn-input-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+
+.sn-input-icon {
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.sn-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.sn-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+
+.sn-input-hint {
+  font-size: 0.7rem;
+  color: #bbb;
+  margin: 0.3rem 0 0;
+}
+
+/* ========== SUBMIT BUTTON ========== */
+.sn-submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.sn-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.sn-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.sn-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== CARD FOOTER ========== */
+.sn-card-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 2rem;
+  background: #fafbff;
+  border-top: 1px solid #f0f2f5;
+}
+
+.sn-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.sn-footer-icon {
+  color: #667eea;
+  font-size: 0.8rem;
+}
+
+.sn-footer-divider {
+  color: #ddd;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sn-main {
+    padding: 1.5rem 1rem;
+  }
+
+  .sn-card {
+    max-width: 100%;
+  }
+
+  .sn-card-header {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .sn-card-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .sn-card-header p {
+    font-size: 0.8rem;
+  }
+
+  .sn-card-body {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .sn-options {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .sn-option {
+    padding: 1rem 0.8rem;
+  }
+
+  .sn-option-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .sn-option-text h4 {
+    font-size: 0.85rem;
+  }
+
+  .sn-option-text p {
+    font-size: 0.65rem;
+  }
+
+  .sn-user-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sn-card-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .sn-footer-item {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sn-main {
+    padding: 0.8rem 0.6rem;
+  }
+
+  .sn-card {
+    border-radius: 14px;
+  }
+
+  .sn-card-header {
+    padding: 1.2rem 0.8rem;
+  }
+
+  .sn-header-icon {
+    font-size: 2.2rem;
+  }
+
+  .sn-card-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .sn-card-header p {
+    font-size: 0.7rem;
+  }
+
+  .sn-card-body {
+    padding: 1rem 0.8rem;
+  }
+
+  .sn-options {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .sn-option {
+    padding: 0.8rem 0.5rem;
+    border-radius: 10px;
+  }
+
+  .sn-option-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .sn-option-text h4 {
+    font-size: 0.75rem;
+  }
+
+  .sn-option-text p {
+    font-size: 0.55rem;
+  }
+
+  .sn-option-check {
+    font-size: 0.8rem;
+    top: 5px;
+    right: 5px;
+  }
+
+  .sn-user-details {
+    padding: 0.8rem;
+  }
+
+  .sn-user-field label {
+    font-size: 0.55rem;
+  }
+
+  .sn-user-field p {
+    font-size: 0.75rem;
+  }
+
+  .sn-input {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .sn-submit-btn {
+    font-size: 0.85rem;
+    padding: 0.7rem;
+  }
+
+  .sn-card-footer {
+    padding: 0.5rem 0.8rem;
+  }
+
+  .sn-footer-item {
+    font-size: 0.55rem;
+  }
+
+  .sn-footer-divider {
+    display: none;
+  }
+}
