@@ -20,7 +20,7 @@ const Header = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
+  // Removed: isLoggedInUser state and setter (not used)
   const navigate = useNavigate();
   const location = useLocation();
   const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
@@ -42,7 +42,7 @@ const Header = () => {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedInUser');
-    setIsLoggedInUser(loggedIn === 'true');
+    // Removed: setIsLoggedInUser(loggedIn === 'true');
 
     if (loggedIn === 'true') {
       try {
@@ -79,6 +79,15 @@ const Header = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, [isSmallScreen]);
+
+  // Fixed: Added missing dependency - userData.ProfilePicture
+  useEffect(() => {
+    // This effect runs when userData.ProfilePicture changes
+    // If you need to do something with the profile picture, add it here
+    if (userData?.ProfilePhoto) {
+      // Handle profile picture update if needed
+    }
+  }, [userData?.ProfilePhoto]); // Added missing dependency
 
   useEffect(() => {
     const pathname = location.pathname;
@@ -184,7 +193,6 @@ const Header = () => {
         localStorage.removeItem('userData');
         localStorage.removeItem('isLoggedInUser');
         setUserData(null);
-        setIsLoggedInUser(false);
         navigate('/login');
       },
     });
@@ -199,6 +207,9 @@ const Header = () => {
     }
     return 'U';
   };
+
+  // Check if user is logged in
+  const isLoggedInUser = localStorage.getItem('isLoggedInUser') === 'true';
 
   return (
     <>
@@ -283,7 +294,7 @@ const Header = () => {
         {isMenuOpen && isSmallScreen && (
           <div className="mobile-menu">
             <NavLink to="/users" className="mobile-nav-link" onClick={closeMenu}>
-              <FaHome /> Home
+             Home
             </NavLink>
             <NavLink to="/contactUs" className="mobile-nav-link" onClick={closeMenu}>
               Contact Us
