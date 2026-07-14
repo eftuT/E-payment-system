@@ -16,14 +16,14 @@ const UserLogin = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
+  // Removed: isLoggedInUser state (not used)
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedIsLoggedInUser = localStorage.getItem('isLoggedInUser');
-    setIsLoggedInUser(storedIsLoggedInUser === 'true');
+    // Removed: setIsLoggedInUser(localStorage.getItem('isLoggedInUser') === 'true');
+    // This state is not used anywhere in the component
   }, []);
 
   const handleIdentifierChange = (e) => {
@@ -52,7 +52,6 @@ const UserLogin = () => {
       });
 
       if (response.status === 200) {
-        setIsLoggedInUser(true);
         localStorage.setItem('isLoggedInUser', 'true');
         localStorage.setItem('userData', JSON.stringify(response.data.user || response.data));
         
