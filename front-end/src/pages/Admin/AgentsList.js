@@ -8,12 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import './AgentsList.css';
 
 const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [agentData, setAgentData] = useState([]);
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [agent, setAgent] = useState(null);
-  const [agentAuthorizationLetterUrl, setAgentAuthorizationLetterUrl] = useState();
+  // Removed: agentAuthorizationLetterUrl (not used)
+  // Removed: setAgentAuthorizationLetterUrl (not used)
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(false);

@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import './BillGeneration.css';
 
 const BillGenerationForm = () => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     billNumber: '',
