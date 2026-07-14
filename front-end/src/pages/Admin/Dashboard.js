@@ -8,7 +8,6 @@ import {
   SolutionOutlined,
   TransactionOutlined,
   LogoutOutlined,
-  HomeOutlined,
   AppstoreOutlined,
   DashboardOutlined,
   SettingOutlined,
@@ -16,10 +15,9 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserSwitchOutlined,
-  DollarOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FaShieldAlt, FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle } from 'react-icons/fa';
 import './Dashboard.css';
 
 const { Header, Content, Footer, Sider } = Layout;
