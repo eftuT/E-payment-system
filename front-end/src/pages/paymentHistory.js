@@ -2,16 +2,31 @@ import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { Modal, Table } from "antd";
-import "./style.css";
-import Header from "./Header.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { 
+  FaReceipt, 
+  FaFileDownload, 
+  FaFilePdf, 
+  FaImage,
+  FaHistory,
+  FaCreditCard,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaUser,
+  FaCheckCircle
+
+} from 'react-icons/fa';
+import { MdPayment, MdDownload, MdReceipt } from 'react-icons/md';
+import Header from "./Header";
+import "./PaymentHistory.css";
 
 const PaymentHistory = () => {
   const [userData, setUserData] = useState(JSON.parse(localStorage.getItem("userData")));
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,20 +35,22 @@ const PaymentHistory = () => {
       return;
     }
 
-    const storedPaymentHistory = userData.Payments;
+    const storedPaymentHistory = userData.Payments || [];
     setPaymentHistory(storedPaymentHistory);
     localStorage.setItem("userSelectedMenu", 5);
   }, [userData, navigate]);
 
   const fetchPaymentDetails = async (paymentId) => {
+    setLoading(true);
     try {
       const response = await axios.get(`http://localhost:3000/Users/${userData.UserId}`);
       const paymentDetails = response.data.payment;
-      const customerName = paymentDetails.Bill.customerName;
-
+      const customerName = paymentDetails?.Bill?.customerName || 'N/A';
       setSelectedPayment({ ...paymentDetails, customerName });
     } catch (error) {
       console.error("Error fetching payment details:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,140 +66,261 @@ const PaymentHistory = () => {
 
   const handleModalCancel = () => {
     setModalVisible(false);
+    setSelectedPayment(null);
   };
 
   const handleDownload = (fileType) => {
-    // Capture the modal container element
-    const modalContainer = document.querySelector(".payment-details");
+    const modalContainer = document.querySelector(".payment-details-modal");
+    if (!modalContainer) return;
 
-    // Exclude the buttons from the captured canvas
     const buttons = modalContainer.querySelectorAll("button");
     buttons.forEach((button) => {
       button.style.display = "none";
     });
 
-    // Use html2canvas to convert the modal container to a canvas
+    const footer = modalContainer.querySelector(".modal-footer");
+    if (footer) {
+      footer.style.display = "none";
+    }
+
     html2canvas(modalContainer).then((canvas) => {
-      // Restore the display of the buttons
       buttons.forEach((button) => {
         button.style.display = "block";
       });
+      if (footer) {
+        footer.style.display = "block";
+      }
 
       if (fileType === "picture") {
-        // Convert the canvas to a base64-encoded PNG image
         const dataURL = canvas.toDataURL("image/png");
-
-        // Create a temporary link element to trigger the download
         const link = document.createElement("a");
         link.href = dataURL;
-        link.download = `payment-${selectedPayment.id}.png`;
+        link.download = `payment-${selectedPayment?.id || 'receipt'}.png`;
         link.click();
       } else if (fileType === "pdf") {
-        // Convert the canvas to a base64-encoded PNG image
         const dataURL = canvas.toDataURL("image/png");
-
-        // Calculate the dimensions of the PDF document based on the canvas size
-        const imgWidth = 210; // A4 page width (in mm)
+        const imgWidth = 210;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        // Create a new jsPDF instance
         const pdf = new jsPDF("p", "mm", "a4");
-
-        // Add the image to the PDF document
         pdf.addImage(dataURL, "PNG", 0, 0, imgWidth, imgHeight);
-
-        // Save the PDF file
-        pdf.save(`payment-${selectedPayment.id}.pdf`);
-      } else {
-        console.error("Invalid file type");
+        pdf.save(`payment-${selectedPayment?.id || 'receipt'}.pdf`);
       }
     });
   };
 
   const columns = [
     {
-      title: "No",
+      title: "#",
       dataIndex: "id",
       key: "id",
+      render: (_, __, index) => index + 1,
+      width: 60,
     },
     {
       title: "Transaction No",
       dataIndex: "TransactionNo",
       key: "TransactionNo",
+      render: (text) => <span className="ph-transaction-id">{text}</span>,
     },
     {
-      title: "Payment Method",
+      title: "Method",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
+      render: (text) => (
+        <span className="ph-method-badge">
+          <FaCreditCard className="ph-method-icon" />
+          {text || 'Credit Card'}
+        </span>
+      ),
     },
     {
       title: "Description",
       dataIndex: "paymentDescription",
       key: "paymentDescription",
+      render: (text) => <span className="ph-description">{text}</span>,
     },
     {
-      title: "Reference Number",
+      title: "Reference",
       dataIndex: "ReferenceNo",
       key: "ReferenceNo",
+      render: (text) => <span className="ph-reference">{text}</span>,
     },
     {
-      title: "Total Amount",
+      title: "Amount",
       dataIndex: "amount",
       key: "amount",
+      render: (text) => <span className="ph-amount">${text}</span>,
     },
     {
-      title: "Payment Date",
+      title: "Date",
       dataIndex: "paymentDate",
       key: "paymentDate",
+      render: (text) => (
+        <span className="ph-date">
+          <FaCalendarAlt className="ph-date-icon" />
+          {text}
+        </span>
+      ),
     },
     {
       title: "Action",
       key: "action",
-      render: (text, payment) => (
-        <span>
-          <button onClick={() => generatePicture(payment)}>Generate Picture</button>
-          <button onClick={() => generatePDF(payment)}>Generate PDF</button>
-        </span>
+      width: 160,
+      render: (_, payment) => (
+        <div className="ph-actions">
+          <button 
+            className="ph-action-btn picture" 
+            onClick={() => generatePicture(payment)}
+            title="Download as Image"
+          >
+            <FaImage />
+          </button>
+          <button 
+            className="ph-action-btn pdf" 
+            onClick={() => generatePDF(payment)}
+            title="Download as PDF"
+          >
+            <FaFilePdf />
+          </button>
+        </div>
       ),
     },
   ];
 
-
   return (
-    <div>
+    <div className="ph-container">
       <Header />
-      <h1 style={{ padding: "170px 0% 0% 2%" }}>Payment History</h1>
-      <Table dataSource={paymentHistory} columns={columns} scroll={{ x: true }} />
 
+      <main className="ph-main">
+        <div className="ph-header">
+          <div className="ph-header-left">
+            <div className="ph-header-icon">
+              <FaHistory />
+            </div>
+            <div>
+              <h1>Payment History</h1>
+              <p>View and download your payment receipts</p>
+            </div>
+          </div>
+          <div className="ph-header-badge">
+            <FaReceipt className="ph-badge-icon" />
+            <span>{paymentHistory.length} Payments</span>
+          </div>
+        </div>
+
+        <div className="ph-table-wrapper">
+          {paymentHistory.length === 0 ? (
+            <div className="ph-empty">
+              <MdReceipt className="ph-empty-icon" />
+              <h3>No Payment History</h3>
+              <p>You haven't made any payments yet</p>
+            </div>
+          ) : (
+            <Table
+              dataSource={paymentHistory}
+              columns={columns}
+              scroll={{ x: true }}
+              pagination={{
+                pageSize: 5,
+                showSizeChanger: true,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} payments`,
+              }}
+              className="ph-table"
+              rowClassName="ph-table-row"
+            />
+          )}
+        </div>
+      </main>
+
+      {/* Payment Details Modal */}
       <Modal
-        title="Bank Information Details"
-        visible={modalVisible}
+        title={
+          <div className="ph-modal-header">
+            <FaReceipt className="ph-modal-icon" />
+            <span>Payment Receipt</span>
+          </div>
+        }
+        open={modalVisible}
         onCancel={handleModalCancel}
         footer={[
-          <button key="picture" onClick={() => handleDownload("picture")}>
-            Generate Picture
+          <button 
+            key="picture" 
+            className="ph-modal-btn picture"
+            onClick={() => handleDownload("picture")}
+          >
+            <FaImage /> Download Image
           </button>,
-          <button key="pdf" onClick={() =>handleDownload("pdf")}>
-            Generate PDF
+          <button 
+            key="pdf" 
+            className="ph-modal-btn pdf"
+            onClick={() => handleDownload("pdf")}
+          >
+            <FaFilePdf /> Download PDF
           </button>,
         ]}
+        className="ph-modal"
+        width={560}
       >
-        {selectedPayment && (
-          <div className="payment-details">
-            <h2>Payment Information:</h2>
-            <p>TransactionNo: {selectedPayment.TransactionNo}</p>
-            <p>Payment Method: Credit card</p>
-            <p>Description: {selectedPayment.paymentDescription}</p>
-            <p>Reference Number: {selectedPayment.ReferenceNo}</p>
-            <p>Total Amount: {selectedPayment.amount}</p>
-            <p>Payment Date: {selectedPayment.paymentDate}</p>
-            <p>Payer: {userData.FirstName + ' '+ userData.LastName}</p>
-            <p>Customer Name: {selectedPayment.customerName}</p>
+        {loading ? (
+          <div className="ph-modal-loading">
+            <span className="ph-spinner">⏳</span>
+            <p>Loading payment details...</p>
           </div>
+        ) : (
+          selectedPayment && (
+            <div className="payment-details-modal">
+              <div className="ph-receipt">
+                <div className="ph-receipt-header">
+                  <MdPayment className="ph-receipt-icon" />
+                  <h3>Payment Information</h3>
+                </div>
+                <div className="ph-receipt-body">
+                  <div className="ph-receipt-row">
+                    <span>Transaction No</span>
+                    <span className="ph-receipt-value">{selectedPayment.TransactionNo}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Reference No</span>
+                    <span className="ph-receipt-value">{selectedPayment.ReferenceNo}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Payment Method</span>
+                    <span className="ph-receipt-value">Credit Card</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Description</span>
+                    <span className="ph-receipt-value">{selectedPayment.paymentDescription}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Total Amount</span>
+                    <span className="ph-receipt-value amount">${selectedPayment.amount}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Payment Date</span>
+                    <span className="ph-receipt-value">{selectedPayment.paymentDate}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Payer</span>
+                    <span className="ph-receipt-value">{userData?.FirstName + ' ' + userData?.LastName}</span>
+                  </div>
+                  <div className="ph-receipt-row">
+                    <span>Customer</span>
+                    <span className="ph-receipt-value">{selectedPayment.customerName || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="ph-receipt-footer">
+                  <FaCheckCircle className="ph-receipt-check" />
+                  <span>Payment Successful</span>
+                </div>
+              </div>
+            </div>
+          )
         )}
       </Modal>
     </div>
   );
 };
+
+
 
 export default PaymentHistory;

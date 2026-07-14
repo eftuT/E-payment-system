@@ -280,113 +280,88 @@ const RegistrationForm = () => {
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   return (
-    <div className="registration-container" onClick={handleClearErrors}>
+    <div className="reg-page" onClick={handleClearErrors}>
       <ToastContainer />
       
-      <header className="registration-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <img src={companyLogo} alt="company-logo" className="company-logo" />
-            <div className="company-info">
+      {/* Header */}
+      <header className="reg-header">
+        <div className="reg-header-content">
+          <div className="reg-logo-section">
+            <img src={companyLogo} alt="company-logo" className="reg-company-logo" />
+            <div className="reg-company-info">
               <h1>E-Payment-System</h1>
-              <p className="slogan">your trusted online payment system</p>
+              <p className="reg-slogan">your trusted online payment system</p>
             </div>
           </div>
-        
-          <nav className="header-nav">
-            <Link to="/users" className="nav-link">
-             Home
-            </Link>
-            <Link to="/aboutUs" className="nav-link">
-              About Us
-            </Link>
-            <Link to="/contactUs" className="nav-link">
-              Contact Us
-            </Link>
+          <nav className="reg-header-nav">
+            <Link to="/users" className="reg-nav-link">Home</Link>
+            <Link to="/aboutUs" className="reg-nav-link">About Us</Link>
+            <Link to="/contactUs" className="reg-nav-link">Contact Us</Link>
           </nav>
         </div>
       </header>
 
-      <main className="registration-main">
-        <div className="registration-wrapper">
-          <div className="registration-image-side">
-            <div className="image-content">
-              <div className="image-overlay">
+      {/* Main Content */}
+      <main className="reg-main">
+        <div className="reg-wrapper">
+          {/* Left Side - Image */}
+          <div className="reg-image-side">
+            <div className="reg-image-content">
+              <div className="reg-image-overlay">
                 <h2>E-payment System</h2>
                 <p>The smart solution for seamless payment.</p>
               </div>
-              <img src={paymentImage} alt="Payment System" className="side-image" />
+              <img src={paymentImage} alt="Payment System" className="reg-side-image" />
             </div>
           </div>
 
-          <div className="registration-form-side">
-            <div className="registration-card">
-              <div className="registration-title-section">
-                <h2 className="registration-title">
-                  <FaUserPlus className="title-icon" />
+          {/* Right Side - Form */}
+          <div className="reg-form-side">
+            <div className="reg-card">
+              <div className="reg-title-section">
+                <h2 className="reg-title">
+                  <FaUserPlus className="reg-title-icon" />
                   User Registration
                 </h2>
-                <p className="registration-subtitle">
-                  Create your account for your easy payment
-                </p>
+                <p className="reg-subtitle">Create your account for your easy payment</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="registration-form">
-                <input
-                  type="hidden"
-                  name="UserID"
-                  value={formData.UserID}
-                />
+              <form onSubmit={handleSubmit} className="reg-form">
+                <input type="hidden" name="UserID" value={formData.UserID} />
 
-                <div className="profile-upload-section">
-                  <div className="profile-photo-container">
+                {/* Profile Photo */}
+                <div className="reg-profile-section">
+                  <div className="reg-profile-container">
                     {profilePhotoPreview ? (
                       <>
-                        <img 
-                          src={profilePhotoPreview} 
-                          alt="Profile" 
-                          className="profile-photo-preview"
-                        />
-                        <button
-                          type="button"
-                          className="delete-photo-btn"
-                          onClick={handleDeletePhoto}
-                          title="Delete photo"
-                        >
+                        <img src={profilePhotoPreview} alt="Profile" className="reg-profile-preview" />
+                        <button type="button" className="reg-delete-photo" onClick={handleDeletePhoto} title="Delete photo">
                           <FaTimes />
                         </button>
                       </>
                     ) : (
-                      <div className="profile-photo-placeholder">
-                        <FaUser className="placeholder-icon" />
+                      <div className="reg-profile-placeholder">
+                        <FaUser className="reg-placeholder-icon" />
                       </div>
                     )}
-                    <button
-                      type="button"
-                      className="upload-photo-btn"
-                      onClick={triggerFileInput}
-                    >
+                    <button type="button" className="reg-upload-photo" onClick={triggerFileInput}>
                       <FaCamera />
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      style={{ display: 'none' }}
-                    />
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
                   </div>
-                  <p className="upload-hint">
+                  <p className="reg-upload-hint">
                     {profilePhotoPreview ? 'CLICK X TO DELETE' : 'UPLOAD PROFILE PHOTO'}
                   </p>
                 </div>
 
-                <div className="form-fields">
-                  <div className="form-row">
-                    <div className="form-group half">
+                {/* Form Fields */}
+                <div className="reg-fields">
+                  {/* First Name & Last Name */}
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="FirstName">
-                        <MdPerson className="input-icon" />
-                        FIRST NAME <span className="required">*</span>
+                        <MdPerson className="reg-field-icon" />
+                        FIRST NAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="FirstName"
@@ -395,17 +370,15 @@ const RegistrationForm = () => {
                         value={formData.FirstName}
                         onChange={handleChange}
                         placeholder="Enter first name"
-                        className="form-input"
+                        className="reg-input"
                       />
-                      {errors.FirstName && submitted && (
-                        <div className="error-message">{errors.FirstName}</div>
-                      )}
+                      {errors.FirstName && submitted && <div className="reg-error">{errors.FirstName}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="LastName">
-                        <MdPerson className="input-icon" />
-                        LAST NAME <span className="required">*</span>
+                        <MdPerson className="reg-field-icon" />
+                        LAST NAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="LastName"
@@ -414,19 +387,18 @@ const RegistrationForm = () => {
                         value={formData.LastName}
                         onChange={handleChange}
                         placeholder="Enter last name"
-                        className="form-input"
+                        className="reg-input"
                       />
-                      {errors.LastName && submitted && (
-                        <div className="error-message">{errors.LastName}</div>
-                      )}
+                      {errors.LastName && submitted && <div className="reg-error">{errors.LastName}</div>}
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-group half">
+                  {/* Username & Gender */}
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="UserName">
-                        <FaUser className="input-icon" />
-                        USERNAME <span className="required">*</span>
+                        <FaUser className="reg-field-icon" />
+                        USERNAME <span className="reg-required">*</span>
                       </label>
                       <input
                         id="UserName"
@@ -435,40 +407,31 @@ const RegistrationForm = () => {
                         value={formData.UserName}
                         onChange={handleChange}
                         placeholder="Enter username"
-                        className="form-input"
+                        className="reg-input"
                       />
-                      {errors.UserName && submitted && (
-                        <div className="error-message">{errors.UserName}</div>
-                      )}
+                      {errors.UserName && submitted && <div className="reg-error">{errors.UserName}</div>}
                     </div>
 
-                    <div className="form-group half">
-                      <label htmlFor="Gender">
-                        <FaGenderless className="input-icon" />
-                        GENDER <span className="required">*</span>
+                    <div className="reg-field half">
+                      <label>
+                        <FaGenderless className="reg-field-icon" />
+                        GENDER <span className="reg-required">*</span>
                       </label>
-                      <select
-                        id="Gender"
-                        name="Gender"
-                        value={formData.Gender}
-                        onChange={handleChange}
-                        className="form-input"
-                      >
+                      <select name="Gender" value={formData.Gender} onChange={handleChange} className="reg-input">
                         <option value="" disabled>Select Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                       </select>
-                      {errors.Gender && submitted && (
-                        <div className="error-message">{errors.Gender}</div>
-                      )}
+                      {errors.Gender && submitted && <div className="reg-error">{errors.Gender}</div>}
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-group half">
+                  {/* Email & Phone */}
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="Email">
-                        <MdEmail className="input-icon" />
-                        EMAIL <span className="required">*</span>
+                        <MdEmail className="reg-field-icon" />
+                        EMAIL <span className="reg-required">*</span>
                       </label>
                       <input
                         id="Email"
@@ -477,17 +440,15 @@ const RegistrationForm = () => {
                         value={formData.Email}
                         onChange={handleChange}
                         placeholder="Enter email"
-                        className="form-input"
+                        className="reg-input"
                       />
-                      {errors.Email && submitted && (
-                        <div className="error-message">{errors.Email}</div>
-                      )}
+                      {errors.Email && submitted && <div className="reg-error">{errors.Email}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="PhoneNumber">
-                        <MdPhone className="input-icon" />
-                        PHONE <span className="required">*</span>
+                        <MdPhone className="reg-field-icon" />
+                        PHONE <span className="reg-required">*</span>
                       </label>
                       <input
                         id="PhoneNumber"
@@ -496,21 +457,20 @@ const RegistrationForm = () => {
                         value={formData.PhoneNumber}
                         onChange={handleChange}
                         placeholder="+251 XXX XXX XXX"
-                        className="form-input"
+                        className="reg-input"
                       />
-                      {errors.PhoneNumber && submitted && (
-                        <div className="error-message">{errors.PhoneNumber}</div>
-                      )}
+                      {errors.PhoneNumber && submitted && <div className="reg-error">{errors.PhoneNumber}</div>}
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-group half">
+                  {/* Password & Confirm */}
+                  <div className="reg-row">
+                    <div className="reg-field half">
                       <label htmlFor="Password">
-                        <FaLock className="input-icon" />
-                        PASSWORD <span className="required">*</span>
+                        <FaLock className="reg-field-icon" />
+                        PASSWORD <span className="reg-required">*</span>
                       </label>
-                      <div className="password-input-wrapper">
+                      <div className="reg-password-wrapper">
                         <input
                           id="Password"
                           type={showPassword ? 'text' : 'password'}
@@ -518,27 +478,21 @@ const RegistrationForm = () => {
                           value={formData.Password}
                           onChange={handleChange}
                           placeholder="Enter password"
-                          className="form-input"
+                          className="reg-input"
                         />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={togglePasswordVisibility}
-                        >
+                        <button type="button" className="reg-password-toggle" onClick={togglePasswordVisibility}>
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.Password && submitted && (
-                        <div className="error-message">{errors.Password}</div>
-                      )}
+                      {errors.Password && submitted && <div className="reg-error">{errors.Password}</div>}
                     </div>
 
-                    <div className="form-group half">
+                    <div className="reg-field half">
                       <label htmlFor="ConfirmPassword">
-                        <FaLock className="input-icon" />
-                        CONFIRM <span className="required">*</span>
+                        <FaLock className="reg-field-icon" />
+                        CONFIRM <span className="reg-required">*</span>
                       </label>
-                      <div className="password-input-wrapper">
+                      <div className="reg-password-wrapper">
                         <input
                           id="ConfirmPassword"
                           type={showConfirmPassword ? 'text' : 'password'}
@@ -546,26 +500,21 @@ const RegistrationForm = () => {
                           value={formData.ConfirmPassword}
                           onChange={handleChange}
                           placeholder="Confirm password"
-                          className="form-input"
+                          className="reg-input"
                         />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={toggleConfirmPasswordVisibility}
-                        >
+                        <button type="button" className="reg-password-toggle" onClick={toggleConfirmPasswordVisibility}>
                           {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      {errors.ConfirmPassword && submitted && (
-                        <div className="error-message">{errors.ConfirmPassword}</div>
-                      )}
+                      {errors.ConfirmPassword && submitted && <div className="reg-error">{errors.ConfirmPassword}</div>}
                     </div>
                   </div>
 
-                  <div className="form-group">
+                  {/* Address */}
+                  <div className="reg-field">
                     <label htmlFor="Address">
-                      <MdHome className="input-icon" />
-                      ADDRESS <span className="required">*</span>
+                      <MdHome className="reg-field-icon" />
+                      ADDRESS <span className="reg-required">*</span>
                     </label>
                     <input
                       id="Address"
@@ -574,32 +523,24 @@ const RegistrationForm = () => {
                       value={formData.Address}
                       onChange={handleChange}
                       placeholder="Enter your residential address"
-                      className="form-input"
+                      className="reg-input"
                     />
-                    {errors.Address && submitted && (
-                      <div className="error-message">{errors.Address}</div>
-                    )}
+                    {errors.Address && submitted && <div className="reg-error">{errors.Address}</div>}
                   </div>
 
-                  <button
-                    type="submit"
-                    className="btn-submit"
-                    disabled={isLoading}
-                  >
+                  {/* Submit */}
+                  <button type="submit" className="reg-submit" disabled={isLoading}>
                     {isLoading ? (
-                      <>
-                        <span className="spinner">⟳</span> Registering...
-                      </>
+                      <><span className="reg-spinner">⟳</span> Registering...</>
                     ) : (
-                      <>
-                        Register <FaUserPlus />
-                      </>
+                      <>Register <FaUserPlus /></>
                     )}
                   </button>
                 </div>
 
-                <div className="registration-footer">
-                  <p className="login-link">
+                {/* Footer */}
+                <div className="reg-footer">
+                  <p className="reg-login-link">
                     Already have an account? <Link to="/login">Login here</Link>
                   </p>
                 </div>
