@@ -5,8 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
-  FaUser, FaLock, FaSignInAlt, FaHome, FaEye, FaEyeSlash, FaUserCircle,
-  FaInfoCircle, FaEnvelope
+  FaEye, FaEyeSlash, FaUserCircle 
 } from 'react-icons/fa';
 import companyLogo from '../image/logoimage.jpg';
 import paymentImage from '../image/payment.png';
@@ -16,14 +15,12 @@ const UserLogin = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  // Removed: isLoggedInUser state (not used)
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Removed: setIsLoggedInUser(localStorage.getItem('isLoggedInUser') === 'true');
-    // This state is not used anywhere in the component
+    
   }, []);
 
   const handleIdentifierChange = (e) => {
