@@ -1,31 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { UserOutlined } from '@ant-design/icons';
-import { Layout, Menu, Avatar, Button, message, Form, Input, Upload, Modal, Select, Spin } from 'antd';
+import { 
+  UserOutlined, 
+  LockOutlined, 
+  MailOutlined, 
+  PhoneOutlined, 
+  HomeOutlined
+} from '@ant-design/icons';
+import { Layout, Button, message, Form, Input, Select, Spin } from 'antd';
+import { FaUserPlus, FaUserCog, FaVenusMars, FaCamera, FaTimes, FaUser } from 'react-icons/fa';
 import Dashboard from './Dashboard';
+import './AdminRegistration.css';
+
+const { Option } = Select;
 
 const AdminRegistrationForm = ({ addActivity }) => {
-
-  const { Option } = Select;
-  const [counter, setCounter] = useState(1);
   const navigate = useNavigate();
-  // Generate the next admin ID
+  const fileInputRef = useRef(null);
+  
   const getNextUserID = () => {
-    const timestamp = Date.now().toString(); // Get the current timestamp
-    const randomNumber = Math.floor(Math.random() * 10000).toString(); // Generate a random number between 0 and 9999
+    const timestamp = Date.now().toString();
+    const randomNumber = Math.floor(Math.random() * 10000).toString();
     return `P${timestamp}${randomNumber}`;
-  };
-
-  const incrementCounter = () => {
-    setCounter((prevCounter) => prevCounter + 1);
   };
 
   const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [isLoading, setIsLoading] = useState(true);
   const [form] = Form.useForm();
-  const [profilePictureUrl, setProfilePictureUrl] = useState(JSON.parse(localStorage.getItem('adminData'))?.ProfilePicture);
-  const { adminId } = useParams();
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
+  const [profilePhotoFile, setProfilePhotoFile] = useState(null);
   const [formData, setFormData] = useState({
     UserID: getNextUserID(),
     FirstName: '',
@@ -38,67 +42,8 @@ const AdminRegistrationForm = ({ addActivity }) => {
     Address: '',
     Role: 'Admin',
   });
-
   const [errors, setErrors] = useState({});
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.FirstName) {
-      newErrors.FirstName = 'First Name is required';
-    }
-
-    if (!formData.LastName) {
-      newErrors.LastName = 'Last Name is required';
-    }
-
-    if (!formData.Gender) {
-      newErrors.Gender = 'Gender is required';
-    }
-
-    if (!formData.UserName) {
-      newErrors.UserName = 'User Name is required';
-    }
-
-    if (!formData.Password) {
-      newErrors.Password = 'Password is required';
-    }
-
-    if (!formData.Email) {
-      newErrors.Email = 'Email is required';
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.Email)) {
-      newErrors.Email = 'Email is invalid';
-    }
-
-    if (!formData.PhoneNumber) {
-      newErrors.PhoneNumber = 'Phone Number is required';
-    } else if (!/^\+?\d+$/.test(formData.PhoneNumber)) {
-      newErrors.PhoneNumber = 'Phone Number is invalid';
-    }
-
-    if (!formData.Address) {
-      newErrors.Address = 'Address is required';
-    }
-
-    if (!formData.ProfilePicture) {
-      newErrors.ProfilePicture = "Profile Picture is required";
-    }
-    else if (!isFileValid(formData.ProfilePicture)) {
-      newErrors.ProfilePicture = "Invalid file format. Only JPG, JPEG, or PNG files are allowed.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  function isFileValid(file) {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
-      return false;
-    }
-    else return true;
-  }
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!adminData) {
@@ -111,14 +56,62 @@ const AdminRegistrationForm = ({ addActivity }) => {
     }
     localStorage.setItem('selectedMenu', 6);
   }, [adminData, navigate]);
+
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="admin-loading">
         <Spin size="large" />
-        <p>Please wait while we check your login status...</p>
+        <p>Loading...</p>
       </div>
     );
   }
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        message.error('Image size should be less than 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setProfilePhotoFile(file);
+      setFormData((prevData) => ({
+        ...prevData,
+        ProfilePicture: file,
+      }));
+      if (errors.ProfilePicture) {
+        setErrors((prev) => ({ ...prev, ProfilePicture: '' }));
+      }
+    }
+  };
+
+  const handleDeletePhoto = () => {
+    setProfilePhotoPreview(null);
+    setProfilePhotoFile(null);
+    setFormData((prevData) => ({
+      ...prevData,
+      ProfilePicture: null,
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (errors.ProfilePicture) {
+      setErrors((prev) => ({ ...prev, ProfilePicture: '' }));
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -126,180 +119,363 @@ const AdminRegistrationForm = ({ addActivity }) => {
       ...prevData,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-  
-    // Check the file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
-      return;
-    }
-  
-    const url = URL.createObjectURL(file);
-    setProfilePictureUrl(url);
+  const handleSelectChange = (name, value) => {
     setFormData((prevData) => ({
       ...prevData,
-      ProfilePicture: file,
+      [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleSave = async (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.FirstName?.trim()) newErrors.FirstName = 'First Name is required';
+    if (!formData.LastName?.trim()) newErrors.LastName = 'Last Name is required';
+    if (!formData.Gender) newErrors.Gender = 'Gender is required';
+    if (!formData.UserName?.trim()) newErrors.UserName = 'Username is required';
+    if (!formData.Password) newErrors.Password = 'Password is required';
+    if (formData.Password && formData.Password.length < 6) {
+      newErrors.Password = 'Password must be at least 6 characters';
+    }
+    if (!formData.Email?.trim()) {
+      newErrors.Email = 'Email is required';
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.Email)) {
+      newErrors.Email = 'Email is invalid';
+    }
+    if (!formData.PhoneNumber?.trim()) {
+      newErrors.PhoneNumber = 'Phone Number is required';
+    } else if (!/^\+?\d+$/.test(formData.PhoneNumber)) {
+      newErrors.PhoneNumber = 'Phone Number is invalid';
+    }
+    if (!formData.Address?.trim()) newErrors.Address = 'Address is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Get form values
-      const values = await form.validateFields(); // Validate the form fields and get the values
-
-      // Update the formData state with the form values
-      setFormData((prevData) => ({
-        ...prevData,
-        ...values,
-        Role: 'Admin',
-      }));
-
-      // Create a new FormData object
-      const updatedAdminData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
+      const submitData = new FormData();
+      
+      Object.keys(formData).forEach(key => {
         if (key === 'ProfilePicture') {
-          // Skip the ProfilePicture field if it's not updated
-          if (formData.ProfilePicture) {
-            updatedAdminData.append(key, formData.ProfilePicture);
+          if (profilePhotoFile) {
+            submitData.append(key, profilePhotoFile);
           }
-        } else {
-          updatedAdminData.append(key, value);
+        } else if (key !== 'Role') {
+          submitData.append(key, formData[key] || '');
         }
       });
-      updatedAdminData.append('Role', 'Admin');
+      submitData.append('Role', 'Admin');
 
-      // Send the updated admin profile to the server
-      const response = await axios.post(`http://localhost:3000/Users`, updatedAdminData, {
+      const response = await axios.post(`http://localhost:3000/Users`, submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: adminData.token,
+          Authorization: adminData?.token,
         },
       });
 
-      // Handle the response from the server
-      if (response.status === 200) {
-        message.success('Admin Registered successfully');
-        // Register admin activity
-      const activity = {
-        adminName: `Admin ${adminData.user.FirstName}`,
-        action: 'registered',
-        targetAdminName:`Admin ${values.FirstName}`,
-        timestamp: new Date().getTime(),
+      if (response.status === 200 || response.status === 201) {
+        message.success('Admin registered successfully!');
+        
+        if (addActivity) {
+          const activity = {
+            adminName: `Admin ${adminData?.user?.FirstName || ''}`,
+            action: 'registered',
+            targetAdminName: `Admin ${formData.FirstName}`,
+            timestamp: new Date().getTime(),
           };
-  
+
           try {
-            const activityResponse = await axios.post('http://localhost:3000/admin-activity', activity, {
-              headers: {
-                Authorization: adminData.token,
-              },
+            await axios.post('http://localhost:3000/admin-activity', activity, {
+              headers: { Authorization: adminData?.token },
             });
-  
-            if (activityResponse.status === 200) {
-              console.log('Admin activity registered successfully!');
-            } else {
-              console.error('Error registering admin activity:', activityResponse);
-            }
-          } catch (error){
+          } catch (error) {
             console.error('Error registering admin activity:', error);
           }
-      form.resetFields();
-      window.location.href = window.location.href;
-      } else {
-        message.error('Failed to register admin');
+        }
+
+        form.resetFields();
+        setProfilePhotoPreview(null);
+        setProfilePhotoFile(null);
+        setFormData({
+          UserID: getNextUserID(),
+          FirstName: '',
+          LastName: '',
+          Gender: '',
+          UserName: '',
+          Password: '',
+          Email: '',
+          PhoneNumber: '',
+          Address: '',
+          Role: 'Admin',
+        });
+        setErrors({});
+        setLoading(false);
+        
+        setTimeout(() => {
+          navigate('/admin/dashboard');
+        }, 1500);
       }
     } catch (error) {
       console.error('Error registering admin:', error);
-      message.error('Error registering admin');
+      message.error(error.response?.data?.message || 'Error registering admin');
+      setLoading(false);
     }
-    
   };
 
   return (
-    <Layout>
-      <Dashboard content={
-        <Layout.Content className="admin-registration-content">
-          <div className="admin-registration-wrapper">
-            <div className="admin-registration-header">
+    <Dashboard
+      content={
+        <div className="admin-reg-container">
+          <div className="admin-reg-card">
+            {/* Header */}
+            <div className="admin-reg-header">
+              <div className="admin-reg-header-left">
+                <div className="admin-reg-icon">
+                  <FaUserCog />
+                </div>
+                <div>
+                  <h1>Admin Registration</h1>
+                  <p>Register a new administrator for the system</p>
+                </div>
+              </div>
+              <div className="admin-reg-badge">
+                <FaUserPlus /> New Admin
+              </div>
             </div>
-            <h1>ADMIN REGISTRATION</h1>
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={formData}
-              onChange={handleFormChange}
-              onFinish={handleSave}
-            >
-            <Form.Item label="UserID" name="UserID" rules={[{ required: true }]}>
-  <Input defaultvalue={formData.UserID} disabled />
-</Form.Item>
-              
-              <Form.Item label="First Name" 
-              name="FirstName" rules={[{ required: true }]}>
-                <Input placeholder="Enter First Name" />
-              </Form.Item>
-              {errors.FirstName &&
-               <p className="error-message"
-               >{errors.FirstName}</p>}
-              
-              
-              
-              
-              <Form.Item label="Last Name" name="LastName" rules={[{ required: true }]}>
-                <Input placeholder="Enter Last Name" />
-              </Form.Item>
-              {errors.LastName && <p className="error-message">{errors.LastName}</p>}
-              <Form.Item label="Gender" name="Gender" rules={[{ required: true }]}>
-                <Select>
-                  <Option value="male">Male</Option>
-                  <Option value="female">Female</Option>
-                </Select>
-              </Form.Item>
-              {errors.Gender && <p className="error-message">{errors.Gender}</p>}
-              <Form.Item label="User Name" name="UserName" rules={[{ required: true }]}>
-                <Input placeholder="Enter User Name" />
-              </Form.Item>
-              {errors.UserName && <p className="error-message">{errors.UserName}</p>}
-              <Form.Item label="Password" name="Password" rules={[{ required: true }]}>
-                <Input.Password placeholder="Enter Password" />
-              </Form.Item>
-              {errors.Password && <p className="error-message">{errors.Password}</p>}
-              <Form.Item label="Email" name="Email" rules={[{ required: true, type: 'email' }]}>
-                <Input placeholder="Enter Email" />
-              </Form.Item>
-              {errors.Email && <p className="error-message">{errors.Email}</p>}
-              <Form.Item label="Phone Number" name="PhoneNumber" rules={[{ required: true, pattern: /^\+?\d+$/ }]}>
-                <Input placeholder="Enter Phone Number" />
-              </Form.Item>
-              {errors.PhoneNumber && <p className="error-message">{errors.PhoneNumber}</p>}
-              <Form.Item label="Address" name="Address" rules={[{ required: true }]}>
-                <Input placeholder="Enter Address" />
-              </Form.Item>
-              {errors.Address && <p className="error-message">{errors.Address}</p>}
-              <Form.Item name="ProfilePicture" >
-                <label htmlFor="profilePicture">Profile Picture:</label>
-                <input
-                  type="file"
-                  id="profilePicture"
-                  accept=".jpeg, .jpg, .png, .gif"
-                  onChange={handleFileChange}
-                />
-                {profilePictureUrl && (
-                  <img src={profilePictureUrl} alt="Profile" style={{ width: '200px' }} />
-                )}
-              </Form.Item>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Register
-                </Button>
-              </Form.Item>
-            </Form>
+
+            <div className="admin-reg-body">
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSave}
+                className="admin-reg-form"
+              >
+                {/* Profile Photo - OPTIONAL */}
+                <div className="profile-upload-section">
+                  <div className="profile-photo-container">
+                    {profilePhotoPreview ? (
+                      <>
+                        <img 
+                          src={profilePhotoPreview} 
+                          alt="Profile" 
+                          className="profile-photo-preview"
+                        />
+                        <button
+                          type="button"
+                          className="delete-photo-btn"
+                          onClick={handleDeletePhoto}
+                          title="Delete photo"
+                        >
+                          <FaTimes />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="profile-photo-placeholder">
+                        <FaUser className="placeholder-icon" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="upload-photo-btn"
+                      onClick={triggerFileInput}
+                    >
+                      <FaCamera />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                  <p className="upload-hint">
+                    {profilePhotoPreview ? 'CLICK X TO DELETE' : 'UPLOAD PROFILE PHOTO (OPTIONAL)'}
+                  </p>
+                </div>
+
+                {/* Form Fields - All in 2 columns */}
+                <div className="form-grid">
+                  {/* First Name */}
+                  <div className="form-group">
+                    <label>
+                      <UserOutlined className="field-icon" />
+                      First Name <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="FirstName"
+                      placeholder="Enter first name"
+                      value={formData.FirstName}
+                      onChange={handleFormChange}
+                      className={errors.FirstName ? 'error' : ''}
+                      status={errors.FirstName ? 'error' : ''}
+                    />
+                    {errors.FirstName && <div className="error-message">{errors.FirstName}</div>}
+                  </div>
+
+                  {/* Last Name */}
+                  <div className="form-group">
+                    <label>
+                      <UserOutlined className="field-icon" />
+                      Last Name <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="LastName"
+                      placeholder="Enter last name"
+                      value={formData.LastName}
+                      onChange={handleFormChange}
+                      className={errors.LastName ? 'error' : ''}
+                      status={errors.LastName ? 'error' : ''}
+                    />
+                    {errors.LastName && <div className="error-message">{errors.LastName}</div>}
+                  </div>
+
+                  {/* Gender */}
+                  <div className="form-group">
+                    <label>
+                      <FaVenusMars className="field-icon" />
+                      Gender <span className="required">*</span>
+                    </label>
+                    <Select
+                      value={formData.Gender || undefined}
+                      onChange={(value) => handleSelectChange('Gender', value)}
+                      placeholder="Select gender"
+                      className={errors.Gender ? 'error' : ''}
+                      status={errors.Gender ? 'error' : ''}
+                    >
+                      <Option value="male">Male</Option>
+                      <Option value="female">Female</Option>
+                    </Select>
+                    {errors.Gender && <div className="error-message">{errors.Gender}</div>}
+                  </div>
+
+                  {/* Username */}
+                  <div className="form-group">
+                    <label>
+                      <UserOutlined className="field-icon" />
+                      Username <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="UserName"
+                      placeholder="Enter username"
+                      value={formData.UserName}
+                      onChange={handleFormChange}
+                      className={errors.UserName ? 'error' : ''}
+                      status={errors.UserName ? 'error' : ''}
+                    />
+                    {errors.UserName && <div className="error-message">{errors.UserName}</div>}
+                  </div>
+
+                  {/* Password */}
+                  <div className="form-group">
+                    <label>
+                      <LockOutlined className="field-icon" />
+                      Password <span className="required">*</span>
+                    </label>
+                    <Input.Password
+                      name="Password"
+                      placeholder="Enter password (min 6 characters)"
+                      value={formData.Password}
+                      onChange={handleFormChange}
+                      className={errors.Password ? 'error' : ''}
+                      status={errors.Password ? 'error' : ''}
+                    />
+                    {errors.Password && <div className="error-message">{errors.Password}</div>}
+                  </div>
+
+                  {/* Email */}
+                  <div className="form-group">
+                    <label>
+                      <MailOutlined className="field-icon" />
+                      Email <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="Email"
+                      type="email"
+                      placeholder="Enter email"
+                      value={formData.Email}
+                      onChange={handleFormChange}
+                      className={errors.Email ? 'error' : ''}
+                      status={errors.Email ? 'error' : ''}
+                    />
+                    {errors.Email && <div className="error-message">{errors.Email}</div>}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="form-group">
+                    <label>
+                      <PhoneOutlined className="field-icon" />
+                      Phone Number <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="PhoneNumber"
+                      placeholder="+251 XXX XXX XXX"
+                      value={formData.PhoneNumber}
+                      onChange={handleFormChange}
+                      className={errors.PhoneNumber ? 'error' : ''}
+                      status={errors.PhoneNumber ? 'error' : ''}
+                    />
+                    {errors.PhoneNumber && <div className="error-message">{errors.PhoneNumber}</div>}
+                  </div>
+
+                  {/* Address - Now beside Phone Number */}
+                  <div className="form-group">
+                    <label>
+                      <HomeOutlined className="field-icon" />
+                      Address <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="Address"
+                      placeholder="Enter address"
+                      value={formData.Address}
+                      onChange={handleFormChange}
+                      className={errors.Address ? 'error' : ''}
+                      status={errors.Address ? 'error' : ''}
+                    />
+                    {errors.Address && <div className="error-message">{errors.Address}</div>}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="form-actions">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    className="submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Registering...' : <><FaUserPlus /> Register Admin</>}
+                  </Button>
+                </div>
+              </Form>
+            </div>
           </div>
-        </Layout.Content>} />
-    </Layout>
+        </div>
+      }
+    />
   );
 };
 

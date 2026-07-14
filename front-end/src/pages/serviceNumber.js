@@ -1,61 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import './style.css';
 import axios from 'axios';
+import { 
+  FaUser, 
+  FaUsers, 
+  FaArrowRight, 
+  FaCheckCircle,
+  FaCreditCard,
+  FaUserCheck
+} from 'react-icons/fa';
+import { MdPayment } from 'react-icons/md';
 import Header from './Header';
+import './ServiceNumber.css';
 
 const ServiceNumber = () => {
-
-  // State variables
-  const [userData, setUserData] = useState(localStorage.getItem('userData'));
   const [serviceNumber, setServiceNumber] = useState('');
-  const [serviceProviderBIN, setServiceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN'));
-  const [bill, setBill] = useState(null);
+  const [serviceProviderBIN] = useState(localStorage.getItem('serviceProviderBIN')); 
   const [user, setUser] = useState(null);
-  const [data, setData] = useState({});
   const [paymentFor, setPaymentFor] = useState('');
   const [errors, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.setItem("selectedMenu", 5);
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Retrieve user data from localStorage or API
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData) {
+        const userDataFromStorage = JSON.parse(localStorage.getItem('userData'));
+        if (!userDataFromStorage) {
           navigate("/users");
           return;
         }
 
-        setUser(userData);
-        console.log(userData.id);
+        setUser(userDataFromStorage);
 
-
-        // Fetch the user data including service providers
-        const response = await axios.get(`http://localhost:3000/Users/${userData.id}`);
+        const response = await axios.get(`http://localhost:3000/Users/${userDataFromStorage.id}`);
         const { data } = response;
-        console.log(data);
 
-        // Filter service providers based on serviceProviderBIN
-        const filteredServiceProviders = data.ServiceProviders.filter(
+        const filteredServiceProviders = data.ServiceProviders?.filter(
           (provider) => provider.serviceProviderBIN === serviceProviderBIN
         );
 
-        if (filteredServiceProviders.length > 0) {
+        if (filteredServiceProviders?.length > 0) {
           const serviceNos = filteredServiceProviders.map(
-            (provider) => provider.userServiceProvider.serviceNo
+            (provider) => provider.userServiceProvider?.serviceNo
           );
           setServiceNumber(serviceNos.join(', '));
         }
-
-        console.log(filteredServiceProviders);
-        console.log(serviceNumber);
-        setData(data);
       } catch (error) {
         console.error('Error fetching service number:', error);
         message.error('Failed to fetch service number');
@@ -63,112 +58,158 @@ const ServiceNumber = () => {
     };
 
     fetchData();
-  }, []);
+  }, [navigate, serviceProviderBIN]); // Added missing dependencies
 
   const handleServiceNumberChange = (event) => {
     setServiceNumber(event.target.value);
   };
 
-  const handlePaymentForChange = (event) => {
-    setPaymentFor(event.target.value);
+  const handlePaymentForChange = (value) => {
+    setPaymentFor(value);
+    setErrorMessage('');
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!paymentFor) {
+      setErrorMessage('Please select who you are paying for');
+      return;
+    }
 
     if (!serviceNumber) {
       setErrorMessage('Service number is required');
       return;
     }
 
+    setLoading(true);
     localStorage.setItem('serviceNo', serviceNumber);
-    console.log(localStorage.getItem('serviceNo'));
-    navigate('/payment', { state: { serviceNumber } });
+    setTimeout(() => {
+      navigate('/payment');
+      setLoading(false);
+    }, 500);
   };
 
-
   return (
-    <div className='container'>
+    <div className="sn-container">
       <Header />
-      <div className='circle'>
-        <p>P</p>
-      </div>
 
-      <div className='bodyy' >
-
-        <div className='form-container' >
-          <form onSubmit={handleSubmit}>
-            <div className='title'>Payment Page
-              <div
-                className="title-line"
-                style={{
-                  content: "",
-                  position: "relative",
-                  height: "3px",
-                  width: "25px",
-                  left: '10px',
-                  transform: "translateX(-50%)",
-                  backgroundImage:
-                    "linear-gradient(to right, rgb(3, 55, 100), rgb(95, 174, 230))"
-                }}
-              ></div></div>
-            <div>
-              <label>
-                <input
-                  type='radio'
-                  value='self'
-                  checked={paymentFor === 'self'}
-                  onChange={handlePaymentForChange}
-                />
-                Make payment for myself
-              </label>
-              <label>
-                <input
-                  type='radio'
-                  value='other'
-                  checked={paymentFor === 'other'}
-                  onChange={handlePaymentForChange}
-                />
-                Make payment for someone else
-              </label>
+      <main className="sn-main">
+        <div className="sn-card">
+          {/* Header */}
+          <div className="sn-card-header">
+            <div className="sn-header-icon">
+              <MdPayment />
             </div>
-            {paymentFor === 'self' && user && (
-              <>
-                <p>User ID: {user.UserID}</p>
-                <p>First Name: {user.FirstName}</p>
-                <p>Last Name: {user.LastName}</p>
-                {/* Display other user details */}
-                <label >
-                  <br></br>
-                  Service Number:
-                  <input
-                    type='text'
-                    value={serviceNumber}
-                    onChange={handleServiceNumberChange}
-                  />
-                </label>
-                <button className='button' type='submit'>NEXT</button>
-              </>
-            )}
-            {paymentFor === 'other' && (
-              <>
-                <label>
-                  Service Number:
-                  <input
-                    type='text'
-                    onChange={handleServiceNumberChange}
-                  />
-                </label>
-                <button type='submit'>NEXT</button>
-              </>
-            )}
-            <br />
-            {errors && <span>{errors}</span>}
-          </form>
-        </div>
-      </div>
-    </div>
+            <h1>Payment Details</h1>
+            <p>Enter your service number to continue</p>
+          </div>
 
+          <div className="sn-card-body">
+            <form onSubmit={handleSubmit}>
+              {/* Payment For Options */}
+              <div className="sn-options">
+                <label 
+                  className={`sn-option ${paymentFor === 'self' ? 'active' : ''}`}
+                  onClick={() => handlePaymentForChange('self')}
+                >
+                  <input
+                    type="radio"
+                    value="self"
+                    checked={paymentFor === 'self'}
+                    onChange={() => handlePaymentForChange('self')}
+                  />
+                  <div className="sn-option-icon self">
+                    <FaUser />
+                  </div>
+                  <div className="sn-option-text">
+                    <h4>Myself</h4>
+                    <p>Pay for your own account</p>
+                  </div>
+                  {paymentFor === 'self' && <FaCheckCircle className="sn-option-check" />}
+                </label>
+
+                <label 
+                  className={`sn-option ${paymentFor === 'other' ? 'active' : ''}`}
+                  onClick={() => handlePaymentForChange('other')}
+                >
+                  <input
+                    type="radio"
+                    value="other"
+                    checked={paymentFor === 'other'}
+                    onChange={() => handlePaymentForChange('other')}
+                  />
+                  <div className="sn-option-icon other">
+                    <FaUsers />
+                  </div>
+                  <div className="sn-option-text">
+                    <h4>Someone Else</h4>
+                    <p>Pay for another person</p>
+                  </div>
+                  {paymentFor === 'other' && <FaCheckCircle className="sn-option-check" />}
+                </label>
+              </div>
+
+              {errors && <div className="sn-error">{errors}</div>}
+
+              {/* User Details - Self */}
+              {paymentFor === 'self' && user && (
+                <div className="sn-user-details">
+                  <div className="sn-user-header">
+                    <FaUserCheck className="sn-user-icon" />
+                    <h3>Your Details</h3>
+                  </div>
+                  <div className="sn-user-grid">
+                    <div className="sn-user-field">
+                      <label>User ID</label>
+                      <p>{user.UserID}</p>
+                    </div>
+                    <div className="sn-user-field">
+                      <label>Full Name</label>
+                      <p>{user.FirstName} {user.LastName}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Service Number Input */}
+              <div className="sn-input-group">
+                <label htmlFor="serviceNumber">
+                  <FaCreditCard className="sn-input-icon" />
+                  Service Number
+                </label>
+                <input
+                  id="serviceNumber"
+                  type="text"
+                  value={serviceNumber}
+                  onChange={handleServiceNumberChange}
+                  placeholder="Enter your service number"
+                  className="sn-input"
+                />
+                <p className="sn-input-hint">Enter the service number provided by your provider</p>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                className="sn-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="sn-spinner">⏳</span>
+                ) : (
+                  <>
+                    Continue <FaArrowRight />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+        
+        </div>
+      </main>
+    </div>
   );
 };
 

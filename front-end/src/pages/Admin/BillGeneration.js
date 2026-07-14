@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { UploadOutlined } from '@ant-design/icons';
-import { Layout, Menu, Avatar, Button, message, Form, Input, Upload, Modal, Spin } from 'antd';
+import { 
+  FileTextOutlined, 
+  CalendarOutlined, 
+  DollarOutlined,
+  UserOutlined,
+  BankOutlined,
+  PercentageOutlined
+} from '@ant-design/icons';
+import { Button, message, Form, Input, Spin } from 'antd';
+import { 
+  FaUserPlus, 
+  FaFileInvoice, 
+  FaCalendarAlt, 
+  FaMoneyBillWave,
+  FaBuilding,
+  FaUser,
+  FaPercent,
+  FaReceipt
+} from 'react-icons/fa';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
+import './BillGeneration.css';
 
 const BillGenerationForm = () => {
   const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
@@ -20,12 +38,14 @@ const BillGenerationForm = () => {
     billStatus: "Unpaid",
     serviceProviderBIN: '',
     UserId: '',
+    customerName: '',
   });
 
-  const [file, setFile] = useState(null);
   const [errors, setErrors] = useState({});
-  const [serviceProviderAuthorizationLetterUrl, setServiceProviderAuthorizationLetterUrl] = useState();
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [searchingUser, setSearchingUser] = useState(false);
+  const [foundUser, setFoundUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,12 +60,11 @@ const BillGenerationForm = () => {
     localStorage.setItem('selectedMenu', 11);
   }, [adminData, navigate]);
 
-
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="bill-loading">
         <Spin size="large" />
-        <p>Please wait while we check your login status...</p>
+        <p>Loading...</p>
       </div>
     );
   }
@@ -53,15 +72,15 @@ const BillGenerationForm = () => {
   const validateForm = async () => {
     try {
       await form.validateFields();
-      setErrors({}); // Reset the errors state when the form is valid
-      return true; // Return true when the form is valid
+      setErrors({});
+      return true;
     } catch (error) {
       const newErrors = {};
       error.errorFields.forEach((field) => {
         newErrors[field.name[0]] = field.errors[0];
       });
       setErrors(newErrors);
-      return false; // Return false when there are validation errors
+      return false;
     }
   };
 
@@ -71,60 +90,153 @@ const BillGenerationForm = () => {
       ...prevData,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+
+    // Auto search user
+    if (name === 'UserId') {
+      if (value && value.trim().length > 5) {
+        autoSearchUser(value.trim());
+      } else {
+        setFoundUser(null);
+        setFormData((prev) => ({ ...prev, customerName: '' }));
+        form.setFieldsValue({ customerName: '' });
+      }
+    }
+  };
+
+  // ========== AUTO SEARCH USER ==========
+  const autoSearchUser = async (userId) => {
+    if (!userId || userId.trim() === '' || userId.trim().length < 5) {
+      return;
+    }
+
+    setSearchingUser(true);
+    try {
+      const response = await axios.get('http://localhost:3000/Users');
+      
+      let users = [];
+      if (response.data && Array.isArray(response.data)) {
+        users = response.data;
+      } else if (response.data && response.data.users && Array.isArray(response.data.users)) {
+        users = response.data.users;
+      } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        users = response.data.data;
+      } else {
+        users = [response.data];
+      }
+      
+      const user = users.find(u => u.UserID === userId.trim());
+      
+      if (user) {
+        setFoundUser(user);
+        // Keep the UserID as the original P... format, not the numeric id
+        setFormData((prev) => ({
+          ...prev,
+          UserId: userId.trim(), // Keep the P... format
+          customerName: `${user.FirstName || ''} ${user.LastName || ''}`.trim() || user.UserName || 'Unknown',
+        }));
+        form.setFieldsValue({
+          customerName: `${user.FirstName || ''} ${user.LastName || ''}`.trim() || user.UserName || 'Unknown',
+        });
+      } else {
+        setFoundUser(null);
+        setFormData((prev) => ({ ...prev, customerName: '' }));
+        form.setFieldsValue({ customerName: '' });
+      }
+    } catch (error) {
+      console.error('Error finding user:', error);
+    }
+    setSearchingUser(false);
   };
 
   const handleSubmit = async () => {
     if (await validateForm()) {
+      setLoading(true);
       try {
-        console.log(formData);
+        // Find the numeric id from the UserID string
+        let userIdToSend = formData.UserId;
+        
+        if (foundUser) {
+          userIdToSend = foundUser.id; // Send numeric id to API
+        } else if (formData.UserId && !isNaN(Number(formData.UserId))) {
+          userIdToSend = Number(formData.UserId);
+        } else {
+          const response = await axios.get('http://localhost:3000/Users');
+          let users = [];
+          if (response.data && Array.isArray(response.data)) {
+            users = response.data;
+          } else if (response.data && response.data.users && Array.isArray(response.data.users)) {
+            users = response.data.users;
+          }
+          const user = users.find(u => u.UserID === formData.UserId);
+          if (user) {
+            userIdToSend = user.id;
+            setFoundUser(user);
+          } else {
+            message.error('User not found. Please enter a valid User ID.');
+            setLoading(false);
+            return;
+          }
+        }
 
         const formDataToSend = {
           billNumber: formData.billNumber,
           dateIssued: formData.dateIssued,
           dueDate: formData.dueDate,
-          amountDue: parseFloat(formData.amountDue),
+          amountDue: parseFloat(formData.amountDue) || 0,
           serviceDescription: formData.serviceDescription,
           servicePeriod: formData.servicePeriod,
-          serviceCharges: parseFloat(formData.serviceCharges),
-          additionalCharges: parseFloat(formData.additionalCharges),
-          billStatus: formData.billStatus,
-          serviceProviderBIN: parseInt(formData.serviceProviderBIN),
-          UserId: parseInt(formData.UserId)
+          serviceCharges: parseFloat(formData.serviceCharges) || 0,
+          additionalCharges: parseFloat(formData.additionalCharges) || 0,
+          billStatus: formData.billStatus || "Unpaid",
+          serviceProviderBIN: formData.serviceProviderBIN,
+          UserId: userIdToSend, // Send numeric id
+          customerName: formData.customerName || 'N/A'
         };
 
-        console.log(formDataToSend);
+        console.log('Sending data:', formDataToSend);
 
-        console.log(formDataToSend);
         const response = await axios.post('http://localhost:3000/bills', formDataToSend);
 
-        if (response.status === 200) {
-          const activity = {
-            adminName: `Admin ${adminData.user.FirstName}`,
-            action: 'registered',
-            targetAdminName: `bill for ${response.data.customerName}`,
-            timestamp: new Date().getTime(),
-          };
-
-          // Save the admin activity to the database
-          axios.post('http://localhost:3000/admin-activity', activity, {
-            headers: {
-              Authorization: adminData.token,
-            },
-          });
-
+        if (response.status === 200 || response.status === 201) {
           message.success('Bill registered successfully!');
-          console.log('Bill registered successfully!');
-          form.resetFields(); // Reset the form fields
-          return;
-        }
-      } catch (error) {
-        if (error.response && error.response.data && error.response.data.error) {
-          const errorMessage = error.response.data.error;
-          message.error(`Failed to register bill. ${errorMessage}`);
+          
+          form.resetFields();
+          setFormData({
+            billNumber: '',
+            dateIssued: '',
+            dueDate: '',
+            amountDue: '',
+            serviceDescription: '',
+            servicePeriod: '',
+            serviceCharges: '',
+            additionalCharges: '',
+            billStatus: "Unpaid",
+            serviceProviderBIN: '',
+            UserId: '',
+            customerName: '',
+          });
+          setFoundUser(null);
+          setErrors({});
+          setLoading(false);
+          
         } else {
           message.error('Failed to register bill. Please try again.');
-          console.error('Error:', error);
+          setLoading(false);
         }
+      } catch (error) {
+        console.error('Error:', error);
+        
+        if (error.response && error.response.data && error.response.data.error) {
+          message.error(`Failed to register bill. ${error.response.data.error}`);
+        } else if (error.response && error.response.data && error.response.data.message) {
+          message.error(`Failed to register bill: ${error.response.data.message}`);
+        } else {
+          message.error('Failed to register bill. Please try again.');
+        }
+        setLoading(false);
       }
     }
   };
@@ -132,114 +244,265 @@ const BillGenerationForm = () => {
   return (
     <Dashboard
       content={
-        <Form name="serviceProviderRegistrationForm" layout="vertical" onFinish={handleSubmit} form={form}>
-          <h1>Service provider Registration</h1>
-          <Form.Item
-            label="Bill number"
-            name="billNumber"
-            validateStatus={errors.billNumber && 'error'}
-            help={errors.billNumber}
-            rules={[{ required: true }]}
-          >
-            <Input name="billNumber" onChange={handleChange} placeholder="Enter bill number" />
-          </Form.Item>
+        <div className="bill-container">
+          <div className="bill-card">
+            {/* Header */}
+            <div className="bill-header">
+              <div className="bill-header-left">
+                <div className="bill-icon">
+                  <FaFileInvoice />
+                </div>
+                <div>
+                  <h1>Bill Generation</h1>
+                  <p>Create a new bill for customers</p>
+                </div>
+              </div>
+              <div className="bill-badge">
+                <FaUserPlus /> New Bill
+              </div>
+            </div>
 
-          <Form.Item
-            label="Date issued"
-            name="dateIssued"
-            validateStatus={errors.dateIssued && 'error'}
-            help={errors.dateIssued}
-            rules={[{ required: true }]}
-          >
-            <Input name="dateIssued" onChange={handleChange} placeholder="Enter date issued" />
-          </Form.Item>
+            <div className="bill-body">
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                className="bill-form"
+              >
+                <div className="form-grid">
+                  {/* Customer Information Section */}
+                  <div className="form-group full-width">
+                    <h3 className="section-title">Customer Information</h3>
+                  </div>
 
-          <Form.Item
-            label="Due date"
-            name="dueDate"
-            validateStatus={errors.dueDate && 'error'}
-            help={errors.dueDate}
-            rules={[{ required: true }]}
-          >
-            <Input name="dueDate" onChange={handleChange} placeholder="Enter due date" />
-          </Form.Item>
+                  {/* User ID */}
+                  <div className="form-group">
+                    <label>
+                      <FaUser className="field-icon" />
+                      User ID <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="UserId"
+                      placeholder="Enter User ID (e.g., P17833237518405544)"
+                      value={formData.UserId}
+                      onChange={handleChange}
+                      className={errors.UserId ? 'error' : ''}
+                      status={errors.UserId ? 'error' : ''}
+                      suffix={searchingUser ? <Spin size="small" /> : null}
+                    />
+                    {errors.UserId && <div className="error-message">{errors.UserId}</div>}
+                  </div>
 
-          <Form.Item
-            label="Amount due"
-            name="amountDue"
-            validateStatus={errors.amountDue && 'error'}
-            help={errors.amountDue}
-            rules={[{ required: true }]}
-          >
-            <Input name="amountDue" onChange={handleChange} placeholder="Enter amount due" />
-          </Form.Item>
+                  {/* Customer Name - Auto-filled */}
+                  <div className="form-group">
+                    <label>
+                      <UserOutlined className="field-icon" />
+                      Customer Name <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="customerName"
+                      placeholder="Customer name auto-fills"
+                      value={formData.customerName}
+                      onChange={handleChange}
+                      className={errors.customerName ? 'error' : ''}
+                      status={errors.customerName ? 'error' : ''}
+                    />
+                    {errors.customerName && <div className="error-message">{errors.customerName}</div>}
+                  </div>
 
-          <Form.Item
-            label="Service description"
-            name="serviceDescription"
-            validateStatus={errors.serviceDescription && 'error'}
-            help={errors.serviceDescription}
-            rules={[{ required: true }]}
-          >
-            <Input name="serviceDescription" onChange={handleChange} placeholder="Enter service description" />
-          </Form.Item>
+                  {/* Bill Information Section */}
+                  <div className="form-group full-width">
+                    <h3 className="section-title">Bill Information</h3>
+                  </div>
 
-          <Form.Item
-            label="Service period"
-            name="servicePeriod"
-            validateStatus={errors.servicePeriod && 'error'}
-            help={errors.servicePeriod}
-            rules={[{ required: true }]}
-          >
-            <Input name="servicePeriod" onChange={handleChange} placeholder="Enter service period" />
-          </Form.Item>
+                  {/* Bill Number */}
+                  <div className="form-group">
+                    <label>
+                      <FaReceipt className="field-icon" />
+                      Bill Number <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="billNumber"
+                      placeholder="Enter bill number"
+                      value={formData.billNumber}
+                      onChange={handleChange}
+                      className={errors.billNumber ? 'error' : ''}
+                      status={errors.billNumber ? 'error' : ''}
+                    />
+                    {errors.billNumber && <div className="error-message">{errors.billNumber}</div>}
+                  </div>
 
-          <Form.Item
-            label="Service charges"
-            name="serviceCharges"
-            validateStatus={errors.serviceCharges && 'error'}
-            help={errors.serviceCharges}
-            rules={[{ required: true }]}
-          >
-            <Input name="serviceCharges" onChange={handleChange} placeholder="Enter service charges" />
-          </Form.Item>
+                  {/* Date Issued */}
+                  <div className="form-group">
+                    <label>
+                      <FaCalendarAlt className="field-icon" />
+                      Date Issued <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="dateIssued"
+                      placeholder="YYYY-MM-DD"
+                      value={formData.dateIssued}
+                      onChange={handleChange}
+                      className={errors.dateIssued ? 'error' : ''}
+                      status={errors.dateIssued ? 'error' : ''}
+                    />
+                    {errors.dateIssued && <div className="error-message">{errors.dateIssued}</div>}
+                  </div>
 
-          <Form.Item
-            label="Additional charges"
-            name="additionalCharges"
-            validateStatus={errors.additionalCharges && 'error'}
-            help={errors.additionalCharges}
-            rules={[{ required: true }]}
-          >
-            <Input name="additionalCharges" onChange={handleChange} placeholder="Enter additional charges" />
-          </Form.Item>
+                  {/* Due Date */}
+                  <div className="form-group">
+                    <label>
+                      <FaCalendarAlt className="field-icon" />
+                      Due Date <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="dueDate"
+                      placeholder="YYYY-MM-DD"
+                      value={formData.dueDate}
+                      onChange={handleChange}
+                      className={errors.dueDate ? 'error' : ''}
+                      status={errors.dueDate ? 'error' : ''}
+                    />
+                    {errors.dueDate && <div className="error-message">{errors.dueDate}</div>}
+                  </div>
 
-          <Form.Item
-            label="Service provider BIN"
-            name="serviceProviderBIN"
-            validateStatus={errors.serviceProviderBIN && 'error'}
-            help={errors.serviceProviderBIN}
-            rules={[{ required: true }]}
-          >
-            <Input name="serviceProviderBIN" onChange={handleChange} placeholder="Enter service provider BIN" />
-          </Form.Item>
+                  {/* Service Information Section */}
+                  <div className="form-group full-width">
+                    <h3 className="section-title">Service Information</h3>
+                  </div>
 
-          <Form.Item
-            label="User ID"
-            name="UserId"
-            validateStatus={errors.UserId && 'error'}
-            help={errors.UserId}
-            rules={[{ required: true }]}
-          >
-            <Input name="UserId" onChange={handleChange} placeholder="Enter user ID" />
-          </Form.Item>
+                  {/* Service Provider BIN */}
+                  <div className="form-group">
+                    <label>
+                      <FaBuilding className="field-icon" />
+                      Service Provider BIN <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="serviceProviderBIN"
+                      placeholder="Enter BIN"
+                      value={formData.serviceProviderBIN}
+                      onChange={handleChange}
+                      className={errors.serviceProviderBIN ? 'error' : ''}
+                      status={errors.serviceProviderBIN ? 'error' : ''}
+                    />
+                    {errors.serviceProviderBIN && <div className="error-message">{errors.serviceProviderBIN}</div>}
+                  </div>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Register
-            </Button>
-          </Form.Item>
-        </Form>
+                  {/* Service Description */}
+                  <div className="form-group">
+                    <label>
+                      <FileTextOutlined className="field-icon" />
+                      Service Description <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="serviceDescription"
+                      placeholder="Enter service description"
+                      value={formData.serviceDescription}
+                      onChange={handleChange}
+                      className={errors.serviceDescription ? 'error' : ''}
+                      status={errors.serviceDescription ? 'error' : ''}
+                    />
+                    {errors.serviceDescription && <div className="error-message">{errors.serviceDescription}</div>}
+                  </div>
+
+                  {/* Service Period */}
+                  <div className="form-group">
+                    <label>
+                      <CalendarOutlined className="field-icon" />
+                      Service Period <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="servicePeriod"
+                      placeholder="Enter service period"
+                      value={formData.servicePeriod}
+                      onChange={handleChange}
+                      className={errors.servicePeriod ? 'error' : ''}
+                      status={errors.servicePeriod ? 'error' : ''}
+                    />
+                    {errors.servicePeriod && <div className="error-message">{errors.servicePeriod}</div>}
+                  </div>
+
+                  {/* Service Charges */}
+                  <div className="form-group">
+                    <label>
+                      <FaPercent className="field-icon" />
+                      Service Charges <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="serviceCharges"
+                      placeholder="Enter service charges"
+                      value={formData.serviceCharges}
+                      onChange={handleChange}
+                      className={errors.serviceCharges ? 'error' : ''}
+                      status={errors.serviceCharges ? 'error' : ''}
+                    />
+                    {errors.serviceCharges && <div className="error-message">{errors.serviceCharges}</div>}
+                  </div>
+
+                  {/* Additional Charges */}
+                  <div className="form-group">
+                    <label>
+                      <DollarOutlined className="field-icon" />
+                      Additional Charges <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="additionalCharges"
+                      placeholder="Enter additional charges"
+                      value={formData.additionalCharges}
+                      onChange={handleChange}
+                      className={errors.additionalCharges ? 'error' : ''}
+                      status={errors.additionalCharges ? 'error' : ''}
+                    />
+                    {errors.additionalCharges && <div className="error-message">{errors.additionalCharges}</div>}
+                  </div>
+
+                  {/* Amount Due */}
+                  <div className="form-group">
+                    <label>
+                      <FaMoneyBillWave className="field-icon" />
+                      Amount Due <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="amountDue"
+                      placeholder="Enter amount due"
+                      value={formData.amountDue}
+                      onChange={handleChange}
+                      className={errors.amountDue ? 'error' : ''}
+                      status={errors.amountDue ? 'error' : ''}
+                    />
+                    {errors.amountDue && <div className="error-message">{errors.amountDue}</div>}
+                  </div>
+                </div>
+
+                {/* Status - Readonly */}
+                <div className="form-group status-group">
+                  <label>
+                    <FileTextOutlined className="field-icon" />
+                    Bill Status
+                  </label>
+                  <Input
+                    value="Unpaid"
+                    disabled
+                    className="status-input"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="form-actions">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    className="submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Registering...' : 'Generate'}
+                  </Button>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </div>
       }
     />
   );

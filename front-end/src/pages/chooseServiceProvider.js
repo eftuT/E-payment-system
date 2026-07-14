@@ -1,24 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import './style.css';
 import axios from 'axios';
-import companyLogo from '../image/logoimage.jpg';
+import { 
+  FaArrowRight, 
+  FaBuilding, 
+  FaSearch,
+} from 'react-icons/fa';
 import Header from './Header';
+import './ServiceProviders.css';
 
 const ServiceProvidersDetails = () => {
-  const [userData, setUserData] = useState(localStorage.getItem('userData'));
+  const [userData] = useState(localStorage.getItem('userData')); // Removed setUserData
   const navigate = useNavigate();
   const [serviceProviderData, setServiceProviderData] = useState([]);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!userData) {
-      navigate("/users"); // Replace "/user" with the desired URL for the user page
+      navigate("/users");
       return;
     }
     fetchServiceProviders();
     localStorage.setItem("userSelectedMenu", 5);
-  }, []);
+  }, [navigate, userData]); // Added missing dependencies
 
   const fetchServiceProviders = async () => {
     try {
@@ -30,30 +36,88 @@ const ServiceProvidersDetails = () => {
   };
 
   const handleServiceProviderClick = (serviceProvider) => {
-    console.log('Selected service provider:', serviceProvider);
-    console.log(serviceProvider.serviceProviderBIN);
     localStorage.setItem('serviceProviderBIN', serviceProvider.serviceProviderBIN);
-    console.log(localStorage.getItem('serviceProviderBIN'));
-    navigate('/serviceNumber'); // Navigate to 'payment' page
+    navigate('/serviceNumber');
   };
 
+  const filteredProviders = serviceProviderData.filter(provider =>
+    provider.serviceProviderName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    
-   
-      <div className='container'>
-    <Header/>
-    <div className='class'>
-    <h1 className='list-header'>Choose the Service Providers you want to make pay </h1>
-      <ul>
-        {serviceProviderData.map((serviceProvider) => (
-          <li key={serviceProvider.id}>
-            <button type="primary" className='button' onClick={() => handleServiceProviderClick(serviceProvider)}>
-              {serviceProvider.serviceProviderName}
+    <div className="sp-container">
+      <Header />
+
+      {/* Hero Section */}
+      <section className="sp-hero">
+        <div className="sp-hero-content">
+         
+          <h1>Choose Your Service Provider</h1>
+          <p>Select from our trusted partners to make secure payments</p>
+          <div className="sp-hero-divider"></div>
+          
+          {/* Search Bar */}
+          <div className="sp-search-wrapper">
+            <FaSearch className="sp-search-icon" />
+            <input
+              type="text"
+              placeholder="Search service providers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="sp-search-input"
+            />
+            <button className="sp-search-btn">
+              <FaArrowRight />
             </button>
-          </li>
-        ))}
-      </ul>
-      </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Providers Grid */}
+      <section className="sp-grid-section">
+        <div className="sp-grid-header">
+          <h2>Available Service Providers</h2>
+          <span className="sp-count">{filteredProviders.length} providers</span>
+        </div>
+
+        {filteredProviders.length === 0 ? (
+          <div className="sp-empty">
+            <FaBuilding className="sp-empty-icon" />
+            <h3>No providers found</h3>
+            <p>Try adjusting your search</p>
+          </div>
+        ) : (
+          <div className="sp-grid">
+            {filteredProviders.map((provider, index) => (
+              <div 
+                key={provider.id} 
+                className={`sp-card ${hoveredCard === index ? 'hovered' : ''}`}
+                onMouseEnter={() => setHoveredCard(index)}
+                onMouseLeave={() => setHoveredCard(null)}
+                onClick={() => handleServiceProviderClick(provider)}
+              >
+                <div className="sp-card-number"></div>
+                
+                <div className="sp-card-icon">
+                  <FaBuilding />
+                </div>
+                
+                <h3 className="sp-card-name">{provider.serviceProviderName}</h3>
+                
+               
+
+                <div className="sp-card-footer">
+                  <span className="sp-card-action">
+                    Pay Now <FaArrowRight className="sp-action-arrow" />
+                  </span>
+                </div>
+
+                <div className="sp-card-glow"></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };
