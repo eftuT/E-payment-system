@@ -1,0 +1,642 @@
+/* Payment.css */
+
+/* ========== CONTAINER ========== */
+.payment-page {
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+/* ========== MAIN ========== */
+.payment-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 2rem;
+}
+
+/* ========== HEADER ========== */
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.payment-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.payment-header-icon {
+  font-size: 2rem;
+  color: #667eea;
+}
+
+.payment-header-left h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.payment-header-left p {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0;
+}
+
+.payment-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #22c55e;
+  background: #ecfdf5;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+}
+
+/* ========== BILL CARD ========== */
+.bill-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.bill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #fafbff;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.bill-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.bill-icon {
+  font-size: 1.2rem;
+  color: #667eea;
+}
+
+.bill-card-title h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.bill-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+}
+
+.bill-status.unpaid {
+  color: #f59e0b;
+  background: #fef3c7;
+}
+
+.bill-status.paid {
+  color: #22c55e;
+  background: #ecfdf5;
+}
+
+/* ========== BILL BODY ========== */
+.bill-card-body {
+  padding: 1.2rem 1.5rem;
+}
+
+.bill-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.bill-field label {
+  font-size: 0.7rem;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bill-field p {
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  margin: 0.2rem 0 0;
+}
+
+.field-icon {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.bill-divider {
+  height: 1px;
+  background: #f0f2f5;
+  margin: 0.8rem 0;
+}
+
+/* ========== BILL AMOUNT ========== */
+.bill-amount-section {
+  margin-top: 0.5rem;
+}
+
+.bill-amount-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.bill-amount-item.total {
+  font-weight: 700;
+  color: #1a1a2e;
+  border-top: 2px solid #f0f2f5;
+  padding-top: 0.5rem;
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+/* ========== BILL FOOTER ========== */
+.bill-card-footer {
+  padding: 0.8rem 1.5rem 1.2rem;
+  border-top: 1px solid #f0f2f5;
+}
+
+.pay-now-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.pay-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* ========== NO BILL ========== */
+.no-bill-card {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.no-bill-icon {
+  font-size: 3rem;
+  color: #ddd;
+  margin-bottom: 0.8rem;
+}
+
+.no-bill-card h3 {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0 0 0.3rem;
+}
+
+.no-bill-card p {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ========== PAYMENT FORM ========== */
+.payment-form-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-form-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 1rem;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-input {
+  padding: 0.7rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+  padding: 0.7rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-select:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.verification-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.verification-input {
+  flex: 1;
+}
+
+.verify-btn {
+  padding: 0.7rem 1.2rem;
+  background: #f0f0ff;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+}
+
+.verify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+}
+
+.submit-payment-btn {
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.submit-payment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+}
+
+/* ========== MODAL ========== */
+.payment-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.modal-success-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.success-icon {
+  font-size: 1.5rem;
+  color: #22c55e;
+}
+
+.payment-modal-content {
+  padding: 0.5rem 0;
+}
+
+.modal-receipt {
+  background: #fafbff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #f0f2f5;
+}
+
+.receipt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid #f0f2f5;
+  margin-bottom: 0.8rem;
+}
+
+.receipt-icon {
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.receipt-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.receipt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  border-bottom: 1px solid #f5f6fa;
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-row.full {
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.receipt-value {
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.receipt-value.amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.receipt-footer {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 2px solid #f0f2f5;
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.modal-btn-close {
+  border-radius: 8px;
+}
+
+.modal-btn-download {
+  border-radius: 8px;
+  background: #f0f0ff;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.modal-btn-download.primary {
+  background: #667eea;
+  color: white;
+  border: none;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .payment-main {
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .payment-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .payment-header-left {
+    width: 100%;
+  }
+
+  .payment-header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .payment-header-badge {
+    align-self: flex-start;
+  }
+
+  .bill-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .bill-card-header {
+    padding: 0.8rem 1rem;
+  }
+
+  .bill-card-body {
+    padding: 1rem;
+  }
+
+  .bill-card-footer {
+    padding: 0.6rem 1rem 1rem;
+  }
+
+  .payment-form-card {
+    padding: 1rem;
+  }
+
+  .verification-wrapper {
+    flex-direction: column;
+  }
+
+  .verify-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .payment-modal .ant-modal-content {
+    margin: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-main {
+    padding: 0.5rem 0.5rem 1rem;
+  }
+
+  .payment-header {
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+  }
+
+  .payment-header-icon {
+    font-size: 1.5rem;
+  }
+
+  .payment-header-left h1 {
+    font-size: 1rem;
+  }
+
+  .payment-header-left p {
+    font-size: 0.65rem;
+  }
+
+  .payment-header-badge {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .bill-card {
+    border-radius: 12px;
+  }
+
+  .bill-card-title h2 {
+    font-size: 1rem;
+  }
+
+  .bill-status {
+    font-size: 0.6rem;
+  }
+
+  .bill-field label {
+    font-size: 0.6rem;
+  }
+
+  .bill-field p {
+    font-size: 0.8rem;
+  }
+
+  .bill-amount-item {
+    font-size: 0.75rem;
+  }
+
+  .bill-amount-item.total {
+    font-size: 0.9rem;
+  }
+
+  .pay-now-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  .payment-form-card h2 {
+    font-size: 1rem;
+  }
+
+  .form-input,
+  .form-select {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .verify-btn {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .submit-payment-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  .no-bill-card {
+    padding: 2rem 1rem;
+  }
+
+  .no-bill-icon {
+    font-size: 2.5rem;
+  }
+
+  .modal-receipt {
+    padding: 1rem;
+  }
+
+  .receipt-row {
+    font-size: 0.75rem;
+  }
+
+  .receipt-value.amount {
+    font-size: 1rem;
+  }
+}

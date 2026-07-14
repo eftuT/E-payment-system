@@ -1,9 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { UploadOutlined } from '@ant-design/icons';
-import { Layout, Menu, Avatar, Button, message, Form, Input, Upload, Modal, Spin } from 'antd';
+import { 
+  UploadOutlined, 
+  BankOutlined, 
+  PhoneOutlined,
+  FileTextOutlined
+} from '@ant-design/icons';
+import { Button, message, Form, Input, Upload, Spin } from 'antd';
+import { 
+  FaUserPlus, 
+  FaBuilding, 
+  FaEnvelope, 
+  FaPhone, 
+  FaFileUpload,
+  FaTimes,
+  FaCheckCircle,
+  FaUniversity
+} from 'react-icons/fa';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
+import './ServiceProviderRegistration.css';
 
 const ServiceProviderRegistrationForm = () => {
   const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
@@ -15,14 +31,16 @@ const ServiceProviderRegistrationForm = () => {
     BankName: '',
     BankAccountNumber: '',
     phoneNumber: '+251',
-    agentAuthorizationLetter: null,
+    serviceProviderAuthorizationLetter: null,
   });
 
   const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
   const [errors, setErrors] = useState({});
-  const [serviceProviderAuthorizationLetterUrl, setServiceProviderAuthorizationLetterUrl] = useState();
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!adminData) {
@@ -36,45 +54,13 @@ const ServiceProviderRegistrationForm = () => {
     localStorage.setItem('selectedMenu', 4);
   }, [adminData, navigate]);
 
-
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className="sp-loading">
         <Spin size="large" />
-        <p>Please wait while we check your login status...</p>
+        <p>Loading...</p>
       </div>
     );
-  }
-
-  const validateForm = async () => {
-    try {
-      await form.validateFields();
-      return isFileValid(file);
-    } catch (error) {
-      const newErrors = {};
-      error.errorFields.forEach((field) => {
-        newErrors[field.name[0]] = field.errors[0];
-      });
-      setErrors(newErrors);
-      return false;
-    }
-  };
-
-  function isFileValid(file) {
-    if (!file) {
-      message.error('No file selected.');
-      return false;
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-
-    if (!allowedTypes.includes(`image/${fileExtension}`)) {
-      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
-      return false;
-    } else {
-      return true;
-    }
   }
 
   const handleChange = (e) => {
@@ -83,42 +69,109 @@ const ServiceProviderRegistrationForm = () => {
       ...prevData,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleFileChange = (info) => {
-    const file = info.file?.originFileObj;
+    const file = info.file?.originFileObj || info.file;
     if (!file) {
       setFile(null);
-      setServiceProviderAuthorizationLetterUrl(null);
+      setFilePreview(null);
       return;
     }
-  
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(`image/${fileExtension}`) && !allowedTypes.includes(file.type)) {
+      message.error('Invalid file type. Please select an image file (JPEG, JPG, PNG, GIF).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('File size should be less than 5MB');
+      return;
+    }
+
     setFile(file);
-  
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      const fileUrl = event.target.result;
-      setServiceProviderAuthorizationLetterUrl(fileUrl);
+      setFilePreview(event.target.result);
     };
     reader.readAsDataURL(file);
+    
+    if (errors.serviceProviderAuthorizationLetter) {
+      setErrors((prev) => ({ ...prev, serviceProviderAuthorizationLetter: '' }));
+    }
+  };
+
+  const handleDeleteFile = () => {
+    setFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.serviceProviderBIN?.trim()) newErrors.serviceProviderBIN = 'Business Identification Number is required';
+    if (!formData.serviceProviderName?.trim()) newErrors.serviceProviderName = 'Service Provider Name is required';
+    if (!formData.servicesOffered?.trim()) newErrors.servicesOffered = 'Services Offered is required';
+    if (!formData.BankName?.trim()) newErrors.BankName = 'Bank Name is required';
+    if (!formData.BankAccountNumber?.trim()) newErrors.BankAccountNumber = 'Bank Account Number is required';
+    if (!formData.phoneNumber?.trim()) {
+      newErrors.phoneNumber = 'Phone Number is required';
+    } else if (!/^\+?\d+$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Phone Number is invalid';
+    }
+    if (!file) {
+      newErrors.serviceProviderAuthorizationLetter = 'Authorization Letter is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (await validateForm()) {
-      try {
-        const formDataToSend = new FormData();
-        formDataToSend.append('serviceProviderBIN', formData.serviceProviderBIN);
-        formDataToSend.append('serviceProviderName', formData.serviceProviderName);
-        formDataToSend.append('servicesOffered', formData.servicesOffered);
-        formDataToSend.append('BankName', formData.BankName);
-        formDataToSend.append('BankAccountNumber', formData.BankAccountNumber);
-        formDataToSend.append('phoneNumber', formData.phoneNumber);
-        formDataToSend.append('serviceProviderAuthorizationLetter', file);
+    if (!validateForm()) {
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }
+      return;
+    }
 
-        const response = await axios.post('http://localhost:3000/serviceproviders', formDataToSend);
-        
+    setLoading(true);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('serviceProviderBIN', formData.serviceProviderBIN);
+      formDataToSend.append('serviceProviderName', formData.serviceProviderName);
+      formDataToSend.append('servicesOffered', formData.servicesOffered);
+      formDataToSend.append('BankName', formData.BankName);
+      formDataToSend.append('BankAccountNumber', formData.BankAccountNumber);
+      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('serviceProviderAuthorizationLetter', file);
 
-        if(response.status === 200){
+      const response = await axios.post('http://localhost:3000/serviceproviders', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: adminData?.token,
+        },
+      });
+
+      if (response.status === 200 || response.status === 201) {
         const activity = {
           adminName: `Admin ${adminData.user.FirstName}`,
           action: 'registered',
@@ -126,124 +179,247 @@ const ServiceProviderRegistrationForm = () => {
           timestamp: new Date().getTime(),
         };
 
-        // Save the admin activity to the database
         axios.post('http://localhost:3000/admin-activity', activity, {
-          headers: {
-            Authorization: adminData.token,
-          },
-        });
+          headers: { Authorization: adminData.token },
+        }).catch(err => console.error('Activity log error:', err));
 
         message.success('Service provider registered successfully!');
-        console.log('Service provider registered successfully!');
-        form.resetFields(); // Reset the form fields
-        setServiceProviderAuthorizationLetterUrl(null);
-        return;
+        form.resetFields();
+        setFile(null);
+        setFilePreview(null);
+        setFormData({
+          serviceProviderBIN: '',
+          serviceProviderName: '',
+          servicesOffered: '',
+          BankName: '',
+          BankAccountNumber: '',
+          phoneNumber: '+251',
+          serviceProviderAuthorizationLetter: null,
+        });
+        setErrors({});
+        setLoading(false);
+        
+        setTimeout(() => {
+          navigate('/admin/service-providers');
+        }, 1500);
       }
-      } catch (error) {
-        if (error.response && error.response.data && error.response.data.error) {
-          const errorMessage = error.response.data.error;
-          message.error(`Failed to register service provider. ${errorMessage}`);
-        } else {
-          message.error('Failed to register service provider. Please try again.');
-          console.error('Error:', error);
-        }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.error) {
+        message.error(`Failed to register service provider. ${error.response.data.error}`);
+      } else {
+        message.error('Failed to register service provider. Please try again.');
+        console.error('Error:', error);
       }
+      setLoading(false);
     }
   };
+
   return (
     <Dashboard
       content={
-        <Form name="serviceProviderRegistrationForm" layout="vertical" onFinish={handleSubmit} form={form}>
-          <h1>Service provider Registration</h1>
-  
-          <Form.Item
-            label="Business Identification Number"
-            name="serviceProviderBIN"
-            validateStatus={errors.serviceProviderBIN && 'error'}
-            help={errors.serviceProviderBIN}
-            rules={[{ required: true }]}
-          >
-            <Input name="serviceProviderBIN" onChange={handleChange} placeholder="Enter BIN" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Service Provider Name"
-            name="serviceProviderName"
-            validateStatus={errors.serviceProviderName && 'error'}
-            help={errors.serviceProviderName}
-            rules={[{ required: true }]}
-          >
-            <Input name="serviceProviderName" onChange={handleChange} placeholder="Enter Name" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Services Offered"
-            name="servicesOffered"
-            validateStatus={errors.servicesOffered && 'error'}
-            help={errors.servicesOffered}
-            rules={[{ required: true }]}
-          >
-            <Input name="servicesOffered" onChange={handleChange} placeholder="Enter Services Offered" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Bank Name"
-            name="BankName"
-            validateStatus={errors.BankName && 'error'}
-            help={errors.BankName}
-            rules={[{ required: true }]}
-          >
-            <Input name="BankName" onChange={handleChange} placeholder="Enter Bank Name" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Bank Account Number"
-            name="BankAccountNumber"
-            validateStatus={errors.BankAccountNumber && 'error'}
-            help={errors.BankAccountNumber}
-            rules={[{ required: true }]}
-          >
-            <Input name="BankAccountNumber" onChange={handleChange} placeholder="Enter Bank Account Number" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Phone Number"
-            name="phoneNumber"
-            validateStatus={errors.phoneNumber && 'error'}
-            help={errors.phoneNumber}
-            rules={[{ required: true }]}
-          >
-            <Input name="phoneNumber" onChange={handleChange} placeholder="Enter Phone Number" />
-          </Form.Item>
-  
-          <Form.Item
-            label="Service Provider Authorization Letter"
-            name="serviceProviderAuthorizationLetter"
-            validateStatus={errors.serviceProviderAuthorizationLetter && 'error'}
-            help={errors.serviceProviderAuthorizationLetter}
-            rules={[{ required: true }]}
-          >
-            <Upload
-              name="serviceProviderAuthorizationLetter"
-              accept=".jpeg,.jpg,.png,.gif"
-              onChange={handleFileChange}
-            >
-              <Button icon={<UploadOutlined />}>Click to Upload</Button>
-            </Upload>
-            {serviceProviderAuthorizationLetterUrl && (
-              <img src={serviceProviderAuthorizationLetterUrl} alt="Auth Letter" style={{ width: '200px' }} />
-            )}
-          </Form.Item>
-  
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Register
-            </Button>
-          </Form.Item>
-        </Form>
+        <div className="sp-reg-container">
+          <div className="sp-reg-card">
+            {/* Header */}
+            <div className="sp-reg-header">
+              <div className="sp-reg-header-left">
+                <div className="sp-reg-icon">
+                  <FaBuilding />
+                </div>
+                <div>
+                  <h1>Service Provider Registration</h1>
+                  <p>Register a new service provider for the payment system</p>
+                </div>
+              </div>
+              <div className="sp-reg-badge">
+                <FaUserPlus /> New Provider
+              </div>
+            </div>
+
+            <div className="sp-reg-body">
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                className="sp-reg-form"
+              >
+                <div className="form-grid">
+                  {/* Service Provider BIN */}
+                  <div className="form-group">
+                    <label>
+                      <BankOutlined className="field-icon" />
+                      Business Identification Number <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="serviceProviderBIN"
+                      placeholder="Enter BIN"
+                      value={formData.serviceProviderBIN}
+                      onChange={handleChange}
+                      className={errors.serviceProviderBIN ? 'error' : ''}
+                      status={errors.serviceProviderBIN ? 'error' : ''}
+                    />
+                    {errors.serviceProviderBIN && <div className="error-message">{errors.serviceProviderBIN}</div>}
+                  </div>
+
+                  {/* Service Provider Name */}
+                  <div className="form-group">
+                    <label>
+                      <FaBuilding className="field-icon" />
+                      Service Provider Name <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="serviceProviderName"
+                      placeholder="Enter name"
+                      value={formData.serviceProviderName}
+                      onChange={handleChange}
+                      className={errors.serviceProviderName ? 'error' : ''}
+                      status={errors.serviceProviderName ? 'error' : ''}
+                    />
+                    {errors.serviceProviderName && <div className="error-message">{errors.serviceProviderName}</div>}
+                  </div>
+
+                
+
+                  {/* Bank Name */}
+                  <div className="form-group">
+                    <label>
+                      <FaUniversity className="field-icon" />
+                      Bank Name <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="BankName"
+                      placeholder="Enter bank name"
+                      value={formData.BankName}
+                      onChange={handleChange}
+                      className={errors.BankName ? 'error' : ''}
+                      status={errors.BankName ? 'error' : ''}
+                    />
+                    {errors.BankName && <div className="error-message">{errors.BankName}</div>}
+                  </div>
+
+                  {/* Bank Account Number */}
+                  <div className="form-group">
+                    <label>
+                      <BankOutlined className="field-icon" />
+                      Bank Account Number <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="BankAccountNumber"
+                      placeholder="Enter bank account number"
+                      value={formData.BankAccountNumber}
+                      onChange={handleChange}
+                      className={errors.BankAccountNumber ? 'error' : ''}
+                      status={errors.BankAccountNumber ? 'error' : ''}
+                    />
+                    {errors.BankAccountNumber && <div className="error-message">{errors.BankAccountNumber}</div>}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="form-group">
+                    <label>
+                      <PhoneOutlined className="field-icon" />
+                      Phone Number <span className="required">*</span>
+                    </label>
+                    <Input
+                      name="phoneNumber"
+                      placeholder="+251 XXX XXX XXX"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      className={errors.phoneNumber ? 'error' : ''}
+                      status={errors.phoneNumber ? 'error' : ''}
+                    />
+                    {errors.phoneNumber && <div className="error-message">{errors.phoneNumber}</div>}
+                  </div>
+                    {/* Services Offered - Full Width */}
+                  <div className="form-group full-width">
+                    <label>
+                      <FileTextOutlined className="field-icon" />
+                      Services Offered <span className="required">*</span>
+                    </label>
+                    <Input.TextArea
+                      name="servicesOffered"
+                      placeholder="List the services this provider offers"
+                      value={formData.servicesOffered}
+                      onChange={handleChange}
+                      className={`services-textarea ${errors.servicesOffered ? 'error' : ''}`}
+                      rows={2}
+                      style={{ resize: 'vertical', minHeight: '70px', maxHeight: '100px' }}
+                    />
+                    {errors.servicesOffered && <div className="error-message">{errors.servicesOffered}</div>}
+                  </div>
+
+                  {/* Authorization Letter - Full Width */}
+                  <div className="form-group full-width">
+                    <label>
+                      <FaFileUpload className="field-icon" />
+                      Authorization Letter <span className="required">*</span>
+                    </label>
+                    <div className="file-upload-section">
+                      {filePreview ? (
+                        <div className="file-preview-container">
+                          <img 
+                            src={filePreview} 
+                            alt="Authorization Letter" 
+                            className="file-preview"
+                          />
+                          <button
+                            type="button"
+                            className="file-delete-btn"
+                            onClick={handleDeleteFile}
+                            title="Delete file"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="file-upload-placeholder" onClick={triggerFileInput}>
+                          <UploadOutlined className="file-upload-icon" />
+                          <p>Click to upload authorization letter</p>
+                          <span className="file-upload-hint">Supported: JPEG, JPG, PNG, GIF (Max 5MB)</span>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".jpeg,.jpg,.png,.gif"
+                        onChange={(e) => handleFileChange({ file: e.target.files[0] })}
+                        style={{ display: 'none' }}
+                      />
+                      {filePreview && (
+                        <Button 
+                          type="primary" 
+                          ghost 
+                          onClick={triggerFileInput}
+                          className="file-change-btn"
+                        >
+                          Change File
+                        </Button>
+                      )}
+                      {errors.serviceProviderAuthorizationLetter && (
+                        <div className="error-message">{errors.serviceProviderAuthorizationLetter}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="form-actions">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    className="submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Registering...' : <><FaUserPlus /> Register Provider</>}
+                  </Button>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </div>
       }
     />
   );
-    };
+};
 
 export default ServiceProviderRegistrationForm;
