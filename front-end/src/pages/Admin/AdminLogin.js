@@ -4,8 +4,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FaUser, FaLock, FaEye, FaEyeSlash, FaUserCircle,
-  FaShieldAlt, FaSignInAlt, FaHome, FaInfoCircle, FaEnvelope
+ FaEye, FaEyeSlash, FaUserCircle,
+  FaShieldAlt
 } from 'react-icons/fa';
 import companyLogo from '../../image/logoimage.jpg';
 import adminImage from '../../image/payment.png';
@@ -18,7 +18,6 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleIdentifierChange = (e) => {
     setIdentifier(e.target.value);
@@ -55,10 +54,9 @@ const AdminLogin = () => {
           if (data.user.Role === "Admin" || data.user.Role === "SuperAdmin") {
             localStorage.setItem('adminToken', data.token);
             localStorage.setItem('adminData', JSON.stringify(data));
-            setIsLoggedIn(true);
             console.log('Admin logged in successfully');
             message.success('Admin logged in successfully');
-            localStorage.setItem('isLoggedInAdmin', true);
+            localStorage.setItem('isLoggedInAdmin', 'true');
             console.log(`${data.token},${data.user.id}`);
             console.log(localStorage.getItem('adminData'));
             console.log(localStorage.getItem('isLoggedInAdmin'));

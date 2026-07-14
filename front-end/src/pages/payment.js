@@ -1,22 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Button, Form, Input, Modal, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Input, Modal, message } from "antd";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import axios from "axios";
 import { 
   MailOutlined, 
   CheckCircleOutlined,
-  ClockCircleOutlined,
-  DollarOutlined,
   UserOutlined,
   BankOutlined,
   FileTextOutlined
 } from "@ant-design/icons";
 import { 
-  FaCreditCard, 
   FaReceipt, 
   FaCalendarAlt,
-  FaMoneyBillWave,
   FaCheckCircle,
   FaArrowRight
 } from "react-icons/fa";
@@ -26,18 +22,16 @@ import Header from "./Header";
 import "./Payment.css";
 
 const Payment = () => {
-  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem("userData")));
-  const [serviceNo, setServiceNumber] = useState(localStorage.getItem('serviceNo'));
-  const [serviceProvidersBIN, setServiceProvidersBIN] = useState(localStorage.getItem('serviceProviderBIN'));
-  const [user, setUser] = useState(null);
+  const [userData] = useState(JSON.parse(localStorage.getItem("userData"))); 
+  const [serviceNo] = useState(localStorage.getItem('serviceNo')); 
+  const [serviceProvidersBIN] = useState(localStorage.getItem('serviceProviderBIN')); 
+  // Removed unused 'user' state
   const [payerId, setPayerId] = useState();
   const [payments, setPayments] = useState([]);
   const [userbill, setUserBill] = useState(null);
   const [banks, setBanks] = useState([]);
-  const [form] = Form.useForm();
   const [userId, setUserId] = useState();
   const [downloadModalVisible, setDownloadModalVisible] = useState(false);
-  const formRef = useRef(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
   const [errors, setErrorMessage] = useState('');
@@ -64,7 +58,7 @@ const Payment = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/Users/serviceNo/${serviceNo}/${serviceProvidersBIN}`);
-        setUser(response.data);
+        // Removed: setUser(response.data);
         setPayerId(userData.id);
         const serviceProviderBIN = response.data.ServiceProviders[0].serviceProviderBIN;
         const userId = response.data.id;
@@ -93,7 +87,7 @@ const Payment = () => {
 
     fetchData();
     fetchBanks();
-  }, []);
+  }, [navigate, serviceNo, serviceProvidersBIN, userData]);
 
   const handlePayment = (billNumber, serviceProviderBIN) => {
     setShowBankAccountForm(true);

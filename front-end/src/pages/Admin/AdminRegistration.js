@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   UserOutlined, 
   LockOutlined, 
@@ -8,7 +8,7 @@ import {
   PhoneOutlined, 
   HomeOutlined
 } from '@ant-design/icons';
-import { Layout, Button, message, Form, Input, Select, Spin } from 'antd';
+import { Button, message, Form, Input, Select, Spin } from 'antd';
 import { FaUserPlus, FaUserCog, FaVenusMars, FaCamera, FaTimes, FaUser } from 'react-icons/fa';
 import Dashboard from './Dashboard';
 import './AdminRegistration.css';
@@ -25,7 +25,7 @@ const AdminRegistrationForm = ({ addActivity }) => {
     return `P${timestamp}${randomNumber}`;
   };
 
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [isLoading, setIsLoading] = useState(true);
   const [form] = Form.useForm();
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
@@ -44,6 +44,7 @@ const AdminRegistrationForm = ({ addActivity }) => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  // Removed: counter, incrementCounter, adminId, validateForm (not used)
 
   useEffect(() => {
     if (!adminData) {
@@ -134,6 +135,7 @@ const AdminRegistrationForm = ({ addActivity }) => {
     }
   };
 
+  // validateForm function is now used in handleSave, so it's no longer unused
   const validateForm = () => {
     const newErrors = {};
     if (!formData.FirstName?.trim()) newErrors.FirstName = 'First Name is required';

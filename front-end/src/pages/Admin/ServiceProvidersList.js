@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import './ServiceProvidersList.css';
 
 const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [serviceProviderData, setServiceProviderData] = useState([]);
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [serviceProvider, setServiceProvider] = useState(null);
-  const [serviceProviderAuthorizationLetterUrl, setServiceProviderAuthorizationLetterUrl] = useState();
+  // Removed: serviceProviderAuthorizationLetterUrl and setServiceProviderAuthorizationLetterUrl (not used)
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
