@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Button, Spin, message, Avatar } from 'antd';
-import { SearchOutlined, UserOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Table, Input, Spin, message, Avatar } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { FaUserPlus, FaUsers, FaEnvelope, FaPhone, FaHome } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
@@ -13,7 +13,7 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [ setPageSize] = useState(10);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const navigate = useNavigate();
 
