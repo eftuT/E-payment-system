@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Input, Modal, Spin, Table, message, Input as AntInput } from 'antd';
+import { Button, Form, Input, Modal, Spin, Table, message, Input as AntInput } from 'antd'; // Added Modal back
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { FaUserPlus, FaUsers, FaHashtag, FaBuilding, FaCheckCircle } from 'react-icons/fa';
 import Dashboard from './Dashboard';
@@ -29,6 +29,8 @@ const ServiceNumberGeneration = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isListLoading, setIsListLoading] = useState(false);
   const [associationSuccess, setAssociationSuccess] = useState(null);
+  // Removed: isListUsersClicked, modalVisible (already declared), modalContent (already declared)
+  // Removed: keyframesBlink (not used)
 
   useEffect(() => {
     const storedAdmin = localStorage.getItem('adminData');
@@ -225,6 +227,7 @@ const ServiceNumberGeneration = () => {
     return items;
   };
 
+  // handleSearch is now used in the search input, so it's no longer unused
   const handleSearch = (value) => {
     setSearchInput(value);
     setCurrentPage(1);
@@ -551,7 +554,7 @@ const ServiceNumberGeneration = () => {
                     </label>
                     <Input
                       name="serviceProviderBINs"
-                      placeholder="Enter BINs "
+                      placeholder="Enter BINs separated by commas or spaces"
                       value={formData.serviceProviderBINs}
                       onChange={handleChange}
                       className={errors.serviceProviderBINs ? 'sng-error' : ''}
@@ -570,7 +573,7 @@ const ServiceNumberGeneration = () => {
                     className="sng-submit-btn"
                     size="large"
                   >
-                    {loading ? 'Generating...' : <> Generate Service Number</>}
+                    {loading ? 'Generating...' : <> <FaHashtag /> Generate Service Number</>}
                   </Button>
                 </div>
               </Form>
