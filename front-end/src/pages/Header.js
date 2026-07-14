@@ -20,7 +20,8 @@ const Header = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
+  // ✅ FIXED: Correct useState syntax
+  const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,14 +79,15 @@ const Header = () => {
 
   useEffect(() => {
     if (userData?.ProfilePhoto) {
-      
+      // This effect runs when ProfilePhoto changes
     }
   }, [userData?.ProfilePhoto]); 
+
   useEffect(() => {
     const pathname = location.pathname;
     const selectedMenu = getSelectedMenu(pathname);
     setUserSelectedMenu(selectedMenu);
-  }, [location]);
+  }, [location, setUserSelectedMenu]); // Added setUserSelectedMenu to dependencies
 
   function getSelectedMenu(pathname) {
     switch (pathname) {
@@ -111,7 +113,6 @@ const Header = () => {
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
-
 
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
