@@ -9,11 +9,8 @@ import {
   InstagramOutlined,
   ClockCircleOutlined
 } from '@ant-design/icons';
-import { Typography } from 'antd';
-import Header from './Header';
+import Header from './Header'; // Removed Typography import (not used)
 import './ContactUs.css';
-
-const { Title, Paragraph } = Typography;
 
 const ContactUs = () => {
 

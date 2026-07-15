@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { Layout, Button, message, Form, Input, Upload, Spin } from 'antd';
+import { Button, message, Form, Input, Spin } from 'antd';
 import { 
   BankOutlined, 
   MailOutlined, 
@@ -19,11 +19,11 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 import Dashboard from "./Dashboard";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Removed useParams
 import './AgentRegistration.css';
 
 const AgentRegistrationForm = () => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
   const [form] = Form.useForm();
   const [agentData, setAgentData] = useState({
     agentBIN: '',

@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, message, Modal, Form, Input, Upload, Spin, Input as AntInput } from 'antd';
-import { DeleteOutlined, EditOutlined, UploadOutlined, SearchOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone, FaFileAlt, FaSearch, FaDownload } from 'react-icons/fa';
+import { DeleteOutlined, EditOutlined, UploadOutlined, SearchOutlined, DownloadOutlined } from '@ant-design/icons';
+import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
 import './AgentsList.css';
 
 const AgentsList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData, setAdminData] = useState(JSON.parse(localStorage.getItem('adminData')));
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [agentData, setAgentData] = useState([]);
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [agent, setAgent] = useState(null);
-  const [agentAuthorizationLetterUrl, setAgentAuthorizationLetterUrl] = useState();
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [ setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
   

@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
+import { Link, useNavigate, NavLink } from 'react-router-dom'; // Removed useLocation
 import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
 import companyLogo from '../image/logoimage.jpg';
 import USER from '../image/himage3.jpg';
-import { Form, Layout, Button, Input, Modal, message, Menu } from 'antd';
+import { Form, Button, Input, Modal, message } from 'antd';
 import axios from 'axios';
 import {
-  FaUser, FaLock, FaEye, FaEyeSlash,
+  FaUser,
   FaUserPlus, FaHome, FaCamera, FaGenderless
 } from 'react-icons/fa';
-import { MdEmail, MdPerson, MdLock, MdPhone, MdHome } from 'react-icons/md';
+import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
 import './Header.css';
 
-const { Sider } = Layout;
 
 const Header = () => {
-  // State variables
   const [userData, setUserData] = useState(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const [userSelectedMenu, setUserSelectedMenu] = useState(localStorage.getItem("userSelectedMenu") || '1');
+  // Removed: location (not used)
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +38,6 @@ const Header = () => {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedInUser');
-    setIsLoggedInUser(loggedIn === 'true');
 
     if (loggedIn === 'true') {
       try {
@@ -81,27 +76,10 @@ const Header = () => {
   }, [isSmallScreen]);
 
   useEffect(() => {
-    const pathname = location.pathname;
-    const selectedMenu = getSelectedMenu(pathname);
-    setUserSelectedMenu(selectedMenu);
-  }, [location]);
-
-  function getSelectedMenu(pathname) {
-    switch (pathname) {
-      case '/users':
-        return '1';
-      case '/aboutUs':
-        return '2';
-      case '/contactUs':
-        return '3';
-      case '/serviceProviders':
-        return '4';
-      case '/history':
-        return '5';
-      default:
-        return '1';
+    if (userData?.ProfilePhoto) {
+      // This effect runs when ProfilePhoto changes
     }
-  }
+  }, [userData?.ProfilePhoto]); 
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -109,10 +87,6 @@ const Header = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
-  };
-
-  const handleMenuSelect = ({ key }) => {
-    setUserSelectedMenu([key]);
   };
 
   const handleProfilePictureChange = (e) => {
@@ -184,13 +158,11 @@ const Header = () => {
         localStorage.removeItem('userData');
         localStorage.removeItem('isLoggedInUser');
         setUserData(null);
-        setIsLoggedInUser(false);
         navigate('/login');
       },
     });
   };
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (userData) {
       const firstName = userData.FirstName || '';
@@ -199,6 +171,8 @@ const Header = () => {
     }
     return 'U';
   };
+
+  const isLoggedInUser = localStorage.getItem('isLoggedInUser') === 'true';
 
   return (
     <>
@@ -283,7 +257,7 @@ const Header = () => {
         {isMenuOpen && isSmallScreen && (
           <div className="mobile-menu">
             <NavLink to="/users" className="mobile-nav-link" onClick={closeMenu}>
-              <FaHome /> Home
+             Home
             </NavLink>
             <NavLink to="/contactUs" className="mobile-nav-link" onClick={closeMenu}>
               Contact Us
