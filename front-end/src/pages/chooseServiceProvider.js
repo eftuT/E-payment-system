@@ -11,7 +11,7 @@ import Header from './Header';
 import './ServiceProviders.css';
 
 const ServiceProvidersDetails = () => {
-  const [userData] = useState(localStorage.getItem('userData')); // Removed setUserData
+  const [userData] = useState(localStorage.getItem('userData'));
   const navigate = useNavigate();
   const [serviceProviderData, setServiceProviderData] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -24,7 +24,7 @@ const ServiceProvidersDetails = () => {
     }
     fetchServiceProviders();
     localStorage.setItem("userSelectedMenu", 5);
-  }, [navigate, userData]); // Added missing dependencies
+  }, [navigate, userData]);
 
   const fetchServiceProviders = async () => {
     try {
@@ -48,15 +48,12 @@ const ServiceProvidersDetails = () => {
     <div className="sp-container">
       <Header />
 
-      {/* Hero Section */}
       <section className="sp-hero">
         <div className="sp-hero-content">
-         
           <h1>Choose Your Service Provider</h1>
           <p>Select from our trusted partners to make secure payments</p>
           <div className="sp-hero-divider"></div>
           
-          {/* Search Bar */}
           <div className="sp-search-wrapper">
             <FaSearch className="sp-search-icon" />
             <input
@@ -66,14 +63,11 @@ const ServiceProvidersDetails = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="sp-search-input"
             />
-            <button className="sp-search-btn">
-              <FaArrowRight />
-            </button>
+          
           </div>
         </div>
       </section>
 
-      {/* Providers Grid */}
       <section className="sp-grid-section">
         <div className="sp-grid-header">
           <h2>Available Service Providers</h2>
@@ -103,8 +97,6 @@ const ServiceProvidersDetails = () => {
                 </div>
                 
                 <h3 className="sp-card-name">{provider.serviceProviderName}</h3>
-                
-               
 
                 <div className="sp-card-footer">
                   <span className="sp-card-action">

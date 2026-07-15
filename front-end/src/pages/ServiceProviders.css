@@ -85,13 +85,26 @@
   font-size: 0.9rem;
 }
 
+/* FIX: Override Ant Design global input styles to remove the double box */
 .sp-search-input {
   flex: 1;
   padding: 0.7rem 0.5rem;
-  border: none;
   font-size: 0.9rem;
-  outline: none;
-  background: transparent;
+  
+  /* Force remove all borders and shadows */
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* FIX: Stop the blue glow/ring from appearing when typing */
+.sp-search-input:focus,
+.sp-search-input:active {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 .sp-search-input::placeholder {
