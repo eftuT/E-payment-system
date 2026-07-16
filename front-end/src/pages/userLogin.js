@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -52,11 +52,6 @@ const UserLogin = () => {
         localStorage.setItem('isLoggedInUser', 'true');
         localStorage.setItem('userData', JSON.stringify(response.data.user || response.data));
         
-        toast.success('Login successful!', {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
-        
         message.success('User logged in successfully');
         
         setTimeout(() => {
@@ -94,9 +89,13 @@ const UserLogin = () => {
       <header className="login-header">
         <div className="header-content">
           <div className="logo-section">
-            <img src={companyLogo} alt="company-logo" className="company-logo" />
+            <img 
+              src={companyLogo} 
+              alt="company-logo" 
+              className="company-logo spinning-logo" 
+            />
             <div className="company-info">
-             <h1 >E-Payment-System</h1>
+              <h1>E-Payment-System</h1>
               <p className="slogan">your trusted online payment system</p>
             </div>
           </div>
@@ -110,7 +109,6 @@ const UserLogin = () => {
             <Link to="/contactUs" className="nav-link">
                Contact Us
             </Link>
-            
           </nav>
         </div>
       </header>
@@ -118,12 +116,12 @@ const UserLogin = () => {
       <main className="login-main">
         <div className="login-wrapper">
           <div className="login-image-side">
-           <div className="image-content">
+            <div className="image-content">
               <div className="image-overlay">
                 <h2>E-payment System</h2>
                 <p>The smart solution for seamless payment.</p>
-              <img src={paymentImage} alt="Payment System" className="side-image" />
-            </div>
+                <img src={paymentImage} alt="Payment System" className="side-image" />
+              </div>
             </div>
           </div>
           <div className="login-form-side">
