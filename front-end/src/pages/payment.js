@@ -1,43 +1,45 @@
 import React, { useEffect, useState } from "react";
 import { Button, Input, Modal, message } from "antd";
+import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import axios from "axios";
-import { 
-  MailOutlined, 
-  CheckCircleOutlined,
-  UserOutlined,
-  BankOutlined,
-  FileTextOutlined
-} from "@ant-design/icons";
-import { 
-  FaReceipt, 
-  FaCalendarAlt,
-  FaCheckCircle,
-  FaArrowRight
-} from "react-icons/fa";
-import { MdPayment, MdSecurity } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+
 import Header from "./Header";
 import "./Payment.css";
 
+import {
+  CheckCircleOutlined,
+  UserOutlined,
+  BankOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+
+import {
+  FaReceipt,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaArrowRight,
+} from "react-icons/fa";
+
+import { MdPayment, MdSecurity } from "react-icons/md";
+
 const Payment = () => {
-  const [userData] = useState(JSON.parse(localStorage.getItem("userData"))); 
-  const [serviceNo] = useState(localStorage.getItem('serviceNo')); 
-  const [serviceProvidersBIN] = useState(localStorage.getItem('serviceProviderBIN')); 
-  // Removed unused 'user' state
-  const [payerId, setPayerId] = useState();
-  const [payments, setPayments] = useState([]);
-  const [userbill, setUserBill] = useState(null);
-  const [banks, setBanks] = useState([]);
-  const [userId, setUserId] = useState();
-  const [downloadModalVisible, setDownloadModalVisible] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verifyCode, setVerifyCode] = useState('');
-  const [errors, setErrorMessage] = useState('');
-  const [showBankAccountForm, setShowBankAccountForm] = useState(false);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const userData = JSON.parse(localStorage.getItem("userData") || "null");
+  const serviceNo = localStorage.getItem("serviceNo");
+  const serviceProviderBIN = localStorage.getItem("serviceProviderBIN");
+
+  const [payerId, setPayerId] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [userBill, setUserBill] = useState(null);
+  const [banks, setBanks] = useState([]);
+  const [payments, setPayments] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [showBankAccountForm, setShowBankAccountForm] = useState(false);
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const [bankAccount, setBankAccount] = useState({
     bankAccountNumber: "",
@@ -48,182 +50,200 @@ const Payment = () => {
 
   useEffect(() => {
     localStorage.setItem("userSelectedMenu", 4);
-  }, []);
 
-  useEffect(() => {
     if (!userData) {
       navigate("/users");
       return;
     }
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/Users/serviceNo/${serviceNo}/${serviceProvidersBIN}`);
-        // Removed: setUser(response.data);
-        setPayerId(userData.id);
-        const serviceProviderBIN = response.data.ServiceProviders[0].serviceProviderBIN;
-        const userId = response.data.id;
-        setUserId(userId);
-
-        const userBillResponse = await axios.get(`http://localhost:3000/bills/findOne`, {
-          params: {
-            userId: userId,
-            serviceProviderBIN: serviceProviderBIN,
-          }
-        });
-        setUserBill(userBillResponse.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const fetchBanks = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/Agents");
-        setBanks(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
 
     fetchData();
     fetchBanks();
-  }, [navigate, serviceNo, serviceProvidersBIN, userData]);
+  }, []);
 
-  const handlePayment = (billNumber, serviceProviderBIN) => {
-    setShowBankAccountForm(true);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      if (!serviceNo || !serviceProviderBIN) {
+        message.error("Missing service information.");
+        return;
+      }
+
+      const response = await axios.get(
+        `http://localhost:3000/Users/serviceNo/${serviceNo}/${serviceProviderBIN}`
+      );
+
+      const fetchedUser = response.data.user;
+
+      if (!fetchedUser) {
+        message.error("User not found.");
+        return;
+      }
+
+      setPayerId(userData.id);
+
+      const currentUserId = fetchedUser.id;
+      setUserId(currentUserId);
+
+      const provider = fetchedUser.ServiceProviders?.[0];
+
+      if (!provider) {
+        message.warning("No service provider found.");
+        return;
+      }
+
+      const billResponse = await axios.get(
+        "http://localhost:3000/bills/findOne",
+        {
+          params: {
+            userId: currentUserId,
+            serviceProviderBIN: provider.serviceProviderBIN,
+          },
+        }
+      );
+
+      if (billResponse.data) {
+        setUserBill(billResponse.data);
+      } else {
+        setUserBill(null);
+      }
+    } catch (error) {
+      if (error.response) {
+        message.error(
+          error.response.data?.message || "Unable to load payment information."
+        );
+      } else {
+        message.error("Network error.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setBankAccount((prevBankAccount) => ({
-      ...prevBankAccount,
+  const fetchBanks = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/Agents");
+      setBanks(response.data || []);
+    } catch (error) {
+      message.error("Unable to load banks.");
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBankAccount((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
-  const sendVerificationEmail = async () => {
-    try {
-      setLoading(true);
-      const code = generateVerificationCode();
-      setVerificationCode(code);
-      await axios.post(`http://localhost:3000/Users/verifyUser/${userId}/${code}`);
-      message.success('Verification code sent successfully');
-      setLoading(false);
-    } catch (error) {
-      console.error('Error sending email:', error);
-      message.error('Error sending verification code');
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = (fileType) => {
-    const modalContainer = document.querySelector(".payment-modal-content");
-    if (!modalContainer) return;
-
-    const footer = modalContainer.querySelector(".modal-footer");
-    const buttons = modalContainer.querySelectorAll(".ant-btn");
-
-    buttons.forEach((button) => {
-      button.style.display = "none";
-    });
-
-    if (footer) {
-      footer.style.display = "none";
-    }
-
-    html2canvas(modalContainer).then((canvas) => {
-      buttons.forEach((button) => {
-        button.style.display = "block";
-      });
-
-      if (footer) {
-        footer.style.display = "block";
-      }
-
-      if (fileType === "picture") {
-        const dataURL = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = dataURL;
-        link.download = "payment_receipt.png";
-        link.click();
-      } else if (fileType === "pdf") {
-        const dataURL = canvas.toDataURL("image/png");
-        const imgWidth = 210;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const pdf = new jsPDF("p", "mm", "a4");
-        pdf.addImage(dataURL, "PNG", 0, 0, imgWidth, imgHeight);
-        pdf.save("payment_receipt.pdf");
-      }
-    });
+  const handlePayment = () => {
+    setShowBankAccountForm(true);
   };
 
   const handleBankAccountSubmit = async () => {
-    try {
-      let errorMessage = {};
-      if (!verifyCode || !bankAccount.bankAccountNumber || !bankAccount.AgentName) {
-        if (!bankAccount.bankAccountNumber || !bankAccount.AgentName) {
-          errorMessage.bankAccount = "Bank Account Number and Bank selection are required";
-        }
-        if (!verifyCode) {
-          errorMessage.verificationCode = "Verification code is required";
-        }
-        setErrorMessage(errorMessage);
-        return;
-      } else if (verifyCode !== verificationCode) {
-        errorMessage.verificationCode = "Invalid Verification code";
-        setErrorMessage(errorMessage);
-        return;
-      }
+    const validationErrors = {};
 
-      const randomNumber = Math.floor(Math.random() * 1000000000);
-      const random = `TXN${randomNumber}`;
-      const today = new Date().toISOString().split('T')[0];
+    if (!bankAccount.bankAccountNumber.trim()) {
+      validationErrors.bankAccountNumber = "Bank account number is required.";
+    }
+
+    if (!bankAccount.AgentName) {
+      validationErrors.AgentName = "Please select your bank.";
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    if (!userBill) {
+      message.error("No bill found.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const transactionNo = "TXN" + Date.now();
 
       const paymentData = {
-        TransactionNo: random,
-        paymentDate: today,
-        amount: userbill.TotalAmount,
+        TransactionNo: transactionNo,
+        paymentDate: new Date().toISOString().split("T")[0],
+        amount: userBill.TotalAmount,
         UserId: payerId,
-        serviceProviderBIN: localStorage.getItem('serviceProviderBIN'),
-        paymentMethod: "Credit card",
-        paymentDescription: `Payment for ${userbill.serviceDescription} services`,
-        ReferenceNo: userbill.billNumber,
+        serviceProviderBIN,
+        paymentMethod: "Credit Card",
+        paymentDescription: `Payment for ${userBill.serviceDescription}`,
+        ReferenceNo: userBill.billNumber,
       };
 
-      const paymentMethodResponse = await axios.post("http://localhost:3000/payment", paymentData);
-      await axios.put(`http://localhost:3000/bills/${userbill.id}`, {
+      const paymentResponse = await axios.post(
+        "http://localhost:3000/payment",
+        paymentData
+      );
+
+      await axios.put(`http://localhost:3000/bills/${userBill.id}`, {
         billStatus: "paid",
-        PaymentId: paymentMethodResponse.data.id,
+        PaymentId: paymentResponse.data.id,
       });
 
-      message.success('Payment successful!');
-      setErrorMessage("");
-      setDownloadModalVisible(true);
       setPayments(paymentData);
+      setErrors({});
+      setDownloadModalVisible(true);
+      message.success("Payment completed successfully.");
     } catch (error) {
-      console.error(error);
-      message.error('Payment failed. Please try again.');
+      message.error("Payment failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const generateVerificationCode = () => {
-    const length = 6;
-    const characters = "0123456789";
-    let code = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      code += characters.charAt(randomIndex);
-    }
-    return code;
-  };
+  const handleDownload = async (type) => {
+    const receipt = document.querySelector(".payment-modal-content");
 
-  const handleVerificationCodeChange = (event) => {
-    setVerifyCode(event.target.value);
+    if (!receipt) return;
+
+    const footer = receipt.querySelector(".modal-footer");
+    const buttons = receipt.querySelectorAll(".ant-btn");
+
+    buttons.forEach((btn) => {
+      btn.style.display = "none";
+    });
+
+    if (footer) footer.style.display = "none";
+
+    try {
+      const canvas = await html2canvas(receipt);
+
+      buttons.forEach((btn) => {
+        btn.style.display = "block";
+      });
+
+      if (footer) footer.style.display = "block";
+
+      if (type === "picture") {
+        const link = document.createElement("a");
+        link.download = "payment_receipt.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      if (type === "pdf") {
+        const pdf = new jsPDF("p", "mm", "a4");
+        const width = 210;
+        const height = (canvas.height * width) / canvas.width;
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, width, height);
+        pdf.save("payment_receipt.pdf");
+      }
+    } catch (error) {
+      message.error("Failed to download receipt.");
+    }
   };
 
   const navigateToUserPage = () => {
     setDownloadModalVisible(false);
-    navigate('/serviceProviders');
+    navigate("/serviceProviders");
   };
 
   return (
@@ -240,19 +260,30 @@ const Payment = () => {
             </div>
           </div>
           <div className="payment-header-badge">
-            <MdSecurity /> Secure Payment
+            <MdSecurity />
+            Secure Payment
           </div>
         </div>
 
-        {userbill ? (
+        {loading && (
+          <div className="payment-loading">
+            <h3>Loading payment information...</h3>
+          </div>
+        )}
+
+        {!loading && userBill && (
           <div className="bill-card">
             <div className="bill-card-header">
               <div className="bill-card-title">
                 <FaReceipt className="bill-icon" />
                 <h2>Bill Details</h2>
               </div>
-              <span className={`bill-status ${userbill.billStatus === 'paid' ? 'paid' : 'unpaid'}`}>
-                {userbill.billStatus || 'Unpaid'}
+              <span
+                className={`bill-status ${
+                  userBill.billStatus === "paid" ? "paid" : "unpaid"
+                }`}
+              >
+                {userBill.billStatus || "Unpaid"}
               </span>
             </div>
 
@@ -260,77 +291,99 @@ const Payment = () => {
               <div className="bill-row">
                 <div className="bill-field">
                   <label>Bill Number</label>
-                  <p><strong>{userbill.billNumber}</strong></p>
+                  <p>
+                    <strong>{userBill.billNumber}</strong>
+                  </p>
                 </div>
                 <div className="bill-field">
                   <label>Date Issued</label>
-                  <p><FaCalendarAlt className="field-icon" /> {userbill.dateIssued}</p>
+                  <p>
+                    <FaCalendarAlt className="field-icon" /> {userBill.dateIssued}
+                  </p>
                 </div>
               </div>
 
-              <div className="bill-divider"></div>
+              <div className="bill-divider" />
 
               <div className="bill-row">
                 <div className="bill-field">
-                  <label><UserOutlined /> Customer</label>
-                  <p>{userbill.customerName}</p>
+                  <label>
+                    <UserOutlined /> Customer
+                  </label>
+                  <p>{userBill.customerName}</p>
                 </div>
                 <div className="bill-field">
-                  <label><FileTextOutlined /> Description</label>
-                  <p>{userbill.serviceDescription}</p>
+                  <label>
+                    <FileTextOutlined /> Description
+                  </label>
+                  <p>{userBill.serviceDescription}</p>
                 </div>
               </div>
 
               <div className="bill-row">
                 <div className="bill-field">
                   <label>Service Period</label>
-                  <p>{userbill.servicePeriod}</p>
+                  <p>{userBill.servicePeriod}</p>
                 </div>
                 <div className="bill-field">
                   <label>Due Date</label>
-                  <p><FaCalendarAlt className="field-icon" /> {userbill.dueDate}</p>
+                  <p>
+                    <FaCalendarAlt className="field-icon" /> {userBill.dueDate}
+                  </p>
                 </div>
               </div>
 
-              <div className="bill-divider"></div>
+              <div className="bill-divider" />
 
               <div className="bill-amount-section">
                 <div className="bill-amount-item">
                   <span>Service Charges</span>
-                  <span>${userbill.serviceCharges}</span>
+                  <span>${userBill.serviceCharges}</span>
                 </div>
                 <div className="bill-amount-item">
                   <span>Additional Charges</span>
-                  <span>${userbill.additionalCharges}</span>
+                  <span>${userBill.additionalCharges}</span>
                 </div>
                 <div className="bill-amount-item total">
                   <span>Total Amount</span>
-                  <span>${userbill.TotalAmount}</span>
+                  <span>${userBill.TotalAmount}</span>
                 </div>
               </div>
             </div>
 
             <div className="bill-card-footer">
-              <button 
+              <button
                 className="pay-now-btn"
-                onClick={() => handlePayment(userbill.billNumber, userbill.serviceProviderBIN)}
+                onClick={handlePayment}
+                disabled={userBill.billStatus === "paid"}
               >
-                Pay Now <FaArrowRight />
+                {userBill.billStatus === "paid" ? (
+                  "Already Paid"
+                ) : (
+                  <>
+                    Pay Now
+                    <FaArrowRight />
+                  </>
+                )}
               </button>
             </div>
           </div>
-        ) : (
+        )}
+
+        {!loading && !userBill && (
           <div className="no-bill-card">
             <FaReceipt className="no-bill-icon" />
             <h3>No Bill Available</h3>
-            <p>You don't have any pending bills at the moment</p>
+            <p>There are no pending bills for this service number.</p>
           </div>
         )}
 
-        {/* Payment Form */}
         {showBankAccountForm && (
           <div className="payment-form-card">
-            <h2><BankOutlined /> Bank Account Details</h2>
+            <h2>
+              <BankOutlined /> Bank Account Details
+            </h2>
+
             <div className="payment-form">
               <div className="form-group">
                 <label>Bank Account Number</label>
@@ -341,60 +394,73 @@ const Payment = () => {
                   placeholder="Enter your bank account number"
                   className="form-input"
                 />
+                {errors.bankAccountNumber && (
+                  <span className="error-text">{errors.bankAccountNumber}</span>
+                )}
               </div>
 
               <div className="form-group">
                 <label>Select Bank</label>
                 <select
-                  className="form-select"
                   name="AgentName"
                   value={bankAccount.AgentName}
                   onChange={handleChange}
+                  className="form-select"
                 >
-                  <option value="">Choose a bank</option>
-                  {banks.map((bank) => (
-                    <option key={bank.id} value={bank.agentName}>
-                      {bank.agentName}
-                    </option>
-                  ))}
+                  <option value="">-- Select Bank --</option>
+                  {banks.length > 0 ? (
+                    banks.map((bank) => (
+                      <option key={bank.id} value={bank.agentName}>
+                        {bank.agentName}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No banks available</option>
+                  )}
                 </select>
+                {errors.AgentName && (
+                  <span className="error-text">{errors.AgentName}</span>
+                )}
               </div>
 
-              {errors.bankAccount && <span className="error-text">{errors.bankAccount}</span>}
-
-              <div className="form-group verification-group">
-                <label>Verification Code</label>
-                <div className="verification-wrapper">
-                  <Input
-                    value={verifyCode}
-                    onChange={handleVerificationCodeChange}
-                    placeholder="Enter 6-digit code"
-                    className="form-input verification-input"
-                    maxLength={6}
-                  />
-                  <button 
-                    className="verify-btn"
-                    onClick={sendVerificationEmail}
-                    disabled={loading}
-                  >
-                    <MailOutlined /> {loading ? 'Sending...' : 'Get Code'}
-                  </button>
+              {userBill && (
+                <div className="payment-summary">
+                  <h3>Payment Summary</h3>
+                  <div className="summary-row">
+                    <span>Reference No.</span>
+                    <span>{userBill.billNumber}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>Customer</span>
+                    <span>{userBill.customerName}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>Description</span>
+                    <span>{userBill.serviceDescription}</span>
+                  </div>
+                  <div className="summary-row total">
+                    <span>Total Amount</span>
+                    <strong>${userBill.TotalAmount}</strong>
+                  </div>
                 </div>
-                {errors.verificationCode && <span className="error-text">{errors.verificationCode}</span>}
-              </div>
+              )}
 
-              <button 
-                className="submit-payment-btn"
+              <Button
+                type="primary"
+                size="large"
+                block
+                icon={<FaCheckCircle />}
+                loading={loading}
                 onClick={handleBankAccountSubmit}
+                className="submit-payment-btn"
               >
-                <FaCheckCircle /> Complete Payment
-              </button>
+                Complete Payment
+              </Button>
             </div>
           </div>
         )}
       </main>
 
-      {/* Success Modal */}
       <Modal
         title={
           <div className="modal-success-title">
@@ -408,20 +474,35 @@ const Payment = () => {
           navigateToUserPage();
         }}
         footer={[
-          <Button key="back" className="modal-btn-close" onClick={() => { setDownloadModalVisible(false); navigateToUserPage(); }}>
+          <Button
+            key="back"
+            className="modal-btn-close"
+            onClick={() => {
+              setDownloadModalVisible(false);
+              navigateToUserPage();
+            }}
+          >
             Close
           </Button>,
-          <Button key="picture" className="modal-btn-download" onClick={() => handleDownload("picture")}>
+          <Button
+            key="picture"
+            className="modal-btn-download"
+            onClick={() => handleDownload("picture")}
+          >
             Download as Picture
           </Button>,
-          <Button key="pdf" className="modal-btn-download primary" onClick={() => handleDownload("pdf")}>
+          <Button
+            key="pdf"
+            className="modal-btn-download primary"
+            onClick={() => handleDownload("pdf")}
+          >
             Download as PDF
-          </Button>
+          </Button>,
         ]}
         className="payment-modal"
         width={580}
       >
-        {userbill && (
+        {userBill && (
           <div className="payment-modal-content">
             <div className="modal-receipt">
               <div className="receipt-header">
@@ -439,15 +520,19 @@ const Payment = () => {
                 </div>
                 <div className="receipt-row">
                   <span>Customer:</span>
-                  <span className="receipt-value">{userbill.customerName}</span>
+                  <span className="receipt-value">{userBill.customerName}</span>
                 </div>
                 <div className="receipt-row">
                   <span>Payer:</span>
-                  <span className="receipt-value">{userData.FirstName + ' ' + userData.LastName}</span>
+                  <span className="receipt-value">
+                    {userData.FirstName + " " + userData.LastName}
+                  </span>
                 </div>
                 <div className="receipt-row">
                   <span>Amount:</span>
-                  <span className="receipt-value amount">${payments.amount}</span>
+                  <span className="receipt-value amount">
+                    ${payments.amount}
+                  </span>
                 </div>
                 <div className="receipt-row">
                   <span>Payment Date:</span>
@@ -459,7 +544,9 @@ const Payment = () => {
                 </div>
                 <div className="receipt-row full">
                   <span>Description:</span>
-                  <span className="receipt-value">{payments.paymentDescription}</span>
+                  <span className="receipt-value">
+                    {payments.paymentDescription}
+                  </span>
                 </div>
               </div>
               <div className="receipt-footer">
