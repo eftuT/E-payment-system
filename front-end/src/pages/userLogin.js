@@ -52,11 +52,6 @@ const UserLogin = () => {
         localStorage.setItem('isLoggedInUser', 'true');
         localStorage.setItem('userData', JSON.stringify(response.data.user || response.data));
         
-        toast.success('Login successful!', {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
-        
         message.success('User logged in successfully');
         
         setTimeout(() => {
