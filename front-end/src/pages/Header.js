@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, NavLink } from 'react-router-dom'; // Removed useLocation
-import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useRef } from 'react';
+import { Link, useNavigate, NavLink } from 'react-router-dom';
+import { MenuOutlined, LogoutOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
 import companyLogo from '../image/logoimage.jpg';
 import USER from '../image/himage3.jpg';
 import { Form, Button, Input, Modal, message } from 'antd';
 import axios from 'axios';
 import {
   FaUser,
-  FaUserPlus, FaHome, FaCamera, FaGenderless
+  FaUserPlus, FaCamera, FaGenderless
 } from 'react-icons/fa';
 import { MdEmail, MdPerson, MdPhone, MdHome } from 'react-icons/md';
 import './Header.css';
-
 
 const Header = () => {
   const [userData, setUserData] = useState(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  // Removed: location (not used)
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,6 +36,20 @@ const Header = () => {
     ProfilePicture: null,
   });
 
+  const getProfilePictureUrl = (userData) => {
+    if (!userData) return '';
+    
+    const profilePhoto = userData.ProfilePhoto || userData.profilePicture || userData.ProfilePicture;
+    
+    if (!profilePhoto) return '';
+    
+    if (profilePhoto.startsWith('data:image') || profilePhoto.startsWith('http')) {
+      return profilePhoto;
+    }
+    
+    return `http://localhost:3000/${profilePhoto}`;
+  };
+
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedInUser');
 
@@ -47,18 +61,11 @@ const Header = () => {
           setUserData(parsedData);
           setFormData(parsedData);
           
-          if (parsedData.ProfilePhoto) {
-            if (parsedData.ProfilePhoto.startsWith('data:image') || parsedData.ProfilePhoto.startsWith('http')) {
-              setProfilePictureUrl(parsedData.ProfilePhoto);
-            } else {
-              setProfilePictureUrl(`http://localhost:3000/${parsedData.ProfilePhoto}`);
-            }
-          } else {
-            setProfilePictureUrl('');
-          }
+          const picUrl = getProfilePictureUrl(parsedData);
+          setProfilePictureUrl(picUrl);
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        // Silent fail
       }
     }
 
@@ -70,16 +77,40 @@ const Header = () => {
     if (!isSmallScreen) closeMenu();
     window.addEventListener('resize', handleResize);
 
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSmallScreen]);
 
   useEffect(() => {
-    if (userData?.ProfilePhoto) {
-      // This effect runs when ProfilePhoto changes
-    }
-  }, [userData?.ProfilePhoto]); 
+    const handleStorageChange = (e) => {
+      if (e.key === 'userData') {
+        try {
+          const updatedData = JSON.parse(e.newValue);
+          if (updatedData) {
+            setUserData(updatedData);
+            setFormData(updatedData);
+            const picUrl = getProfilePictureUrl(updatedData);
+            setProfilePictureUrl(picUrl);
+          }
+        } catch (error) {
+          // Silent fail
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -87,6 +118,10 @@ const Header = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   const handleProfilePictureChange = (e) => {
@@ -100,12 +135,15 @@ const Header = () => {
         message.error('Image size should be less than 5MB');
         return;
       }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePictureUrl(reader.result);
+        const imageDataUrl = reader.result;
+        setProfilePictureUrl(imageDataUrl);
         setFormData(prev => ({
           ...prev,
-          ProfilePicture: reader.result
+          ProfilePicture: imageDataUrl,
+          ProfilePhoto: imageDataUrl
         }));
       };
       reader.readAsDataURL(file);
@@ -114,7 +152,13 @@ const Header = () => {
 
   const handleEdit = () => {
     setEditMode(true);
+    setIsDropdownOpen(false);
     form.setFieldsValue(userData);
+  };
+
+  const handleChangePassword = () => {
+    setIsDropdownOpen(false);
+    navigate('/users/updatepassword');
   };
 
   const handleSave = async () => {
@@ -125,29 +169,38 @@ const Header = () => {
       const updatedData = {
         ...userData,
         ...values,
-        ProfilePicture: formData.ProfilePicture || userData?.ProfilePicture || null
+        ProfilePicture: formData.ProfilePicture || userData?.ProfilePicture || userData?.ProfilePhoto || null,
+        ProfilePhoto: formData.ProfilePicture || userData?.ProfilePicture || userData?.ProfilePhoto || null
       };
 
       localStorage.setItem('userData', JSON.stringify(updatedData));
+      
       setUserData(updatedData);
+      setFormData(updatedData);
+      
+      const picUrl = getProfilePictureUrl(updatedData);
+      setProfilePictureUrl(picUrl);
       
       try {
-        await axios.put(`http://localhost:3000/Users/${userData?.id || userData?.UserID}`, updatedData);
+        const userId = userData?.id || userData?.UserID;
+        if (userId) {
+          await axios.put(`http://localhost:3000/Users/${userId}`, updatedData);
+        }
       } catch (apiError) {
-        console.log('API update skipped or failed');
+        // Silent fail
       }
 
       message.success('Profile updated successfully!');
       setEditMode(false);
       setLoading(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
       message.error('Please fill all required fields correctly');
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
+    setIsDropdownOpen(false);
     Modal.confirm({
       title: 'Confirm Logout',
       content: 'Are you sure you want to Logout?',
@@ -158,6 +211,7 @@ const Header = () => {
         localStorage.removeItem('userData');
         localStorage.removeItem('isLoggedInUser');
         setUserData(null);
+        setProfilePictureUrl('');
         navigate('/login');
       },
     });
@@ -176,10 +230,8 @@ const Header = () => {
 
   return (
     <>
-      {/* Header */}
       <header className="app-header">
         <div className="header-content">
-          {/* Logo Section with 3D Spin Animation */}
           <div className="logo-section">
             <div className="logo-wrapper">
               <img 
@@ -194,19 +246,18 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="header-nav">
-            {/* Desktop Navigation */}
             <div className="desktop-nav">
               <NavLink to="/users" className="nav-link" activeClassName="active">
-                <FaHome /> Home
-              </NavLink>
-              <NavLink to="/contactUs" className="nav-link" activeClassName="active">
-                Contact Us
+                Home
               </NavLink>
               <NavLink to="/aboutUs" className="nav-link" activeClassName="active">
                 About Us
               </NavLink>
+              <NavLink to="/contactUs" className="nav-link" activeClassName="active">
+                Contact Us
+              </NavLink>
+              
               {isLoggedInUser && (
                 <>
                   <NavLink to="/serviceProviders" className="nav-link" activeClassName="active">
@@ -219,24 +270,48 @@ const Header = () => {
               )}
             </div>
 
-            {/* User Profile / Login */}
             <div className="user-section">
               {isLoggedInUser ? (
-                <div className="user-profile" onClick={handleEdit}>
-                  {profilePictureUrl && profilePictureUrl !== 'http://localhost:3000/null' ? (
-                    <img 
-                      src={profilePictureUrl} 
-                      alt="Profile" 
-                      className="profile-avatar"
-                    />
-                  ) : (
-                    <div className="profile-avatar-initial">
-                      {getUserInitials()}
+                <div className="user-profile-dropdown" ref={dropdownRef}>
+                  <div className="user-profile-trigger" onClick={toggleDropdown}>
+                    {profilePictureUrl && profilePictureUrl !== 'http://localhost:3000/null' ? (
+                      <img 
+                        src={profilePictureUrl} 
+                        alt="Profile" 
+                        className="profile-avatar"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const parent = e.target.parentElement;
+                          const initialsDiv = document.createElement('div');
+                          initialsDiv.className = 'profile-avatar-initial';
+                          initialsDiv.textContent = getUserInitials();
+                          parent.appendChild(initialsDiv);
+                        }}
+                      />
+                    ) : (
+                      <div className="profile-avatar-initial">
+                        {getUserInitials()}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {isDropdownOpen && (
+                    <div className="profile-dropdown-menu">
+                      <div className="dropdown-item" onClick={handleEdit}>
+                        <UserOutlined className="dropdown-icon" />
+                        <span>Edit Profile</span>
+                      </div>
+                      <div className="dropdown-item" onClick={handleChangePassword}>
+                        <KeyOutlined className="dropdown-icon" />
+                        <span>Change Password</span>
+                      </div>
+                      <div className="dropdown-divider"></div>
+                      <div className="dropdown-item logout-item" onClick={handleLogout}>
+                        <LogoutOutlined className="dropdown-icon" />
+                        <span>Logout</span>
+                      </div>
                     </div>
                   )}
-                  <button className="logout-btn" onClick={(e) => { e.stopPropagation(); handleLogout(); }}>
-                    <LogoutOutlined /> Logout
-                  </button>
                 </div>
               ) : (
                 <Link to="/login" className="login-link">
@@ -246,25 +321,24 @@ const Header = () => {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <button className="mobile-menu-btn" onClick={toggleMenu}>
               <MenuOutlined />
             </button>
           </nav>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && isSmallScreen && (
           <div className="mobile-menu">
             <NavLink to="/users" className="mobile-nav-link" onClick={closeMenu}>
              Home
             </NavLink>
+              <NavLink to="/aboutUs" className="mobile-nav-link" onClick={closeMenu}>
+              About Us
+            </NavLink>
             <NavLink to="/contactUs" className="mobile-nav-link" onClick={closeMenu}>
               Contact Us
             </NavLink>
-            <NavLink to="/aboutUs" className="mobile-nav-link" onClick={closeMenu}>
-              About Us
-            </NavLink>
+          
             {isLoggedInUser && (
               <>
                 <NavLink to="/serviceProviders" className="mobile-nav-link" onClick={closeMenu}>
@@ -276,15 +350,20 @@ const Header = () => {
               </>
             )}
             {isLoggedInUser && (
-              <button className="mobile-logout-btn" onClick={() => { closeMenu(); handleLogout(); }}>
-                <LogoutOutlined /> Logout
-              </button>
+              <>
+                <div className="mobile-divider"></div>
+                <NavLink to="/users/updatepassword" className="mobile-nav-link" onClick={closeMenu}>
+                  <KeyOutlined /> Change Password
+                </NavLink>
+                <button className="mobile-logout-btn" onClick={() => { closeMenu(); handleLogout(); }}>
+                  <LogoutOutlined /> Logout
+                </button>
+              </>
             )}
           </div>
         )}
       </header>
 
-      {/* Edit Profile Modal */}
       <Modal
         title={
           <div style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold' }}>
@@ -307,7 +386,6 @@ const Header = () => {
           initialValues={userData}
           onFinish={handleSave}
         >
-          {/* Profile Photo */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               {profilePictureUrl && profilePictureUrl !== 'http://localhost:3000/null' ? (
@@ -320,6 +398,26 @@ const Header = () => {
                     borderRadius: '50%',
                     objectFit: 'cover',
                     border: '3px solid #667eea'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    const parent = e.target.parentElement;
+                    const initialsDiv = document.createElement('div');
+                    initialsDiv.style.cssText = `
+                      width: 100px;
+                      height: 100px;
+                      borderRadius: 50%;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      display: flex;
+                      justifyContent: center;
+                      alignItems: center;
+                      border: 3px solid #667eea;
+                    `;
+                    const span = document.createElement('span');
+                    span.style.cssText = 'fontSize: 40px; color: white; fontWeight: bold;';
+                    span.textContent = getUserInitials();
+                    initialsDiv.appendChild(span);
+                    parent.appendChild(initialsDiv);
                   }}
                 />
               ) : (
