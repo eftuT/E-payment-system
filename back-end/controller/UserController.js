@@ -294,6 +294,10 @@ exports.findOne = asyncHandler(async (req, res) => {
   }
 });
 
+// ==========================================
+// FIXED: This controller will no longer 
+// clash with getDefaultIncludes()
+// ==========================================
 exports.findOneByServiceNo = asyncHandler(async (req, res) => {
   const serviceNo = req.params.serviceNo;
   const serviceProviderBIN = req.params.serviceProviderBIN;
@@ -304,17 +308,22 @@ exports.findOneByServiceNo = asyncHandler(async (req, res) => {
         {
           model: db.ServiceProviders,
           as: 'ServiceProviders',
+          required: true,
+          where: {
+            serviceProviderBIN: serviceProviderBIN
+          },
           through: {
             model: db.UserServiceProvider,
             as: 'userServiceProvider',
             where: {
-              serviceNo: serviceNo,
-              serviceProviderBIN: serviceProviderBIN
+              serviceNo: serviceNo
             },
-            required: true,
           },
         },
-        ...getDefaultIncludes()
+        // Manually declaring these to prevent overlap
+        { model: db.Payment, as: 'Payments' },
+        { model: db.Bill, as: 'Bills' },
+        { model: db.Agents, as: 'Agents' },
       ],
       distinct: true
     });
@@ -625,7 +634,7 @@ async function sendEmail(recipientEmail, subject, message) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER || "letinamekonnen6@gmail.com",
+        user: process.env.EMAIL_USER || "eftutesfaye357@gmail.com",
         pass: process.env.EMAIL_PASS || "clnyfngaveyvxucx",
       },
       tls: {
@@ -634,7 +643,7 @@ async function sendEmail(recipientEmail, subject, message) {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER || "letinamekonnen6@gmail.com",
+      from: process.env.EMAIL_USER || "eftutesfaye357@gmail.com",
       to: recipientEmail,
       subject: subject,
       text: message,
