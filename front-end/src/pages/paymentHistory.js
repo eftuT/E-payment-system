@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { Modal, Table } from "antd";
+import { Modal, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
@@ -12,18 +12,19 @@ import {
   FaCreditCard,
   FaCalendarAlt,
   FaCheckCircle
-
 } from 'react-icons/fa';
 import { MdPayment, MdReceipt } from 'react-icons/md';
 import Header from "./Header";
 import "./PaymentHistory.css";
 
 const PaymentHistory = () => {
-  const [userData] = useState(JSON.parse(localStorage.getItem("userData"))); // Removed setUserData
+  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem("userData"))); 
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [fetchingHistory, setFetchingHistory] = useState(false);
+  const [loadingModal, setLoadingModal] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,34 +32,49 @@ const PaymentHistory = () => {
       navigate("/users");
       return;
     }
-
-    const storedPaymentHistory = userData.Payments || [];
-    setPaymentHistory(storedPaymentHistory);
+    
     localStorage.setItem("userSelectedMenu", 5);
-  }, [userData, navigate]);
+    fetchLatestPayments();
+  }, []);
+
+  const fetchLatestPayments = async () => {
+    setFetchingHistory(true);
+    try {
+      const response = await axios.get(`http://localhost:3000/Users/${userData.id}`);
+      
+      if (response.data.success) {
+        const freshUser = response.data.user;
+        setPaymentHistory(freshUser.Payments || []);
+        localStorage.setItem("userData", JSON.stringify(freshUser));
+        setUserData(freshUser);
+      }
+    } catch (error) {
+      console.error("Error fetching latest payments:", error);
+      message.error("Could not refresh payment history.");
+      setPaymentHistory(userData.Payments || []);
+    } finally {
+      setFetchingHistory(false);
+    }
+  };
 
   const fetchPaymentDetails = async (paymentId) => {
-    setLoading(true);
+    setLoadingModal(true);
     try {
-      const response = await axios.get(`http://localhost:3000/Users/${userData.UserId}`);
-      const paymentDetails = response.data.payment;
+      const response = await axios.get(`http://localhost:3000/payment/${paymentId}`);
+      const paymentDetails = response.data;
       const customerName = paymentDetails?.Bill?.customerName || 'N/A';
       setSelectedPayment({ ...paymentDetails, customerName });
     } catch (error) {
       console.error("Error fetching payment details:", error);
+      message.error("Failed to load payment details.");
     } finally {
-      setLoading(false);
+      setLoadingModal(false);
     }
   };
 
-  const generatePicture = (payment) => {
-    fetchPaymentDetails(payment.id);
+  const openReceiptModal = (payment) => {
     setModalVisible(true);
-  };
-
-  const generatePDF = (payment) => {
     fetchPaymentDetails(payment.id);
-    setModalVisible(true);
   };
 
   const handleModalCancel = () => {
@@ -92,7 +108,7 @@ const PaymentHistory = () => {
         const dataURL = canvas.toDataURL("image/png");
         const link = document.createElement("a");
         link.href = dataURL;
-        link.download = `payment-${selectedPayment?.id || 'receipt'}.png`;
+        link.download = `payment-${selectedPayment?.TransactionNo || 'receipt'}.png`;
         link.click();
       } else if (fileType === "pdf") {
         const dataURL = canvas.toDataURL("image/png");
@@ -100,7 +116,7 @@ const PaymentHistory = () => {
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         const pdf = new jsPDF("p", "mm", "a4");
         pdf.addImage(dataURL, "PNG", 0, 0, imgWidth, imgHeight);
-        pdf.save(`payment-${selectedPayment?.id || 'receipt'}.pdf`);
+        pdf.save(`payment-${selectedPayment?.TransactionNo || 'receipt'}.pdf`);
       }
     });
   };
@@ -160,29 +176,30 @@ const PaymentHistory = () => {
       ),
     },
     {
-      title: "Action",
+      title: "Receipt",
       key: "action",
-      width: 160,
+      width: 120,
       render: (_, payment) => (
-        <div className="ph-actions">
-          <button 
-            className="ph-action-btn picture" 
-            onClick={() => generatePicture(payment)}
-            title="Download as Image"
-          >
-            <FaImage />
-          </button>
-          <button 
-            className="ph-action-btn pdf" 
-            onClick={() => generatePDF(payment)}
-            title="Download as PDF"
-          >
-            <FaFilePdf />
-          </button>
-        </div>
+        <button 
+          className="ph-receipt-btn"
+          onClick={() => openReceiptModal(payment)}
+          title="View Receipt"
+        >
+          <FaReceipt /> Receipt
+        </button>
       ),
     },
   ];
+
+  const itemRender = (current, type, originalElement) => {
+    if (type === 'prev') {
+      return <a className="ph-pagination-arrow">‹</a>;
+    }
+    if (type === 'next') {
+      return <a className="ph-pagination-arrow">›</a>;
+    }
+    return originalElement;
+  };
 
   return (
     <div className="ph-container">
@@ -206,7 +223,11 @@ const PaymentHistory = () => {
         </div>
 
         <div className="ph-table-wrapper">
-          {paymentHistory.length === 0 ? (
+          {fetchingHistory ? (
+            <div className="ph-loading-table">
+               <h3>Loading recent payments...</h3>
+            </div>
+          ) : paymentHistory.length === 0 ? (
             <div className="ph-empty">
               <MdReceipt className="ph-empty-icon" />
               <h3>No Payment History</h3>
@@ -217,10 +238,11 @@ const PaymentHistory = () => {
               dataSource={paymentHistory}
               columns={columns}
               scroll={{ x: true }}
+              rowKey="id"
               pagination={{
                 pageSize: 5,
-                showSizeChanger: true,
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} payments`,
+                showSizeChanger: false,
+                itemRender: itemRender,
               }}
               className="ph-table"
               rowClassName="ph-table-row"
@@ -229,7 +251,6 @@ const PaymentHistory = () => {
         </div>
       </main>
 
-      {/* Payment Details Modal */}
       <Modal
         title={
           <div className="ph-modal-header">
@@ -244,6 +265,7 @@ const PaymentHistory = () => {
             key="picture" 
             className="ph-modal-btn picture"
             onClick={() => handleDownload("picture")}
+            disabled={loadingModal || !selectedPayment}
           >
             <FaImage /> Download Image
           </button>,
@@ -251,6 +273,7 @@ const PaymentHistory = () => {
             key="pdf" 
             className="ph-modal-btn pdf"
             onClick={() => handleDownload("pdf")}
+            disabled={loadingModal || !selectedPayment}
           >
             <FaFilePdf /> Download PDF
           </button>,
@@ -258,7 +281,7 @@ const PaymentHistory = () => {
         className="ph-modal"
         width={560}
       >
-        {loading ? (
+        {loadingModal ? (
           <div className="ph-modal-loading">
             <span className="ph-spinner">⏳</span>
             <p>Loading payment details...</p>
