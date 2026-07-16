@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Dashboard from './Dashboard';
-import { Spin, message, Card, Statistic, Row, Col, Tag } from 'antd';
+import { Spin, message, Card, Statistic, Row, Col, Tag, Tabs, Table, Empty } from 'antd';
 import { 
   UserOutlined, 
   BankOutlined, 
@@ -9,15 +9,19 @@ import {
   DollarOutlined,
   TeamOutlined,
   WalletOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  PieChartOutlined,
+  TableOutlined,
+  BarChartOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { FaShieldAlt } from 'react-icons/fa';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import './Home.css';
 
 const Home = ({ content }) => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -28,6 +32,9 @@ const Home = ({ content }) => {
     totalBills: 0,
   });
   const [recentPayments, setRecentPayments] = useState([]);
+  const [paymentStats, setPaymentStats] = useState({
+    paymentMethods: {}
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -98,11 +105,72 @@ const Home = ({ content }) => {
     try {
       const paymentsRes = await axios.get('http://localhost:3000/payment');
       const payments = extractArray(paymentsRes.data);
-      setRecentPayments(payments.slice(0, 5));
+      setRecentPayments(payments);
+      
+      const methodCount = {};
+      payments.forEach(p => {
+        const method = p.paymentMethod || 'Other';
+        methodCount[method] = (methodCount[method] || 0) + 1;
+      });
+      
+      setPaymentStats({
+        paymentMethods: methodCount
+      });
     } catch (error) {
       console.error('Error fetching payments:', error);
     }
   };
+
+  const getPaymentMethodData = () => {
+    const colors = ['#667eea', '#f5576c', '#4facfe', '#22c55e', '#f59e0b', '#8b5cf6'];
+    return Object.entries(paymentStats.paymentMethods).map(([name, value], index) => ({
+      name,
+      value,
+      color: colors[index % colors.length]
+    }));
+  };
+
+  const columns = [
+    {
+      title: 'Transaction ID',
+      dataIndex: 'TransactionNo',
+      key: 'transactionNo',
+      render: (text) => <span className="transaction-id-text">{text || 'N/A'}</span>
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount) => (
+        <span className="amount-text">
+          ${parseFloat(amount || 0).toFixed(2)}
+        </span>
+      )
+    },
+    {
+      title: 'Method',
+      dataIndex: 'paymentMethod',
+      key: 'paymentMethod',
+      render: (method) => (
+        <Tag color={method === 'Credit Card' ? 'blue' : method === 'PayPal' ? 'purple' : method === 'Bank Transfer' ? 'green' : 'orange'}>
+          {method || 'Unknown'}
+        </Tag>
+      )
+    },
+    {
+      title: 'Date',
+      dataIndex: 'paymentDate',
+      key: 'paymentDate',
+      render: (date) => date || 'N/A'
+    },
+    {
+      title: 'Status',
+      key: 'status',
+      render: () => (
+        <Tag color="success">Completed</Tag>
+      )
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -158,11 +226,74 @@ const Home = ({ content }) => {
     },
   ];
 
+  const tabItems = [
+    {
+      key: 'table',
+      label: <span><TableOutlined /> Table View</span>,
+      children: (
+        <Table 
+          columns={columns} 
+          dataSource={recentPayments.slice(0, 10)} 
+          pagination={{ pageSize: 5 }}
+          rowKey={(record, index) => index}
+          className="payment-table"
+        />
+      )
+    },
+    {
+      key: 'pie',
+      label: <span><PieChartOutlined /> Payment Methods</span>,
+      children: (
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={getPaymentMethodData()}
+                cx="50%"
+                cy="50%"
+                labelLine={true}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {getPaymentMethodData().map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )
+    },
+    {
+      key: 'bar',
+      label: <span><BarChartOutlined /> Amount Distribution</span>,
+      children: (
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={recentPayments.slice(0, 10).map(p => ({
+              name: p.TransactionNo || 'N/A',
+              amount: parseFloat(p.amount || 0)
+            }))}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="amount" fill="#667eea" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )
+    }
+  ];
+
   return (
     <Dashboard
       content={
         <div className="home-content">
-          {/* Welcome Section */}
           <div className="welcome-section">
             <div className="welcome-text">
               <h1>Welcome back, {adminData?.user?.FirstName || 'Admin'}! 👋</h1>
@@ -174,58 +305,31 @@ const Home = ({ content }) => {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <Row gutter={[16, 16]} className="stats-row">
+          {/* Stats Cards - Equal and Responsive */}
+          <div className="stats-grid">
             {statsData.map((stat, index) => (
-              <Col xs={24} sm={12} lg={6} xl={4} key={index}>
-                <Card className="stat-card">
-                  <div className="stat-icon" style={{ background: stat.bg, color: stat.color }}>
-                    {stat.icon}
-                  </div>
-                  <div className="stat-content">
-                    <Statistic
-                      title={stat.title}
-                      value={stat.value}
-                      valueStyle={{ color: '#1a1a2e', fontSize: '22px', fontWeight: 700 }}
-                    />
-                  </div>
-                </Card>
-              </Col>
+              <Card key={index} className="stat-card">
+                <div className="stat-icon" style={{ background: stat.bg, color: stat.color }}>
+                  {stat.icon}
+                </div>
+                <div className="stat-content">
+                  <Statistic
+                    title={stat.title}
+                    value={stat.value}
+                    valueStyle={{ color: '#1a1a2e', fontSize: '22px', fontWeight: 700 }}
+                  />
+                </div>
+              </Card>
             ))}
-          </Row>
+          </div>
 
-          {/* Recent Transactions */}
           <div className="recent-transactions">
             <h2 className="section-title">💳 Recent Transactions</h2>
             <Card className="transaction-card">
               {recentPayments.length > 0 ? (
-                <div className="transaction-list">
-                  {recentPayments.map((payment, index) => (
-                    <div key={index} className="transaction-item">
-                      <div className="transaction-left">
-                        <div className="transaction-icon">
-                          <TransactionOutlined />
-                        </div>
-                        <div className="transaction-info">
-                          <div className="transaction-id">{payment.TransactionNo || 'N/A'}</div>
-                          <div className="transaction-meta">
-                            <Tag color="blue">{payment.paymentMethod || 'Unknown'}</Tag>
-                            <span className="transaction-date">
-                              <CalendarOutlined /> {payment.paymentDate || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="transaction-amount">
-                        ${parseFloat(payment.amount || 0).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <Tabs defaultActiveKey="table" items={tabItems} className="transaction-tabs" />
               ) : (
-                <div className="no-transactions">
-                  <p>No transactions found</p>
-                </div>
+                <Empty description="No transactions found" />
               )}
             </Card>
           </div>

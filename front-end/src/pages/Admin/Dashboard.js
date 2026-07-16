@@ -27,7 +27,6 @@ const Dashboard = ({ content }) => {
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
-  // Removed: admin state (not used)
   const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const { adminId } = useParams();
@@ -77,18 +76,6 @@ const Dashboard = ({ content }) => {
       setIsLoading(false);
     }
   }, [adminData, navigate]);
-
-  // Fixed: Added missing dependency
-  useEffect(() => {
-    // This effect runs when profilePictureUrl changes
-    // If you need to do something with profilePictureUrl, add it here
-  }, [profilePictureUrl]); // Added missing dependency
-
-  // Fixed: Added missing dependency
-  useEffect(() => {
-    // This effect runs when selectedMenu changes
-    // If you need to do something with selectedMenu, add it here
-  }, [selectedMenu]); // Added missing dependency
 
   if (isLoading) {
     return (
@@ -187,15 +174,15 @@ const Dashboard = ({ content }) => {
 
   const menuItems = [
     { key: '1', icon: <DashboardOutlined />, label: 'Dashboard', path: `/admin/dashboard/${formData.id}` },
-    { key: '2', icon: <BankOutlined />, label: 'Agents Registration', path: `/admin/agents/registration/${formData.id}` },
+    { key: '2', icon: <BankOutlined />, label: 'Agent Registration', path: `/admin/agents/registration/${formData.id}` },
     { key: '3', icon: <BankOutlined />, label: 'Agents List', path: `/admin/agents/${formData.id}` },
-    { key: '4', icon: <SolutionOutlined />, label: 'Service Providers Reg', path: `/admin/service-providers/registration/${formData.id}` },
+    { key: '4', icon: <SolutionOutlined />, label: 'Service Provider Registration', path: `/admin/service-providers/registration/${formData.id}` },
     { key: '5', icon: <SolutionOutlined />, label: 'Service Providers List', path: `/admin/service-providers/${formData.id}` },
     { key: '6', icon: <UserOutlined />, label: 'Admin Registration', path: `/admin/user/registration/${formData.id}` },
     { key: '7', icon: <UserOutlined />, label: 'Admin List', path: `/admin/adminsList/${formData.id}` },
     { key: '8', icon: <UserSwitchOutlined />, label: 'Users List', path: `/admin/usersList/${formData.id}` },
     { key: '9', icon: <TransactionOutlined />, label: 'Transactions', path: `/admin/transactions/${formData.id}` },
-    { key: '10', icon: <AppstoreOutlined />, label: 'Service Number Gen', path: `/admin/serviceNogenerator/${formData.id}` },
+    { key: '10', icon: <AppstoreOutlined />, label: 'Service Number Generator', path: `/admin/serviceNogenerator/${formData.id}` },
     { key: '11', icon: <AppstoreOutlined />, label: 'Bill Generation', path: `/admin/billgenerator/${formData.id}` },
     { key: '12', icon: <AppstoreOutlined />, label: 'Activities', path: `/admin/activities/${formData.id}` },
   ];
@@ -213,7 +200,7 @@ const Dashboard = ({ content }) => {
         collapsed={collapsed}
         onCollapse={toggleCollapsed}
         className="admin-sider"
-        width={260}
+        width={300}
         collapsedWidth={0}
         trigger={null}
         style={{ 
@@ -248,32 +235,21 @@ const Dashboard = ({ content }) => {
         >
           {menuItems.map((item) => (
             <Menu.Item key={item.key} icon={item.icon}>
-              <Link to={item.path}>{item.label}</Link>
+              <Link to={item.path} className="menu-link">{item.label}</Link>
             </Menu.Item>
           ))}
         </Menu>
-
-        <div className="admin-sider-footer">
-          <Button 
-            type="text" 
-            onClick={toggleCollapsed}
-            className="admin-toggle-btn"
-          >
-            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          </Button>
-        </div>
       </Sider>
 
-      <Layout className="admin-main-layout" style={{ marginLeft: collapsed ? 0 : 260, transition: 'margin-left 0.2s' }}>
+      <Layout className="admin-main-layout" style={{ marginLeft: collapsed ? 0 : 300 }}>
         <Header className="admin-header">
           <div className="admin-header-left">
             <Button
               type="text"
               onClick={toggleCollapsed}
               className="admin-toggle-btn"
-            >
-              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            </Button>
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            />
             <span className="admin-header-title">Dashboard</span>
           </div>
 
@@ -321,7 +297,6 @@ const Dashboard = ({ content }) => {
         </Footer>
       </Layout>
 
-      {/* Edit Profile Modal */}
       <Modal
         title={
           <div className="modal-title">
