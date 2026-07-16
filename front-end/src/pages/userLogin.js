@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -51,11 +51,6 @@ const UserLogin = () => {
       if (response.status === 200) {
         localStorage.setItem('isLoggedInUser', 'true');
         localStorage.setItem('userData', JSON.stringify(response.data.user || response.data));
-        
-        toast.success('Login successful!', {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        });
         
         message.success('User logged in successfully');
         
