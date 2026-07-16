@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   FaShieldAlt, 
   FaRocket, 
@@ -8,8 +7,6 @@ import {
   FaMobileAlt,
   FaCheckCircle
 } from 'react-icons/fa';
-import { MdPayment, MdSecurity } from 'react-icons/md';
-import Download from '../image/download.jpg';
 import Image from '../image/images.jpg';
 import Header from './Header';
 import './AboutUs.css';
@@ -23,7 +20,6 @@ const AboutUsPage = () => {
     <div className="about-container">
       <Header />
 
-      {/* Hero Section */}
       <section className="about-hero">
         <div className="about-hero-content">
           <h1 className="about-hero-title">About Us</h1>
@@ -34,10 +30,8 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      {/* Main Content */}
       <main className="about-main">
         <div className="about-content-wrapper">
-          {/* Mission Section */}
           <div className="about-section">
             <div className="about-text-content">
               <div className="about-image-left">
@@ -55,25 +49,6 @@ const AboutUsPage = () => {
             </div>
           </div>
 
-          {/* Security Section */}
-          <div className="about-section reverse">
-            <div className="about-text-content">
-              <div className="about-text">
-                <h2>Security First</h2>
-                <p>
-                  We prioritize the security of your financial data. Our platform encrypts sensitive 
-                  information, ensuring that your transactions are protected and giving you peace of mind. 
-                  Trust and reliability are at the core of our services, and we strive to deliver the 
-                  highest level of security and convenience to our users.
-                </p>
-              </div>
-              <div className="about-image-right">
-                <img src={Download} alt="Security" />
-              </div>
-            </div>
-          </div>
-
-          {/* Features Section */}
           <div className="about-features">
             <h2 className="features-title">Why Choose Us</h2>
             <div className="features-grid">
@@ -108,17 +83,33 @@ const AboutUsPage = () => {
             </div>
           </div>
 
-          {/* Closing Section */}
-          <div className="about-closing">
-            <div className="closing-content">
-              <FaCheckCircle className="closing-icon" />
-              <h2>Thank You for Choosing Us</h2>
-              <p>
-                We look forward to serving you and being your trusted partner for all your online 
-                payment requirements.
-              </p>
+          <div className="about-trust">
+            <div className="trust-grid">
+              <div className="trust-card">
+                <FaLock className="trust-icon" />
+                <div>
+                  <h4>Bank-Grade Security</h4>
+                  <p>256-bit encryption</p>
+                </div>
+              </div>
+              <div className="trust-card">
+                <FaCheckCircle className="trust-icon" />
+                <div>
+                  <h4>99.9% Uptime</h4>
+                  <p>Always available</p>
+                </div>
+              </div>
+              <div className="trust-card">
+                <FaUsers className="trust-icon" />
+                <div>
+                  <h4>10K+ Users</h4>
+                  <p>Trusted worldwide</p>
+                </div>
+              </div>
             </div>
           </div>
+
+      
         </div>
       </main>
     </div>
