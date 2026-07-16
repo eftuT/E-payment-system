@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaArrowRight, FaShieldAlt, FaLock, FaRocket, FaCheckCircle, FaMobileAlt } from 'react-icons/fa';
-import { BsFillShieldLockFill, BsClockFill } from 'react-icons/bs';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaArrowRight, FaShieldAlt, FaLock, FaCheckCircle } from 'react-icons/fa';
+import { BsClockFill } from 'react-icons/bs';
 import BodyPhoto from '../image/pimage1.jpg';
 import Bill from '../image/bimage2.png';
 import Security from '../image/simage.png';
@@ -11,10 +11,23 @@ import './HomePage.css';
 
 const HomePage = () => {
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.setItem("userSelectedMenu", 1);
   }, []);
+
+  const handleGetStarted = (e) => {
+    e.preventDefault();
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || 
+                       localStorage.getItem('token') !== null;
+    
+    if (isLoggedIn) {
+      navigate('/serviceProviders');
+    } else {
+      navigate('/login');
+    }
+  };
 
   const features = [
     {
@@ -47,10 +60,8 @@ const HomePage = () => {
     <div className="homepage-container">
       <Header />
       
-      {/* Main Content - Fits in One Screen */}
       <main className="homepage-main">
         <div className="homepage-content">
-          {/* Left Side - Hero Text */}
           <div className="hero-text">
             <div className="hero-badge">
               <FaShieldAlt className="badge-icon" />
@@ -69,7 +80,7 @@ const HomePage = () => {
               e-payment solutions to make your life easier.
             </p>
             <div className="hero-buttons">
-              <Link to="/serviceProviders" className="btn-primary">
+              <Link to="#" className="btn-primary" onClick={handleGetStarted}>
                 Get Started <FaArrowRight className="btn-arrow" />
               </Link>
               <Link to="/aboutUs" className="btn-secondary">
@@ -78,7 +89,6 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Right Side - Image */}
           <div className="hero-image">
             <div className="image-wrapper">
               <img src={BodyPhoto} alt="Payment System" className="hero-img" />
@@ -98,7 +108,6 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Features - Full Size Cards */}
         <div className="features-row">
           {features.map((feature) => (
             <div 
@@ -120,11 +129,7 @@ const HomePage = () => {
                 </div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-description">{feature.description}</p>
-                <div className="feature-hover-effect">
-                  <span className="feature-learn-more">
-                    Learn More <FaArrowRight className="feature-arrow" />
-                  </span>
-                </div>
+                <div className="feature-underline"></div>
               </div>
               <div 
                 className="feature-glow"
