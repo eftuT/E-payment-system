@@ -292,9 +292,7 @@ const Dashboard = ({ content }) => {
           {content}
         </Content>
 
-        <Footer className="admin-footer">
-          <span>E-Payment System ©{new Date().getFullYear()} Created by INSA</span>
-        </Footer>
+       
       </Layout>
 
       <Modal
