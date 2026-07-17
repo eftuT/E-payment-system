@@ -25,7 +25,7 @@ import './AdminActivityPage.css';
 const { Option } = Select;
 
 const AdminActivityPage = () => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [adminActivities, setAdminActivities] = useState([]);
   const loggedInAdmin = adminData ? `Admin ${adminData.user.FirstName}` : '';
   const [modalVisible, setModalVisible] = useState(false);
@@ -35,7 +35,7 @@ const AdminActivityPage = () => {
   const [filteredActivities, setFilteredActivities] = useState([]);
   const [sortOption, setSortOption] = useState('time');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
@@ -177,12 +177,19 @@ const AdminActivityPage = () => {
 
   const getAdminInitials = (name) => {
     if (!name) return 'A';
+    // Remove "Admin " prefix if present
     const cleanName = name.replace(/^Admin\s+/, '');
     const parts = cleanName.trim().split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+    
+    // If there's only one part, return first letter
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
     }
-    return parts[0].charAt(0).toUpperCase();
+    
+    // Return first letter of first and last name
+    const firstName = parts[0] || '';
+    const lastName = parts[parts.length - 1] || '';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   const getTargetType = (targetName) => {
@@ -265,7 +272,6 @@ const AdminActivityPage = () => {
                   if (key === 'id' || key === 'timestamp' || key === 'createdAt' || key === 'updatedAt') return null;
                   if (key === 'UserID' || key === 'UserId') return null;
                   
-                  // Handle "changes" object (for edit activities)
                   if (key === 'changes' && typeof value === 'object') {
                     return Object.entries(value).map(([field, change]) => {
                       const fieldLabel = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -310,7 +316,11 @@ const AdminActivityPage = () => {
     {
       title: '#',
       key: 'index',
-      render: (_, __, index) => <span className="activity-index">{index + 1}</span>,
+      render: (_, __, index) => {
+        // Calculate the correct index based on current page and page size
+        const rowNumber = (currentPage - 1) * pageSize + index + 1;
+        return <span className="activity-index">{rowNumber}</span>;
+      },
       width: 50,
     },
     {
@@ -460,10 +470,11 @@ const AdminActivityPage = () => {
                   rowKey="id"
                   scroll={{ x: 1000 }}
                   pagination={{
+                    current: currentPage,
+                    pageSize: pageSize,
                     showSizeChanger: true,
                     showTotal: (total, range) => {
-                      const totalPages = Math.ceil(total / pageSize);
-                      return `Showing ${range[0]}-${range[1]} of ${totalPages} pages`;
+                      return `Showing ${range[0]}-${range[1]} of ${total} items`;
                     },
                     showQuickJumper: false,
                   }}
