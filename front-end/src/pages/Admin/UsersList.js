@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import './UsersList.css';
 
 const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [userData, setUserData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [ setPageSize] = useState(10);
+  const [setPageSize] = useState(10);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const navigate = useNavigate();
 
@@ -81,17 +81,20 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
       headers: { Authorization: adminData.token },
     }).catch(error => console.error('Failed to log admin activity:', error));
 
-    const filtered = userData.filter((user) =>
-      user.UserName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.FirstName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.LastName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.Email?.toLowerCase().includes(value.toLowerCase()) ||
-      user.Address?.toLowerCase().includes(value.toLowerCase()) ||
-      user.UserID?.toLowerCase().includes(value.toLowerCase()) ||
-      user.PhoneNumber?.toLowerCase().includes(value.toLowerCase())
-    );
+    const filtered = userData.filter((user) => {
+      const searchLower = value.toLowerCase();
+      return (
+        (user.UserName?.toLowerCase() || '').includes(searchLower) ||
+        (user.FirstName?.toLowerCase() || '').includes(searchLower) ||
+        (user.LastName?.toLowerCase() || '').includes(searchLower) ||
+        (user.Email?.toLowerCase() || '').includes(searchLower) ||
+        (user.Address?.toLowerCase() || '').includes(searchLower) ||
+        (user.UserID?.toLowerCase() || '').includes(searchLower) ||
+        (user.PhoneNumber?.toString().toLowerCase() || '').includes(searchLower)
+      );
+    });
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
   const getUserInitials = (firstName, lastName) => {
@@ -174,7 +177,6 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
       content={
         <div className="users-container">
           <div className="users-card">
-            {/* Header */}
             <div className="users-header">
               <div className="users-header-left">
                 <div className="users-icon">
@@ -191,7 +193,6 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
             </div>
 
             <div className="users-body">
-              {/* Search Bar */}
               <div className="users-search-wrapper">
                 <Input
                   placeholder="Search users by name, email, phone, address or ID..."
@@ -203,7 +204,6 @@ const UsersList = ({ isLoggedIn, setIsLoggedIn }) => {
                 />
               </div>
 
-              {/* Table */}
               <div className="users-table-wrapper">
                 <Table
                   dataSource={filteredUsers}

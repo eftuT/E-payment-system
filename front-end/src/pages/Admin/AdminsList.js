@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import './AdminsList.css';
 
 const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [userData, setUserData] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +70,7 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const handleSearch = async (value) => {
     setSearchInput(value);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
     
     const activity = {
       adminName: `Admin ${adminData?.user?.FirstName || 'Unknown'}`,
@@ -87,14 +87,17 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
       console.error('Error saving admin search activity:', error);
     }
 
-    const filtered = userData.filter((user) =>
-      user.UserName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.FirstName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.LastName?.toLowerCase().includes(value.toLowerCase()) ||
-      user.Email?.toLowerCase().includes(value.toLowerCase()) ||
-      user.Address?.toLowerCase().includes(value.toLowerCase()) ||
-      user.PhoneNumber?.toLowerCase().includes(value.toLowerCase())
-    );
+    const filtered = userData.filter((user) => {
+      const searchLower = value.toLowerCase();
+      return (
+        (user.UserName?.toLowerCase() || '').includes(searchLower) ||
+        (user.FirstName?.toLowerCase() || '').includes(searchLower) ||
+        (user.LastName?.toLowerCase() || '').includes(searchLower) ||
+        (user.Email?.toLowerCase() || '').includes(searchLower) ||
+        (user.Address?.toLowerCase() || '').includes(searchLower) ||
+        (user.PhoneNumber?.toString().toLowerCase() || '').includes(searchLower)
+      );
+    });
     setFilteredUsers(filtered);
   };
 
@@ -178,7 +181,6 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
       content={
         <div className="admins-container">
           <div className="admins-card">
-            {/* Header */}
             <div className="admins-header">
               <div className="admins-header-left">
                 <div className="admins-icon">
@@ -195,7 +197,6 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
             </div>
 
             <div className="admins-body">
-              {/* Search Bar */}
               <div className="admins-search-wrapper">
                 <Input
                   placeholder="Search admins by name, email, phone, address or username..."
@@ -207,7 +208,6 @@ const AdminsList = ({ isLoggedIn, setIsLoggedIn }) => {
                 />
               </div>
 
-              {/* Table */}
               <div className="admins-table-wrapper">
                 <Table
                   dataSource={filteredUsers}
