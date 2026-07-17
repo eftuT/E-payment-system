@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import './ServiceProviderRegistration.css';
 
 const ServiceProviderRegistrationForm = () => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     serviceProviderBIN: '',
@@ -65,10 +65,18 @@ const ServiceProviderRegistrationForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === 'phoneNumber') {
+      const trimmedValue = value.replace(/\s/g, '');
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: trimmedValue,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -127,9 +135,10 @@ const ServiceProviderRegistrationForm = () => {
     if (!formData.servicesOffered?.trim()) newErrors.servicesOffered = 'Services Offered is required';
     if (!formData.BankName?.trim()) newErrors.BankName = 'Bank Name is required';
     if (!formData.BankAccountNumber?.trim()) newErrors.BankAccountNumber = 'Bank Account Number is required';
-    if (!formData.phoneNumber?.trim()) {
+    const trimmedPhone = formData.phoneNumber.replace(/\s/g, '');
+    if (!trimmedPhone) {
       newErrors.phoneNumber = 'Phone Number is required';
-    } else if (!/^\+?\d+$/.test(formData.phoneNumber)) {
+    } else if (!/^\+?\d+$/.test(trimmedPhone)) {
       newErrors.phoneNumber = 'Phone Number is invalid';
     }
     if (!file) {
@@ -156,12 +165,12 @@ const ServiceProviderRegistrationForm = () => {
     setLoading(true);
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('serviceProviderBIN', formData.serviceProviderBIN);
-      formDataToSend.append('serviceProviderName', formData.serviceProviderName);
-      formDataToSend.append('servicesOffered', formData.servicesOffered);
-      formDataToSend.append('BankName', formData.BankName);
-      formDataToSend.append('BankAccountNumber', formData.BankAccountNumber);
-      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('serviceProviderBIN', formData.serviceProviderBIN.trim());
+      formDataToSend.append('serviceProviderName', formData.serviceProviderName.trim());
+      formDataToSend.append('servicesOffered', formData.servicesOffered.trim());
+      formDataToSend.append('BankName', formData.BankName.trim());
+      formDataToSend.append('BankAccountNumber', formData.BankAccountNumber.trim());
+      formDataToSend.append('phoneNumber', formData.phoneNumber.replace(/\s/g, ''));
       formDataToSend.append('serviceProviderAuthorizationLetter', file);
 
       const response = await axios.post('http://localhost:3000/serviceproviders', formDataToSend, {
@@ -184,23 +193,10 @@ const ServiceProviderRegistrationForm = () => {
         }).catch(err => console.error('Activity log error:', err));
 
         message.success('Service provider registered successfully!');
-        form.resetFields();
-        setFile(null);
-        setFilePreview(null);
-        setFormData({
-          serviceProviderBIN: '',
-          serviceProviderName: '',
-          servicesOffered: '',
-          BankName: '',
-          BankAccountNumber: '',
-          phoneNumber: '+251',
-          serviceProviderAuthorizationLetter: null,
-        });
-        setErrors({});
         setLoading(false);
         
         setTimeout(() => {
-          navigate('/admin/service-providers');
+          navigate(`/admin/service-providers/${adminData.user.id}`);
         }, 1500);
       }
     } catch (error) {
@@ -219,7 +215,6 @@ const ServiceProviderRegistrationForm = () => {
       content={
         <div className="sp-reg-container">
           <div className="sp-reg-card">
-            {/* Header */}
             <div className="sp-reg-header">
               <div className="sp-reg-header-left">
                 <div className="sp-reg-icon">
@@ -243,7 +238,6 @@ const ServiceProviderRegistrationForm = () => {
                 className="sp-reg-form"
               >
                 <div className="form-grid">
-                  {/* Service Provider BIN */}
                   <div className="form-group">
                     <label>
                       <BankOutlined className="field-icon" />
@@ -260,7 +254,6 @@ const ServiceProviderRegistrationForm = () => {
                     {errors.serviceProviderBIN && <div className="error-message">{errors.serviceProviderBIN}</div>}
                   </div>
 
-                  {/* Service Provider Name */}
                   <div className="form-group">
                     <label>
                       <FaBuilding className="field-icon" />
@@ -277,7 +270,6 @@ const ServiceProviderRegistrationForm = () => {
                     {errors.serviceProviderName && <div className="error-message">{errors.serviceProviderName}</div>}
                   </div>
 
-                  {/* Bank Name */}
                   <div className="form-group">
                     <label>
                       <FaUniversity className="field-icon" />
@@ -294,7 +286,6 @@ const ServiceProviderRegistrationForm = () => {
                     {errors.BankName && <div className="error-message">{errors.BankName}</div>}
                   </div>
 
-                  {/* Bank Account Number */}
                   <div className="form-group">
                     <label>
                       <BankOutlined className="field-icon" />
@@ -311,7 +302,6 @@ const ServiceProviderRegistrationForm = () => {
                     {errors.BankAccountNumber && <div className="error-message">{errors.BankAccountNumber}</div>}
                   </div>
 
-                  {/* Phone Number */}
                   <div className="form-group">
                     <label>
                       <PhoneOutlined className="field-icon" />
@@ -327,7 +317,7 @@ const ServiceProviderRegistrationForm = () => {
                     />
                     {errors.phoneNumber && <div className="error-message">{errors.phoneNumber}</div>}
                   </div>
-                    {/* Services Offered - Full Width */}
+
                   <div className="form-group full-width">
                     <label>
                       <FileTextOutlined className="field-icon" />
@@ -345,7 +335,6 @@ const ServiceProviderRegistrationForm = () => {
                     {errors.servicesOffered && <div className="error-message">{errors.servicesOffered}</div>}
                   </div>
 
-                  {/* Authorization Letter - Full Width */}
                   <div className="form-group full-width">
                     <label>
                       <FaFileUpload className="field-icon" />
@@ -399,7 +388,6 @@ const ServiceProviderRegistrationForm = () => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="form-actions">
                   <Button
                     type="primary"
