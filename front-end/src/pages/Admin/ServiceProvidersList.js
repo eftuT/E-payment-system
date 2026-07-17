@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, message, Modal, Form, Input, Spin, Input as AntInput, Upload } from 'antd';
 import { DeleteOutlined, EditOutlined, SearchOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { FaUserPlus, FaBuilding, FaEnvelope, FaPhone, FaFileAlt, FaSearch, FaDownload, FaUniversity } from 'react-icons/fa';
+import { FaUserPlus, FaBuilding } from 'react-icons/fa';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import { useNavigate } from 'react-router-dom';
 import './ServiceProvidersList.css';
 
 const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [serviceProviderData, setServiceProviderData] = useState([]);
   const [form] = Form.useForm();
   const [editMode, setEditMode] = useState(false);
   const [serviceProvider, setServiceProvider] = useState(null);
-  // Removed: serviceProviderAuthorizationLetterUrl and setServiceProviderAuthorizationLetterUrl (not used)
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
@@ -48,7 +47,7 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   if (isLoading) {
     return (
-      <div className="sp-list-loading">
+      <div className="spl-loading">
         <Spin size="large" />
         <p>Loading...</p>
       </div>
@@ -220,54 +219,44 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
     {
       title: '#',
       key: 'index',
-      render: (_, __, index) => <span className="sp-index">{index + 1}</span>,
+      render: (_, __, index) => <span className="spl-index">{index + 1}</span>,
       width: 50,
-      fixed: 'left',
     },
     {
       title: 'Provider BIN',
       dataIndex: 'serviceProviderBIN',
       key: 'serviceProviderBIN',
-      render: (text) => <span className="sp-bin">{text}</span>,
-      width: 120,
+      render: (text) => <span className="spl-bin">{text}</span>,
     },
     {
       title: 'Provider Name',
       dataIndex: 'serviceProviderName',
       key: 'serviceProviderName',
-      render: (text) => <span className="sp-name"><FaBuilding className="sp-icon-sm" /> {text}</span>,
-      width: 220,
-      ellipsis: false,
-    },
-    {
-      title: 'Services',
-      dataIndex: 'servicesOffered',
-      key: 'servicesOffered',
-      render: (text) => <span className="sp-services">{text}</span>,
-      width: 180,
-      ellipsis: true,
+      render: (text) => <span className="spl-name">{text}</span>,
     },
     {
       title: 'Bank',
       dataIndex: 'BankName',
       key: 'BankName',
-      render: (text) => <span className="sp-bank"><FaUniversity className="sp-icon-sm" /> {text}</span>,
-      width: 200,
-      ellipsis: false,
+      render: (text) => <span className="spl-bank">{text}</span>,
     },
     {
       title: 'Account',
       dataIndex: 'BankAccountNumber',
       key: 'BankAccountNumber',
-      render: (text) => <span className="sp-account">{text}</span>,
-      width: 130,
+      render: (text) => <span className="spl-account">{text}</span>,
     },
     {
       title: 'Phone',
       dataIndex: 'phoneNumber',
       key: 'phoneNumber',
-      render: (text) => <span className="sp-phone"> {text}</span>,
-      width: 130,
+      render: (text) => <span className="spl-phone">{text}</span>,
+    },
+    {
+      title: 'Services',
+      dataIndex: 'servicesOffered',
+      key: 'servicesOffered',
+      render: (text) => <span className="spl-services">{text}</span>,
     },
     {
       title: 'Auth Letter',
@@ -277,7 +266,7 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
           <Button 
             type="link" 
             icon={<DownloadOutlined />} 
-            className="auth-download-btn"
+            className="spl-auth-download-btn"
             onClick={() => {
               const downloadLink = document.createElement('a');
               downloadLink.href = `http://localhost:3000/${provider.serviceProviderAuthorizationLetter}`;
@@ -289,27 +278,25 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
             Download
           </Button>
         ) : (
-          <span className="no-file">No file</span>
+          <span className="spl-no-file">No file</span>
         )
       ),
-      width: 120,
     },
     {
       title: 'Action',
       key: 'action',
-      width: 110,
-      fixed: 'right',
+      width: 150,
       render: (_, provider) => (
-        <div className="action-buttons">
+        <div className="spl-action-buttons">
           <Button 
             onClick={() => handleEdit(provider)} 
             icon={<EditOutlined />} 
-            className="action-btn edit-btn"
+            className="spl-action-btn spl-edit-btn"
           />
           <Button 
             onClick={() => handleDelete(provider.serviceProviderBIN)} 
             icon={<DeleteOutlined />} 
-            className="action-btn delete-btn"
+            className="spl-action-btn spl-delete-btn"
           />
         </div>
       ),
@@ -318,7 +305,6 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const handleSearch = (e) => {
     setSearchInput(e.target.value);
-    setCurrentPage(1); // Reset to first page when searching
   };
 
   const filteredServiceProviders = serviceProviderData.filter((serviceProvider) =>
@@ -334,12 +320,11 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
   return (
     <Dashboard isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} 
       content={
-        <div className="sp-list-container">
-          <div className="sp-list-card">
-            {/* Header */}
-            <div className="sp-list-header">
-              <div className="sp-list-header-left">
-                <div className="sp-list-icon">
+        <div className="spl-container">
+          <div className="spl-card">
+            <div className="spl-header">
+              <div className="spl-header-left">
+                <div className="spl-icon">
                   <FaBuilding />
                 </div>
                 <div>
@@ -347,56 +332,51 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
                   <p>Manage all registered service providers</p>
                 </div>
               </div>
-              <div className="sp-list-badge">
+              <div className="spl-badge">
                 <FaUserPlus /> {filteredServiceProviders.length} Providers
               </div>
             </div>
 
-            <div className="sp-list-body">
-              {/* Search Bar */}
-              <div className="sp-search-wrapper">
+            <div className="spl-body">
+              <div className="spl-search-wrapper">
                 <AntInput
                   placeholder="Search providers by name, BIN, bank, phone or services..."
                   value={searchInput}
                   onChange={handleSearch}
-                  prefix={<SearchOutlined className="search-icon" />}
-                  className="sp-search-input"
+                  prefix={<SearchOutlined className="spl-search-icon" />}
+                  className="spl-search-input"
                   allowClear
                 />
               </div>
 
-              {/* Table */}
-              <div className="sp-table-wrapper">
+              <div className="spl-table-wrapper">
                 <Table 
                   dataSource={filteredServiceProviders} 
                   columns={columns} 
-                  scroll={{ x: 1260 }}
+                  scroll={{ x: 900 }}
                   pagination={{
-                    current: currentPage,
-                    pageSize: 10,
-                    showSizeChanger: false,
+                    showSizeChanger: true,
                     showTotal: (total, range) => {
-                      const totalPages = Math.ceil(total / 10);
-                      return `Showing ${range[0]}-${range[1]} of ${total} entries (Page ${currentPage} of ${totalPages})`;
+                      const totalPages = Math.ceil(total / pageSize);
+                      return `Showing ${range[0]}-${range[1]} of ${totalPages} pages`;
                     },
                     showQuickJumper: false,
-                    onChange: (page) => {
-                      setCurrentPage(page);
-                    },
-                    position: ['bottomCenter'],
                   }}
-                  className="sp-table"
-                  rowClassName="sp-table-row"
+                  className="spl-table"
+                  rowClassName="spl-table-row"
                   rowKey="serviceProviderBIN"
+                  onChange={(pagination) => {
+                    setCurrentPage(pagination.current);
+                    setPageSize(pagination.pageSize);
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Edit Modal */}
           <Modal
             title={
-              <div className="modal-title">
+              <div className="spl-modal-title">
                 <EditOutlined /> Edit Service Provider
               </div>
             }
@@ -409,10 +389,10 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
             }}
             footer={null}
             width={600}
-            className="sp-modal"
+            className="spl-modal"
           >
-            <Form form={form} layout="vertical" className="sp-edit-form">
-              <div className="modal-form-grid">
+            <Form form={form} layout="vertical" className="spl-edit-form">
+              <div className="spl-modal-form-grid">
                 <Form.Item name="serviceProviderBIN" label="Provider BIN" rules={[{ required: true }]}>
                   <Input disabled />
                 </Form.Item>
@@ -435,10 +415,10 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
               </Form.Item>
 
               <Form.Item name="serviceProviderAuthorizationLetter" label="Authorization Letter">
-                <div className="modal-file-upload">
+                <div className="spl-modal-file-upload">
                   {filePreview ? (
-                    <div className="modal-file-preview">
-                      <img src={filePreview} alt="Auth Letter" className="modal-file-img" />
+                    <div className="spl-modal-file-preview">
+                      <img src={filePreview} alt="Auth Letter" className="spl-modal-file-img" />
                       <Button 
                         type="link" 
                         danger 
@@ -457,16 +437,16 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
                       onChange={handleFileChange}
                       showUploadList={false}
                     >
-                      <Button icon={<UploadOutlined />} className="upload-btn">
+                      <Button icon={<UploadOutlined />} className="spl-upload-btn">
                         Upload Authorization Letter
                       </Button>
                     </Upload>
                   )}
-                  <p className="upload-hint">Supported: JPEG, JPG, PNG, GIF (Max 5MB)</p>
+                  <p className="spl-upload-hint">Supported: JPEG, JPG, PNG, GIF (Max 5MB)</p>
                 </div>
               </Form.Item>
 
-              <div className="modal-actions">
+              <div className="spl-modal-actions">
                 <Button 
                   onClick={() => {
                     setEditMode(false);
@@ -481,7 +461,7 @@ const ServiceProvidersList = ({ isLoggedIn, setIsLoggedIn }) => {
                   type="primary" 
                   onClick={handleSave}
                   loading={loading}
-                  className="modal-save-btn"
+                  className="spl-modal-save-btn"
                 >
                   Save Changes
                 </Button>
