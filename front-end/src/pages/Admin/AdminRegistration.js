@@ -25,7 +25,7 @@ const AdminRegistrationForm = ({ addActivity }) => {
     return `P${timestamp}${randomNumber}`;
   };
 
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [isLoading, setIsLoading] = useState(true);
   const [form] = Form.useForm();
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
@@ -44,7 +44,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  // Removed: counter, incrementCounter, adminId, validateForm (not used)
 
   useEffect(() => {
     if (!adminData) {
@@ -116,10 +115,18 @@ const AdminRegistrationForm = ({ addActivity }) => {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === 'PhoneNumber') {
+      const trimmedValue = value.replace(/\s/g, '');
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: trimmedValue,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -135,7 +142,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
     }
   };
 
-  // validateForm function is now used in handleSave, so it's no longer unused
   const validateForm = () => {
     const newErrors = {};
     if (!formData.FirstName?.trim()) newErrors.FirstName = 'First Name is required';
@@ -151,9 +157,10 @@ const AdminRegistrationForm = ({ addActivity }) => {
     } else if (!/^\S+@\S+\.\S+$/.test(formData.Email)) {
       newErrors.Email = 'Email is invalid';
     }
-    if (!formData.PhoneNumber?.trim()) {
+    const trimmedPhone = formData.PhoneNumber.replace(/\s/g, '');
+    if (!trimmedPhone) {
       newErrors.PhoneNumber = 'Phone Number is required';
-    } else if (!/^\+?\d+$/.test(formData.PhoneNumber)) {
+    } else if (!/^\+?\d+$/.test(trimmedPhone)) {
       newErrors.PhoneNumber = 'Phone Number is invalid';
     }
     if (!formData.Address?.trim()) newErrors.Address = 'Address is required';
@@ -184,6 +191,8 @@ const AdminRegistrationForm = ({ addActivity }) => {
           if (profilePhotoFile) {
             submitData.append(key, profilePhotoFile);
           }
+        } else if (key === 'PhoneNumber') {
+          submitData.append(key, formData[key].replace(/\s/g, ''));
         } else if (key !== 'Role') {
           submitData.append(key, formData[key] || '');
         }
@@ -217,26 +226,10 @@ const AdminRegistrationForm = ({ addActivity }) => {
           }
         }
 
-        form.resetFields();
-        setProfilePhotoPreview(null);
-        setProfilePhotoFile(null);
-        setFormData({
-          UserID: getNextUserID(),
-          FirstName: '',
-          LastName: '',
-          Gender: '',
-          UserName: '',
-          Password: '',
-          Email: '',
-          PhoneNumber: '',
-          Address: '',
-          Role: 'Admin',
-        });
-        setErrors({});
         setLoading(false);
         
         setTimeout(() => {
-          navigate('/admin/dashboard');
+          navigate(`/admin/adminsList/${adminData.user.id}`);
         }, 1500);
       }
     } catch (error) {
@@ -251,7 +244,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
       content={
         <div className="admin-reg-container">
           <div className="admin-reg-card">
-            {/* Header */}
             <div className="admin-reg-header">
               <div className="admin-reg-header-left">
                 <div className="admin-reg-icon">
@@ -274,7 +266,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                 onFinish={handleSave}
                 className="admin-reg-form"
               >
-                {/* Profile Photo - OPTIONAL */}
                 <div className="profile-upload-section">
                   <div className="profile-photo-container">
                     {profilePhotoPreview ? (
@@ -318,9 +309,7 @@ const AdminRegistrationForm = ({ addActivity }) => {
                   </p>
                 </div>
 
-                {/* Form Fields - All in 2 columns */}
                 <div className="form-grid">
-                  {/* First Name */}
                   <div className="form-group">
                     <label>
                       <UserOutlined className="field-icon" />
@@ -337,7 +326,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.FirstName && <div className="error-message">{errors.FirstName}</div>}
                   </div>
 
-                  {/* Last Name */}
                   <div className="form-group">
                     <label>
                       <UserOutlined className="field-icon" />
@@ -354,7 +342,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.LastName && <div className="error-message">{errors.LastName}</div>}
                   </div>
 
-                  {/* Gender */}
                   <div className="form-group">
                     <label>
                       <FaVenusMars className="field-icon" />
@@ -373,7 +360,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.Gender && <div className="error-message">{errors.Gender}</div>}
                   </div>
 
-                  {/* Username */}
                   <div className="form-group">
                     <label>
                       <UserOutlined className="field-icon" />
@@ -390,7 +376,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.UserName && <div className="error-message">{errors.UserName}</div>}
                   </div>
 
-                  {/* Password */}
                   <div className="form-group">
                     <label>
                       <LockOutlined className="field-icon" />
@@ -407,7 +392,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.Password && <div className="error-message">{errors.Password}</div>}
                   </div>
 
-                  {/* Email */}
                   <div className="form-group">
                     <label>
                       <MailOutlined className="field-icon" />
@@ -425,7 +409,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.Email && <div className="error-message">{errors.Email}</div>}
                   </div>
 
-                  {/* Phone Number */}
                   <div className="form-group">
                     <label>
                       <PhoneOutlined className="field-icon" />
@@ -442,7 +425,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                     {errors.PhoneNumber && <div className="error-message">{errors.PhoneNumber}</div>}
                   </div>
 
-                  {/* Address - Now beside Phone Number */}
                   <div className="form-group">
                     <label>
                       <HomeOutlined className="field-icon" />
@@ -460,7 +442,6 @@ const AdminRegistrationForm = ({ addActivity }) => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="form-actions">
                   <Button
                     type="primary"
