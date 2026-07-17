@@ -19,11 +19,11 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 import Dashboard from "./Dashboard";
-import { useNavigate } from "react-router-dom"; // Removed useParams
+import { useNavigate } from "react-router-dom";
 import './AgentRegistration.css';
 
 const AgentRegistrationForm = () => {
-  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData'))); // Removed setAdminData
+  const [adminData] = useState(JSON.parse(localStorage.getItem('adminData')));
   const [form] = Form.useForm();
   const [agentData, setAgentData] = useState({
     agentBIN: '',
@@ -64,10 +64,18 @@ const AgentRegistrationForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAgentData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === 'phoneNumber') {
+      const trimmedValue = value.replace(/\s/g, '');
+      setAgentData((prevData) => ({
+        ...prevData,
+        [name]: trimmedValue,
+      }));
+    } else {
+      setAgentData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -129,9 +137,10 @@ const AgentRegistrationForm = () => {
       newErrors.agentEmail = 'Email is invalid';
     }
     if (!agentData.servicesOffered?.trim()) newErrors.servicesOffered = 'Services Offered is required';
-    if (!agentData.phoneNumber?.trim()) {
+    const trimmedPhone = agentData.phoneNumber.replace(/\s/g, '');
+    if (!trimmedPhone) {
       newErrors.phoneNumber = 'Phone Number is required';
-    } else if (!/^\+?\d+$/.test(agentData.phoneNumber)) {
+    } else if (!/^\+?\d+$/.test(trimmedPhone)) {
       newErrors.phoneNumber = 'Phone Number is invalid';
     }
     if (!file) {
@@ -158,11 +167,11 @@ const AgentRegistrationForm = () => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("agentBIN", agentData.agentBIN);
-      formData.append("agentName", agentData.agentName);
-      formData.append("agentEmail", agentData.agentEmail);
-      formData.append("servicesOffered", agentData.servicesOffered);
-      formData.append("phoneNumber", agentData.phoneNumber);
+      formData.append("agentBIN", agentData.agentBIN.trim());
+      formData.append("agentName", agentData.agentName.trim());
+      formData.append("agentEmail", agentData.agentEmail.trim());
+      formData.append("servicesOffered", agentData.servicesOffered.trim());
+      formData.append("phoneNumber", agentData.phoneNumber.replace(/\s/g, ''));
       formData.append("agentAuthorizationLetter", file);
 
       const response = await axios.post('http://localhost:3000/agents', formData, {
@@ -173,7 +182,6 @@ const AgentRegistrationForm = () => {
       });
       
       if (response.status === 200 || response.status === 201) {
-        // Register admin activity
         const activity = {
           adminName: `Admin ${adminData.user.FirstName}`,
           action: 'registered',
@@ -189,23 +197,11 @@ const AgentRegistrationForm = () => {
           console.error('Error registering admin activity:', error);
         }
 
-        form.resetFields();
-        setFile(null);
-        setFilePreview(null);
-        setAgentData({
-          agentBIN: '',
-          agentName: '',
-          agentEmail: '',
-          servicesOffered: '',
-          phoneNumber: '+251',
-          agentAuthorizationLetter: null,
-        });
-        setErrors({});
-        message.success('Agent registered successfully!');
         setLoading(false);
+        message.success('Agent registered successfully!');
         
         setTimeout(() => {
-          navigate('/admin/agents');
+          navigate(`/admin/agents/${adminData.user.id}`);
         }, 1500);
       }
     } catch (error) {
@@ -220,7 +216,6 @@ const AgentRegistrationForm = () => {
       content={
         <div className="agent-reg-container">
           <div className="agent-reg-card">
-            {/* Header */}
             <div className="agent-reg-header">
               <div className="agent-reg-header-left">
                 <div className="agent-reg-icon">
@@ -243,9 +238,7 @@ const AgentRegistrationForm = () => {
                 onFinish={handleSubmit}
                 className="agent-reg-form"
               >
-                {/* Form Fields */}
                 <div className="form-grid">
-                  {/* Agent BIN */}
                   <div className="form-group">
                     <label>
                       <BankOutlined className="field-icon" />
@@ -262,7 +255,6 @@ const AgentRegistrationForm = () => {
                     {errors.agentBIN && <div className="error-message">{errors.agentBIN}</div>}
                   </div>
 
-                  {/* Agent Name */}
                   <div className="form-group">
                     <label>
                       <FaBuilding className="field-icon" />
@@ -279,7 +271,6 @@ const AgentRegistrationForm = () => {
                     {errors.agentName && <div className="error-message">{errors.agentName}</div>}
                   </div>
 
-                  {/* Agent Email */}
                   <div className="form-group">
                     <label>
                       <MailOutlined className="field-icon" />
@@ -297,7 +288,6 @@ const AgentRegistrationForm = () => {
                     {errors.agentEmail && <div className="error-message">{errors.agentEmail}</div>}
                   </div>
 
-                  {/* Phone Number */}
                   <div className="form-group">
                     <label>
                       <PhoneOutlined className="field-icon" />
@@ -314,24 +304,23 @@ const AgentRegistrationForm = () => {
                     {errors.phoneNumber && <div className="error-message">{errors.phoneNumber}</div>}
                   </div>
 
-              {/* Services Offered - Full Width with TextArea */}
-<div className="form-group full-width">
-  <label>
-    <FileTextOutlined className="field-icon" />
-    Services Offered <span className="required">*</span>
-  </label>
-  <Input.TextArea
-    name="servicesOffered"
-    placeholder="List the services this agent offers"
-    value={agentData.servicesOffered}
-    onChange={handleChange}
-    className={`services-textarea ${errors.servicesOffered ? 'error' : ''}`}
-    rows={2}
-    style={{ resize: 'vertical', minHeight: '70px', maxHeight: '100px' }}
-  />
-  {errors.servicesOffered && <div className="error-message">{errors.servicesOffered}</div>}
-</div>
-                  {/* Authorization Letter - Full Width */}
+                  <div className="form-group full-width">
+                    <label>
+                      <FileTextOutlined className="field-icon" />
+                      Services Offered <span className="required">*</span>
+                    </label>
+                    <Input.TextArea
+                      name="servicesOffered"
+                      placeholder="List the services this agent offers"
+                      value={agentData.servicesOffered}
+                      onChange={handleChange}
+                      className={`services-textarea ${errors.servicesOffered ? 'error' : ''}`}
+                      rows={2}
+                      style={{ resize: 'vertical', minHeight: '70px', maxHeight: '100px' }}
+                    />
+                    {errors.servicesOffered && <div className="error-message">{errors.servicesOffered}</div>}
+                  </div>
+
                   <div className="form-group full-width">
                     <label>
                       <FaFileUpload className="field-icon" />
@@ -385,7 +374,6 @@ const AgentRegistrationForm = () => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="form-actions">
                   <Button
                     type="primary"
